@@ -1,0 +1,10 @@
+{
+  "name": "begoodit",
+  "version": "1.0.0",
+  "description": "BeGoodIt application",
+  "license": "ISC",
+  "scripts": {
+    "start": "cd server/core && npm start",
+    "install": "cd server/core && npm install"
+  }
+}
