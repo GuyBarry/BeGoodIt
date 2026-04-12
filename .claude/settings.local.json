@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/GuyBarry/style-lens-snap/main/src/components/ui/dialog.tsx\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/GuyBarry/style-lens-snap/main/tailwind.config.ts\")",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}
