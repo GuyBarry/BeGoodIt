@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Drawer,
@@ -22,28 +23,25 @@ const DRAWER_COLLAPSED_WIDTH = 80;
 const TRANSITION = 'cubic-bezier(0.4, 0, 0.2, 1)';
 const DURATION = '0.3s';
 
-export interface NavItem {
-  id: string;
+interface NavItem {
+  path: string;
   icon: React.ReactElement;
   label: string;
   description: string;
 }
 
 const navItems: NavItem[] = [
-  { id: 'closet',   icon: <CheckroomIcon />,  label: 'My Closet',    description: 'Browse your wardrobe' },
-  { id: 'add',      icon: <AddIcon />,         label: 'Add Item',     description: 'Upload new clothes' },
-  { id: 'fitting',  icon: <AutoAwesomeIcon />, label: 'Fitting Room', description: 'Create outfits' },
-  { id: 'smartbuy', icon: <ShoppingBagIcon />, label: 'Smart Buy',    description: 'Test before buying' },
-  { id: 'profile',  icon: <PersonIcon />,       label: 'Profile',      description: 'Your stats & settings' },
+  { path: '/closet',   icon: <CheckroomIcon />,  label: 'My Closet',    description: 'Browse your wardrobe' },
+  { path: '/add',      icon: <AddIcon />,         label: 'Add Item',     description: 'Upload new clothes' },
+  { path: '/fitting',  icon: <AutoAwesomeIcon />, label: 'Fitting Room', description: 'Create outfits' },
+  { path: '/smartbuy', icon: <ShoppingBagIcon />, label: 'Smart Buy',    description: 'Test before buying' },
+  { path: '/profile',  icon: <PersonIcon />,       label: 'Profile',      description: 'Your stats & settings' },
 ];
 
-interface SidebarProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
-}
-
-export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const width = collapsed ? DRAWER_COLLAPSED_WIDTH : DRAWER_WIDTH;
 
   return (
@@ -119,13 +117,13 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       {/* Navigation */}
       <List sx={{ flex: 1, px: 1, py: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {navItems.map((item) => {
-          const isActive = activeTab === item.id;
+          const isActive = pathname === item.path;
 
           const button = (
-            <ListItem key={item.id} disablePadding>
+            <ListItem key={item.path} disablePadding>
               <ListItemButton
                 selected={isActive}
-                onClick={() => onTabChange(item.id)}
+                onClick={() => navigate(item.path)}
                 sx={{
                   borderRadius: 2.5,
                   px: 1.5,
@@ -192,7 +190,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           );
 
           return collapsed ? (
-            <Tooltip key={item.id} title={item.label} placement="right">
+            <Tooltip key={item.path} title={item.label} placement="right">
               {button}
             </Tooltip>
           ) : button;
