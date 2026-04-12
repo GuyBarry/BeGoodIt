@@ -6,7 +6,6 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemText,
   Typography,
   Divider,
   Tooltip,
@@ -16,11 +15,12 @@ import AddIcon from '@mui/icons-material/Add';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import PersonIcon from '@mui/icons-material/Person';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 const DRAWER_WIDTH = 272;
 const DRAWER_COLLAPSED_WIDTH = 80;
+const TRANSITION = 'cubic-bezier(0.4, 0, 0.2, 1)';
+const DURATION = '0.3s';
 
 export interface NavItem {
   id: string;
@@ -30,11 +30,11 @@ export interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: 'closet',   icon: <CheckroomIcon />,   label: 'My Closet',    description: 'Browse your wardrobe' },
-  { id: 'add',      icon: <AddIcon />,          label: 'Add Item',     description: 'Upload new clothes' },
-  { id: 'fitting',  icon: <AutoAwesomeIcon />,  label: 'Fitting Room', description: 'Create outfits' },
-  { id: 'smartbuy', icon: <ShoppingBagIcon />,  label: 'Smart Buy',    description: 'Test before buying' },
-  { id: 'profile',  icon: <PersonIcon />,        label: 'Profile',      description: 'Your stats & settings' },
+  { id: 'closet',   icon: <CheckroomIcon />,  label: 'My Closet',    description: 'Browse your wardrobe' },
+  { id: 'add',      icon: <AddIcon />,         label: 'Add Item',     description: 'Upload new clothes' },
+  { id: 'fitting',  icon: <AutoAwesomeIcon />, label: 'Fitting Room', description: 'Create outfits' },
+  { id: 'smartbuy', icon: <ShoppingBagIcon />, label: 'Smart Buy',    description: 'Test before buying' },
+  { id: 'profile',  icon: <PersonIcon />,       label: 'Profile',      description: 'Your stats & settings' },
 ];
 
 interface SidebarProps {
@@ -52,10 +52,11 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       sx={{
         width,
         flexShrink: 0,
+        transition: `width ${DURATION} ${TRANSITION}`,
         '& .MuiDrawer-paper': {
           width,
           overflowX: 'hidden',
-          transition: 'width 0.3s ease',
+          transition: `width ${DURATION} ${TRANSITION}`,
           boxSizing: 'border-box',
           borderRight: '1px solid',
           borderColor: 'divider',
@@ -67,15 +68,15 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       {/* Logo */}
       <Box
         sx={{
-          px: collapsed ? 1.5 : 3,
+          px: 2,
           py: 2.5,
           display: 'flex',
           alignItems: 'center',
           gap: 1.5,
-          justifyContent: collapsed ? 'center' : 'flex-start',
           borderBottom: '1px solid',
           borderColor: 'divider',
           minHeight: 72,
+          overflow: 'hidden',
         }}
       >
         <Box
@@ -93,21 +94,26 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           <CheckroomIcon sx={{ color: '#fff', fontSize: 20 }} />
         </Box>
 
-        {!collapsed && (
-          <Box sx={{ overflow: 'hidden' }}>
-            <Typography
-              variant="h6"
-              fontWeight={600}
-              lineHeight={1.2}
-              sx={{ fontFamily: '"Cormorant Garamond", serif' }}
-            >
-              BeGoodIt
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Smart Wardrobe
-            </Typography>
-          </Box>
-        )}
+        {/* Text fades and collapses smoothly */}
+        <Box
+          sx={{
+            overflow: 'hidden',
+            maxWidth: collapsed ? 0 : 180,
+            opacity: collapsed ? 0 : 1,
+            transition: `max-width ${DURATION} ${TRANSITION}, opacity 0.2s ease`,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600, lineHeight: 1.2 }}
+          >
+            BeGoodIt
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Smart Wardrobe
+          </Typography>
+        </Box>
       </Box>
 
       {/* Navigation */}
@@ -122,10 +128,9 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 onClick={() => onTabChange(item.id)}
                 sx={{
                   borderRadius: 2.5,
-                  px: collapsed ? 1.5 : 2,
+                  px: 1.5,
                   py: 1.5,
-                  justifyContent: collapsed ? 'center' : 'flex-start',
-                  transition: 'all 0.2s ease',
+                  transition: `background-color 0.2s ease, box-shadow 0.2s ease`,
                   '&.Mui-selected': {
                     bgcolor: 'primary.main',
                     color: 'primary.contrastText',
@@ -141,8 +146,9 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               >
                 <ListItemIcon
                   sx={{
-                    minWidth: collapsed ? 'auto' : 40,
+                    minWidth: 40,
                     color: 'inherit',
+                    justifyContent: 'center',
                     '& .MuiSvgIcon-root': {
                       fontSize: 22,
                       transform: isActive ? 'scale(1.1)' : 'scale(1)',
@@ -153,18 +159,34 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                   {item.icon}
                 </ListItemIcon>
 
-                {!collapsed && (
-                  <ListItemText
-                    primary={item.label}
-                    secondary={item.description}
-                    primaryTypographyProps={{ fontWeight: 500, fontSize: 14 }}
-                    secondaryTypographyProps={{
+                {/* Label + description fade and collapse smoothly */}
+                <Box
+                  sx={{
+                    overflow: 'hidden',
+                    maxWidth: collapsed ? 0 : 180,
+                    opacity: collapsed ? 0 : 1,
+                    transition: `max-width ${DURATION} ${TRANSITION}, opacity 0.15s ease`,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <Typography
+                    component="p"
+                    sx={{ fontWeight: 500, fontSize: 14, lineHeight: 1.3 }}
+                  >
+                    {item.label}
+                  </Typography>
+                  <Typography
+                    component="p"
+                    sx={{
                       fontSize: 11,
+                      lineHeight: 1.3,
+                      opacity: isActive ? 0.75 : 1,
                       color: isActive ? 'primary.contrastText' : 'text.secondary',
-                      sx: { opacity: isActive ? 0.75 : 1 },
                     }}
-                  />
-                )}
+                  >
+                    {item.description}
+                  </Typography>
+                </Box>
               </ListItemButton>
             </ListItem>
           );
@@ -184,23 +206,36 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           onClick={() => setCollapsed((prev) => !prev)}
           sx={{
             borderRadius: 2.5,
-            px: collapsed ? 1.5 : 2,
+            px: 1.5,
             py: 1.25,
-            justifyContent: collapsed ? 'center' : 'flex-start',
             color: 'text.secondary',
-            transition: 'all 0.2s ease',
+            transition: 'background-color 0.2s ease',
             '&:hover': { bgcolor: 'action.hover', color: 'text.primary' },
           }}
         >
-          <ListItemIcon sx={{ minWidth: collapsed ? 'auto' : 40, color: 'inherit' }}>
-            {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          <ListItemIcon sx={{ minWidth: 40, color: 'inherit', justifyContent: 'center' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                transition: `transform ${DURATION} ${TRANSITION}`,
+                transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)',
+              }}
+            >
+              <ChevronRightIcon />
+            </Box>
           </ListItemIcon>
-          {!collapsed && (
-            <ListItemText
-              primary="Collapse"
-              primaryTypographyProps={{ fontSize: 14 }}
-            />
-          )}
+
+          <Box
+            sx={{
+              overflow: 'hidden',
+              maxWidth: collapsed ? 0 : 180,
+              opacity: collapsed ? 0 : 1,
+              transition: `max-width ${DURATION} ${TRANSITION}, opacity 0.15s ease`,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Typography sx={{ fontSize: 14 }}>Collapse</Typography>
+          </Box>
         </ListItemButton>
       </Box>
     </Drawer>
