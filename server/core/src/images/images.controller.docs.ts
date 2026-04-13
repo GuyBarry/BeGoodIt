@@ -40,8 +40,11 @@
  *             schema:
  *               type: object
  *               properties:
- *                 error:
+ *                 message:
  *                   type: string
+ *                   example: No file provided
+ *                 details:
+ *                   description: Optional additional context
  *       413:
  *         description: File exceeds maximum allowed size (5MB)
  *         content:
@@ -49,10 +52,15 @@
  *             schema:
  *               type: object
  *               properties:
- *                 error:
+ *                 message:
  *                   type: string
- *                 maxSize:
- *                   type: string
+ *                   example: File too large
+ *                 details:
+ *                   type: object
+ *                   properties:
+ *                     maxSize:
+ *                       type: string
+ *                       example: 5MB
  *       415:
  *         description: Unsupported file type
  *         content:
@@ -60,12 +68,17 @@
  *             schema:
  *               type: object
  *               properties:
- *                 error:
+ *                 message:
  *                   type: string
- *                 allowedTypes:
- *                   type: array
- *                   items:
- *                     type: string
+ *                   example: "Unsupported file type: text/plain"
+ *                 details:
+ *                   type: object
+ *                   properties:
+ *                     allowedTypes:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["image/jpeg", "image/png", "image/webp"]
  *       500:
  *         description: Internal server error
  *         content:
@@ -73,7 +86,8 @@
  *             schema:
  *               type: object
  *               properties:
- *                 error:
+ *                 message:
  *                   type: string
+ *                   example: Oops, something went wrong!
  */
 export {};
