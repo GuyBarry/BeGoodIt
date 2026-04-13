@@ -1,8 +1,11 @@
 import 'dotenv/config';
 import * as admin from 'firebase-admin';
-import * as serviceAccount from '../../serviceAccountKey.json';
+
+const credential = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
+  ? admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON))
+  : admin.credential.applicationDefault();
 
 export const firebaseConfig = {
-  credential: admin.credential.cert(serviceAccount as any),
+  credential,
   storageBucket: process.env.FIREBASE_STORAGE_BUCKET || '',
 };
