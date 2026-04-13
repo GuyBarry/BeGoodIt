@@ -1,12 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { StatusCodes } from 'http-status-codes';
+import {
+  BadRequestException,
+  UnsupportedMediaTypeException,
+  PayloadTooLargeException,
+} from '../exceptions/httpExceptions';
 
-const ALLOWED_MIME_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-];
-
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const MAGIC_BYTES: Record<string, number[]> = {
@@ -16,28 +15,27 @@ const MAGIC_BYTES: Record<string, number[]> = {
 };
 
 export class ImageValidationMiddleware {
-  static validate(req: Request, res: Response, next: NextFunction): void {
+  static validate(req: Request, _res: Response, next: NextFunction): void {
     const file = req.file;
 
     if (!file) {
-      res.status(StatusCodes.BAD_REQUEST).json({ error: 'No file provided' });
-      return;
+      return next(new BadRequestException('No file provided'));
     }
 
     if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-      res.status(StatusCodes.UNSUPPORTED_MEDIA_TYPE).json({
-        error: `Unsupported file type: ${file.mimetype}`,
-        allowedTypes: ALLOWED_MIME_TYPES,
-      });
-      return;
+      return next(
+        new UnsupportedMediaTypeException(`Unsupported file type: ${file.mimetype}`, {
+          allowedTypes: ALLOWED_MIME_TYPES,
+        }),
+      );
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      res.status(StatusCodes.REQUEST_TOO_LONG).json({
-        error: 'File too large',
-        maxSize: `${MAX_FILE_SIZE / (1024 * 1024)}MB`,
-      });
-      return;
+      return next(
+        new PayloadTooLargeException('File too large', {
+          maxSize: `${MAX_FILE_SIZE / (1024 * 1024)}MB`,
+        }),
+      );
     }
 
     const expectedBytes = MAGIC_BYTES[file.mimetype];
@@ -46,8 +44,9 @@ export class ImageValidationMiddleware {
       const isValid = expectedBytes.every((byte, i) => fileHeader[i] === byte);
 
       if (!isValid) {
-        res.status(StatusCodes.BAD_REQUEST).json({ error: 'File appears to be corrupted or has mismatched content type' });
-        return;
+        return next(
+          new BadRequestException('File appears to be corrupted or has mismatched content type'),
+        );
       }
     }
 

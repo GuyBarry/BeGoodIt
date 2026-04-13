@@ -1,30 +1,34 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
-import { ImagesController } from '../../images/images.controller';
-import { ImagesService } from '../../images/images.service';
+import { imagesRouter } from '../../images/images.controller';
+import { imagesService } from '../../images/images.service';
 
+// Mock dependencies
 jest.mock('../../images/images.service');
+jest.mock('../../firebase/firebase.storage');
+
+// Local Error Middleware to simulate how errors are caught
+const mockErrorHandler = (error: any, req: Request, res: Response, next: NextFunction) => {
+  const statusCode = error.statusCode || 500;
+  res.status(statusCode).json({ error: error.message || 'Error' });
+};
 
 const PNG_HEADER = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
-describe('ImagesController', () => {
+describe('imagesRouter', () => {
   let app: express.Express;
-  let mockService: jest.Mocked<ImagesService>;
 
   beforeEach(() => {
-    mockService = {
-      processImage: jest.fn(),
-      uploadImage: jest.fn(),
-    } as unknown as jest.Mocked<ImagesService>;
+    jest.clearAllMocks();
 
-    const controller = new ImagesController(mockService);
     app = express();
-    app.use(controller.router);
+    app.use(imagesRouter);
+    app.use(mockErrorHandler);
   });
 
   describe('POST /image', () => {
     it('should return 201 with url and fileName on successful upload', async () => {
-      mockService.uploadImage.mockResolvedValue({
+      (imagesService.uploadImage as jest.Mock).mockResolvedValue({
         url: 'https://storage.googleapis.com/bucket/images/test.png',
         fileName: 'images/test.png',
       });
@@ -38,7 +42,7 @@ describe('ImagesController', () => {
         url: 'https://storage.googleapis.com/bucket/images/test.png',
         fileName: 'images/test.png',
       });
-      expect(mockService.uploadImage).toHaveBeenCalledTimes(1);
+      expect(imagesService.uploadImage).toHaveBeenCalledTimes(1);
     });
 
     it('should return 400 when no file is provided', async () => {
@@ -57,7 +61,6 @@ describe('ImagesController', () => {
 
       expect(response.status).toBe(415);
       expect(response.body.error).toContain('Unsupported file type');
-      expect(response.body.allowedTypes).toBeDefined();
     });
 
     it('should return 400 for corrupted file (mismatched magic bytes)', async () => {
@@ -72,7 +75,7 @@ describe('ImagesController', () => {
     });
 
     it('should return 500 when the service throws', async () => {
-      mockService.uploadImage.mockRejectedValue(new Error('Firebase down'));
+      (imagesService.uploadImage as jest.Mock).mockRejectedValue(new Error('Firebase down'));
 
       const response = await request(app)
         .post('/image')

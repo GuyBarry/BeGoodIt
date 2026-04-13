@@ -1,17 +1,8 @@
 import * as admin from 'firebase-admin';
-import * as path from 'path';
-
-const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+import { firebaseConfig } from '../config/firebase.config';
 
 if (!admin.apps.length) {
-  const credential = serviceAccountPath
-    ? admin.credential.cert(path.resolve(serviceAccountPath))
-    : admin.credential.applicationDefault();
-
-  admin.initializeApp({
-    credential,
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  });
+  admin.initializeApp(firebaseConfig);
 }
 
 export const firebaseApp = admin.app();

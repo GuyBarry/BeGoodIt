@@ -2,10 +2,9 @@ import 'dotenv/config';
 import express, { Express, Request, Response } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './src/config/swagger.config';
+import { errorHandler } from './src/middlewares/error.middleware';
 import { serverConfig } from './src/config/server.config';
-import { ImagesController } from './src/images/images.controller';
-import { ImagesService } from './src/images/images.service';
-import { FirebaseStorageClient } from './src/firebase/firebase.storage';
+import { imagesRouter } from './src/images/images.controller';
 
 const app: Express = express();
 const PORT = serverConfig.port;
@@ -13,11 +12,9 @@ const PORT = serverConfig.port;
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-const storageClient = new FirebaseStorageClient();
-const imagesService = new ImagesService(storageClient);
-const imagesController = new ImagesController(imagesService);
+app.use(imagesRouter);
 
-app.use(imagesController.router);
+app.use(errorHandler);
 
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Welcome to BeGoodIt API' });
