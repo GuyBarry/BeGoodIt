@@ -10,7 +10,7 @@
     "start": "ts-node app.ts",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "db:start": "dotenv -e .env.development docker compose -f db/localdb/docker-compose.yml up -d",
+    "db:start": "dotenv -e .env.development -- docker compose -f db/localdb/docker-compose.yml up -d",
     "db:stop": "docker compose -f db/localdb/docker-compose.yml down",
     "db:drop": "docker compose -f db/localdb/docker-compose.yml down -v",
     "db:logs": "docker compose -f db/localdb/docker-compose.yml logs -f mysql",
