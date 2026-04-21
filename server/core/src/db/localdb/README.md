@@ -74,7 +74,7 @@ Open your GUI of choice (MySQL Workbench, TablePlus, DBeaver, etc.) and create a
 npm run migration:run
 ```
 
-This applies all pending migrations from `db/migrations/` **and seeds**.
+This applies all pending migrations from `src/db/migrations/` **and seeds**.
 
 ---
 
@@ -85,8 +85,8 @@ All these use `.env.development` by default:
 | Command | Description |
 |---|---|
 | `npm run migration:run` | Apply all pending migrations + seeds |
-| `npm run migration:generate -- db/migrations/MyName` | Generate a new migration from entity changes |
-| `npm run migration:create -- db/migrations/MyName` | Create a blank migration file |
+| `npm run migration:generate -- src/db/migrations/MyName` | Generate a new migration from entity changes |
+| `npm run migration:create -- src/db/migrations/MyName` | Create a blank migration file |
 | `npm run migration:show` | List all migrations and their status |
 | `npm run migration:revert` | Roll back the last applied migration |
 
@@ -134,7 +134,7 @@ npm run db:start           # Container resumes with existing data
 
 ```sh
 # Edit entities in server/core/entities/
-npm run migration:generate -- db/migrations/AddNewColumn
+npm run migration:generate -- src/db/migrations/AddNewColumn
 npm run migration:run      # Apply the migration
 ```
 

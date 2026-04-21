@@ -41,11 +41,21 @@ export class SeedLookupTables1776370000000 implements MigrationInterface {
       ('Winter'),
       ('All-Season')
     `);
+
+    // Seed gender
+    await queryRunner.query(`
+      INSERT INTO \`gender\` (\`name\`) VALUES
+      ('Male'),
+      ('Female'),
+      ('Other'),
+      ('Prefer not to say')
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DELETE FROM \`color_group\``);
     await queryRunner.query(`DELETE FROM \`garment_category\``);
     await queryRunner.query(`DELETE FROM \`season\``);
+    await queryRunner.query(`DELETE FROM \`gender\``);
   }
 }

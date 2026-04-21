@@ -6,7 +6,7 @@ export class Season {
   @PrimaryGeneratedColumn({ name: 'season_id' })
   seasonId: number;
 
-  @Column({ type: 'varchar', length: 30, unique: true })
+  @Column({ type: 'varchar', unique: true })
   name: string;
 
   @OneToMany(() => Cloth, (cloth) => cloth.season)

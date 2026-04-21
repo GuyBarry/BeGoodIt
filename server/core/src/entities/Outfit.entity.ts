@@ -21,7 +21,7 @@ export class Outfit {
   @Column({ name: 'folder_id', type: 'char', length: 36, nullable: true })
   folderId: string | null;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   name: string | null;
 
   @Column({ name: 'is_favorite', type: 'boolean', default: false })

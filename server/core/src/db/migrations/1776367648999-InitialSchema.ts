@@ -12,8 +12,7 @@ export class InitialSchema1776367648999 implements MigrationInterface {
                 \`category_id\` int NULL,
                 \`season_id\` int NULL,
                 \`image_url\` text NOT NULL,
-                \`brand\` varchar(100) NULL,
-                \`style\` varchar(50) NULL,
+                \`style\` varchar(255) NULL,
                 \`image_embedding\` longblob NULL,
                 \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
                 INDEX \`idx_cloth_user_lookups\` (\`user_id\`, \`category_id\`, \`color_group_id\`),
@@ -23,7 +22,7 @@ export class InitialSchema1776367648999 implements MigrationInterface {
         await queryRunner.query(`
             CREATE TABLE \`color_group\` (
                 \`color_id\` int NOT NULL AUTO_INCREMENT,
-                \`name\` varchar(30) NOT NULL,
+                \`name\` varchar(255) NOT NULL,
                 UNIQUE INDEX \`IDX_485978117d19212e4d0d615a90\` (\`name\`),
                 PRIMARY KEY (\`color_id\`)
             ) ENGINE = InnoDB
@@ -31,9 +30,17 @@ export class InitialSchema1776367648999 implements MigrationInterface {
         await queryRunner.query(`
             CREATE TABLE \`garment_category\` (
                 \`category_id\` int NOT NULL AUTO_INCREMENT,
-                \`name\` varchar(30) NOT NULL,
+                \`name\` varchar(255) NOT NULL,
                 UNIQUE INDEX \`IDX_44e9a77678482e3e60b00b2aba\` (\`name\`),
                 PRIMARY KEY (\`category_id\`)
+            ) ENGINE = InnoDB
+        `);
+        await queryRunner.query(`
+            CREATE TABLE \`gender\` (
+                \`gender_id\` int NOT NULL AUTO_INCREMENT,
+                \`name\` varchar(255) NOT NULL,
+                UNIQUE INDEX \`IDX_715cef762c43bdc30e83bea161\` (\`name\`),
+                PRIMARY KEY (\`gender_id\`)
             ) ENGINE = InnoDB
         `);
         await queryRunner.query(`
@@ -41,7 +48,7 @@ export class InitialSchema1776367648999 implements MigrationInterface {
                 \`outfit_id\` varchar(36) NOT NULL,
                 \`user_id\` varchar(36) NOT NULL,
                 \`folder_id\` varchar(36) NULL,
-                \`name\` varchar(100) NULL,
+                \`name\` varchar(255) NULL,
                 \`is_favorite\` tinyint NOT NULL DEFAULT 0,
                 \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
                 PRIMARY KEY (\`outfit_id\`)
@@ -51,7 +58,7 @@ export class InitialSchema1776367648999 implements MigrationInterface {
             CREATE TABLE \`outfit_folder\` (
                 \`folder_id\` varchar(36) NOT NULL,
                 \`user_id\` varchar(36) NOT NULL,
-                \`name\` varchar(50) NOT NULL,
+                \`name\` varchar(255) NOT NULL,
                 UNIQUE INDEX \`IDX_8a1011c24a64f7df062e428542\` (\`user_id\`, \`name\`),
                 PRIMARY KEY (\`folder_id\`)
             ) ENGINE = InnoDB
@@ -59,7 +66,7 @@ export class InitialSchema1776367648999 implements MigrationInterface {
         await queryRunner.query(`
             CREATE TABLE \`season\` (
                 \`season_id\` int NOT NULL AUTO_INCREMENT,
-                \`name\` varchar(30) NOT NULL,
+                \`name\` varchar(255) NOT NULL,
                 UNIQUE INDEX \`IDX_b3e4a42a8be8b449354a8b31cc\` (\`name\`),
                 PRIMARY KEY (\`season_id\`)
             ) ENGINE = InnoDB
@@ -67,14 +74,14 @@ export class InitialSchema1776367648999 implements MigrationInterface {
         await queryRunner.query(`
             CREATE TABLE \`user\` (
                 \`user_id\` varchar(36) NOT NULL,
-                \`username\` varchar(50) NOT NULL,
+                \`username\` varchar(255) NOT NULL,
                 \`email\` varchar(255) NOT NULL,
                 \`password_hash\` text NOT NULL,
                 \`profile_picture_url\` text NULL,
-                \`gender\` varchar(20) NULL,
+                \`gender_id\` int NULL,
                 \`birthdate\` date NULL,
                 \`height_cm\` decimal(5, 2) NULL,
-                \`body_type\` varchar(50) NULL,
+                \`body_type\` varchar(255) NULL,
                 \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
                 UNIQUE INDEX \`IDX_78a916df40e02a9deb1c4b75ed\` (\`username\`),
                 UNIQUE INDEX \`IDX_e12875dfb3b1d92d7d7c5377e2\` (\`email\`),
@@ -123,6 +130,11 @@ export class InitialSchema1776367648999 implements MigrationInterface {
             ADD CONSTRAINT \`FK_63a171d006d7b4f0b542552f14f\` FOREIGN KEY (\`user_id\`) REFERENCES \`user\`(\`user_id\`) ON DELETE CASCADE ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
+            ALTER TABLE \`user\`
+            ADD CONSTRAINT \`FK_6d4390ab1c0e8c86287d9f4c430\` FOREIGN KEY (\`gender_id\`) REFERENCES \`gender\`(\`gender_id\`) ON DELETE
+            SET NULL ON UPDATE NO ACTION
+        `);
+        await queryRunner.query(`
             ALTER TABLE \`outfit_item\`
             ADD CONSTRAINT \`FK_4f9708f0239593b69228e9a32b1\` FOREIGN KEY (\`outfit_id\`) REFERENCES \`outfit\`(\`outfit_id\`) ON DELETE CASCADE ON UPDATE CASCADE
         `);
@@ -138,6 +150,9 @@ export class InitialSchema1776367648999 implements MigrationInterface {
         `);
         await queryRunner.query(`
             ALTER TABLE \`outfit_item\` DROP FOREIGN KEY \`FK_4f9708f0239593b69228e9a32b1\`
+        `);
+        await queryRunner.query(`
+            ALTER TABLE \`user\` DROP FOREIGN KEY \`FK_6d4390ab1c0e8c86287d9f4c430\`
         `);
         await queryRunner.query(`
             ALTER TABLE \`outfit_folder\` DROP FOREIGN KEY \`FK_63a171d006d7b4f0b542552f14f\`
@@ -192,6 +207,12 @@ export class InitialSchema1776367648999 implements MigrationInterface {
         `);
         await queryRunner.query(`
             DROP TABLE \`outfit\`
+        `);
+        await queryRunner.query(`
+            DROP INDEX \`IDX_715cef762c43bdc30e83bea161\` ON \`gender\`
+        `);
+        await queryRunner.query(`
+            DROP TABLE \`gender\`
         `);
         await queryRunner.query(`
             DROP INDEX \`IDX_44e9a77678482e3e60b00b2aba\` ON \`garment_category\`
