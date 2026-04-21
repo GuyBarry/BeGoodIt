@@ -4,6 +4,7 @@ import {
   Cloth,
   ColorGroup,
   GarmentCategory,
+  Gender,
   Outfit,
   OutfitFolder,
   Season,
@@ -19,7 +20,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME ?? 'begoodit',
   synchronize: false, // Use migrations in production
   logging: process.env.NODE_ENV !== 'production',
-  entities: [ColorGroup, GarmentCategory, Season, User, OutfitFolder, Cloth, Outfit],
-  migrations: ['db/migrations/**/*.ts'],
+  entities: [ColorGroup, GarmentCategory, Gender, Season, User, OutfitFolder, Cloth, Outfit],
+  migrations: ['src/db/migrations/**/*.ts'],
   subscribers: [],
 });

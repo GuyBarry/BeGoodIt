@@ -6,7 +6,7 @@ export class ColorGroup {
   @PrimaryGeneratedColumn({ name: 'color_id' })
   colorId: number;
 
-  @Column({ type: 'varchar', length: 30, unique: true })
+  @Column({ type: 'varchar', unique: true })
   name: string;
 
   @OneToMany(() => Cloth, (cloth) => cloth.colorGroup)

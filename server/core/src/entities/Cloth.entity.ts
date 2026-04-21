@@ -31,10 +31,7 @@ export class Cloth {
   @Column({ name: 'image_url', type: 'text' })
   imageUrl: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  brand: string | null;
-
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   style: string | null;
 
   /**

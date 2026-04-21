@@ -6,7 +6,7 @@ export class GarmentCategory {
   @PrimaryGeneratedColumn({ name: 'category_id' })
   categoryId: number;
 
-  @Column({ type: 'varchar', length: 30, unique: true })
+  @Column({ type: 'varchar', unique: true })
   name: string;
 
   @OneToMany(() => Cloth, (cloth) => cloth.category)

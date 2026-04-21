@@ -2,20 +2,22 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Cloth, Outfit, OutfitFolder } from './index';
+import { Cloth, Gender, Outfit, OutfitFolder } from './index';
 
 @Entity('user')
 export class User {
   @PrimaryGeneratedColumn('uuid', { name: 'user_id' })
   userId: string;
 
-  @Column({ type: 'varchar', length: 50, unique: true })
+  @Column({ type: 'varchar', unique: true })
   username: string;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
+  @Column({ type: 'varchar', unique: true })
   email: string;
 
   @Column({ name: 'password_hash', type: 'text' })
@@ -24,8 +26,8 @@ export class User {
   @Column({ name: 'profile_picture_url', type: 'text', nullable: true })
   profilePictureUrl: string | null;
 
-  @Column({ type: 'varchar', length: 20, nullable: true })
-  gender: string | null;
+  @Column({ name: 'gender_id', type: 'int', nullable: true })
+  genderId: number | null;
 
   @Column({ type: 'date', nullable: true })
   birthdate: Date | null;
@@ -39,11 +41,18 @@ export class User {
   })
   heightCm: number | null;
 
-  @Column({ name: 'body_type', type: 'varchar', length: 50, nullable: true })
+  @Column({ name: 'body_type', type: 'varchar', nullable: true })
   bodyType: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @ManyToOne(() => Gender, (gender) => gender.users, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'gender_id' })
+  gender: Gender | null;
 
   @OneToMany(() => OutfitFolder, (folder) => folder.user)
   outfitFolders: OutfitFolder[];

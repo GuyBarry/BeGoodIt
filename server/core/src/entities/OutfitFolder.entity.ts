@@ -18,7 +18,7 @@ export class OutfitFolder {
   @Column({ name: 'user_id', type: 'char', length: 36 })
   userId: string;
 
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ type: 'varchar' })
   name: string;
 
   @ManyToOne(() => User, (user) => user.outfitFolders, { onDelete: 'CASCADE' })
