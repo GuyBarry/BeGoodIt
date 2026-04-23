@@ -1,4 +1,4 @@
 export interface GarmentCategory {
-  categoryId: number;
+  id: number;
   name: string;
 }

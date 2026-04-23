@@ -1,5 +1,5 @@
 export interface OutfitFolder {
-  folderId: string;
+  id: string;
   userId: string;
   name: string;
 }

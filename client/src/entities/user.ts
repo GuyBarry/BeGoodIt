@@ -1,7 +1,7 @@
 import type { Gender } from './gender';
 
 export interface User {
-  userId: string;
+  id: string;
   username: string;
   email: string;
   profilePictureUrl: string | null;
