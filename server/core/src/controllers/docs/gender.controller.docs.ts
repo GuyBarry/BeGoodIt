@@ -16,7 +16,7 @@
  *               items:
  *                 type: object
  *                 properties:
- *                   genderId:
+ *                   id:
  *                     type: integer
  *                     example: 1
  *                   name:

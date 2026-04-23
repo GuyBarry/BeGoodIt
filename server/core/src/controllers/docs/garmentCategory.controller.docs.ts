@@ -16,7 +16,7 @@
  *               items:
  *                 type: object
  *                 properties:
- *                   categoryId:
+ *                   id:
  *                     type: integer
  *                     example: 1
  *                   name:
