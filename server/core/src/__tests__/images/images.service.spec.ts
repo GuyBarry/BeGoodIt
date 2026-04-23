@@ -1,11 +1,17 @@
-import { FirebaseStorageClient } from '../../firebase/firebase.storage';
 import { imagesService } from '../../services/images.service';
+import { imageRepository } from '../../repositories/image.repository';
+import { NotFoundException } from '../../exceptions/httpExceptions';
+import { Image } from '../../db/entities/Image.entity';
 
-jest.mock('../../firebase/firebase.storage');
+jest.mock('../../repositories/image.repository', () => ({
+  imageRepository: {
+    create: jest.fn(),
+    save: jest.fn(),
+    findOne: jest.fn(),
+  },
+}));
 
 describe('imagesService', () => {
-  let mockUploadFile: jest.Mock;
-
   const createMockFile = (overrides?: Partial<Express.Multer.File>): Express.Multer.File => ({
     fieldname: 'file',
     originalname: 'test-image.png',
@@ -20,65 +26,73 @@ describe('imagesService', () => {
     ...overrides,
   });
 
+  const createMockImage = (overrides?: Partial<Image>): Image => ({
+    id: 'uuid-1234',
+    data: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+    mimeType: 'image/png',
+    originalName: 'test-image.png',
+    size: 1024,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    ...overrides,
+  } as Image);
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUploadFile = FirebaseStorageClient.prototype.uploadFile as jest.Mock;
   });
 
-  describe('processImage', () => {
-    it('should return the buffer unchanged', async () => {
-      const input = Buffer.from([1, 2, 3]);
-      const result = await imagesService.processImage(input, 'image/png');
-      expect(result).toBe(input);
+  describe('saveImage', () => {
+    it('should create and save an image entity and return a DTO', async () => {
+      const file = createMockFile();
+      const mockImage = createMockImage();
+
+      (imageRepository.create as jest.Mock).mockReturnValue(mockImage);
+      (imageRepository.save as jest.Mock).mockResolvedValue(mockImage);
+
+      const result = await imagesService.saveImage(file);
+
+      expect(imageRepository.create).toHaveBeenCalledWith({
+        data: file.buffer,
+        mimeType: file.mimetype,
+        originalName: file.originalname,
+        size: file.size,
+      });
+      expect(imageRepository.save).toHaveBeenCalledWith(mockImage);
+      expect(result).toEqual({
+        id: mockImage.id,
+        mimeType: mockImage.mimeType,
+        originalName: mockImage.originalName,
+        size: mockImage.size,
+        createdAt: mockImage.createdAt,
+      });
+      // DTO must NOT include binary data
+      expect((result as any).data).toBeUndefined();
     });
 
-    it('should handle empty buffers', async () => {
-      const input = Buffer.alloc(0);
-      const result = await imagesService.processImage(input, 'image/jpeg');
-      expect(result).toBe(input);
+    it('should propagate repository errors', async () => {
+      (imageRepository.create as jest.Mock).mockReturnValue({});
+      (imageRepository.save as jest.Mock).mockRejectedValue(new Error('DB error'));
+
+      await expect(imagesService.saveImage(createMockFile())).rejects.toThrow('DB error');
     });
   });
 
-  describe('uploadImage', () => {
-    it('should process and upload the file and return url and fileName', async () => {
-      const mockUrl = 'https://storage.googleapis.com/bucket/images/uuid.png';
-      mockUploadFile.mockResolvedValue(mockUrl);
+  describe('getImageById', () => {
+    it('should return the full image entity when found', async () => {
+      const mockImage = createMockImage();
+      (imageRepository.findOne as jest.Mock).mockResolvedValue(mockImage);
 
-      const file = createMockFile();
-      const result = await imagesService.uploadImage(file);
+      const result = await imagesService.getImageById('uuid-1234');
 
-      expect(mockUploadFile).toHaveBeenCalledWith(
-        file.buffer,
-        expect.stringMatching(/^images\/.*\.png$/),
-        'image/png'
-      );
-      expect(result.url).toBe(mockUrl);
-      expect(result.fileName).toMatch(/^images\/.*\.png$/);
+      expect(imageRepository.findOne).toHaveBeenCalledWith({ where: { id: 'uuid-1234' } });
+      expect(result).toBe(mockImage);
+      expect(result.data).toBeDefined();
     });
 
-    it('should extract extension from original filename', async () => {
-      mockUploadFile.mockResolvedValue('https://example.com/img.jpg');
+    it('should throw NotFoundException when image does not exist', async () => {
+      (imageRepository.findOne as jest.Mock).mockResolvedValue(null);
 
-      const file = createMockFile({ originalname: 'photo.jpg', mimetype: 'image/jpeg' });
-      const result = await imagesService.uploadImage(file);
-
-      expect(result.fileName).toMatch(/\.jpg$/);
-    });
-
-    it('should fall back to mime-based extension when originalname has none', async () => {
-      mockUploadFile.mockResolvedValue('https://example.com/img.webp');
-
-      const file = createMockFile({ originalname: 'noext', mimetype: 'image/webp' });
-      const result = await imagesService.uploadImage(file);
-
-      expect(result.fileName).toMatch(/\.webp$/);
-    });
-
-    it('should propagate storage client errors', async () => {
-      mockUploadFile.mockRejectedValue(new Error('Upload failed'));
-
-      const file = createMockFile();
-      await expect(imagesService.uploadImage(file)).rejects.toThrow('Upload failed');
+      await expect(imagesService.getImageById('missing-id')).rejects.toThrow(NotFoundException);
+      await expect(imagesService.getImageById('missing-id')).rejects.toThrow("Image with id 'missing-id' not found");
     });
   });
 });

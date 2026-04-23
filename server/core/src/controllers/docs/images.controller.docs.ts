@@ -3,7 +3,7 @@
  * /image:
  *   post:
  *     summary: Upload an image
- *     description: Uploads an image file, processes it, and stores it in Firebase Storage.
+ *     description: Uploads an image file and stores it in the database.
  *     tags:
  *       - Images
  *     requestBody:
@@ -27,12 +27,22 @@
  *             schema:
  *               type: object
  *               properties:
- *                 url:
+ *                 id:
  *                   type: string
- *                   example: https://storage.googleapis.com/bucket/images/abc-123.jpg
- *                 fileName:
+ *                   format: uuid
+ *                   example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+ *                 mimeType:
  *                   type: string
- *                   example: images/abc-123.jpg
+ *                   example: image/png
+ *                 originalName:
+ *                   type: string
+ *                   example: photo.png
+ *                 size:
+ *                   type: integer
+ *                   example: 204800
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
  *       400:
  *         description: No file provided or file is corrupted
  *         content:
@@ -89,4 +99,47 @@
  *                 message:
  *                   type: string
  *                   example: Oops, something went wrong!
+ *
+ * /image/{id}:
+ *   get:
+ *     summary: Get an image by ID
+ *     description: Returns the raw image file with the appropriate Content-Type header.
+ *     tags:
+ *       - Images
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: UUID of the image
+ *     responses:
+ *       200:
+ *         description: Raw image binary
+ *         content:
+ *           image/png:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *           image/jpeg:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *           image/webp:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Image not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Image with id '3fa85f64-...' not found"
+ *       500:
+ *         description: Internal server error
  */
