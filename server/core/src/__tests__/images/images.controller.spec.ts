@@ -1,12 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
 import { StatusCodes } from 'http-status-codes';
-import { imagesRouter } from '../../images/images.controller';
-import { imagesService } from '../../images/images.service';
+import { imagesRouter } from '../../controllers/images.controller';
+import { imagesService } from '../../services/images.service';
 import { CustomException } from '../../exceptions/customException';
 
 // Mock dependencies
-jest.mock('../../images/images.service');
+jest.mock('../../services/images.service');
 jest.mock('../../firebase/firebase.storage');
 
 // Local Error Middleware — mirrors the real errorHandler middleware exactly

@@ -11,7 +11,7 @@ const swaggerDefinition: swaggerJsdoc.Options = {
     },
     servers: serverConfig.servers,
   },
-  apis: ['./src/**/*.ts'],
+  apis: ['./src/**/*.docs.ts'],
 };
 
 export const swaggerSpec = swaggerJsdoc(swaggerDefinition);

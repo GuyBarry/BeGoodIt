@@ -9,7 +9,7 @@ import {
   OutfitFolder,
   Season,
   User,
-} from '../entities';
+} from './entities';
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
