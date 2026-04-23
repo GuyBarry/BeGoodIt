@@ -12,8 +12,8 @@ import { Outfit, User } from './index';
 @Entity('outfit_folder')
 @Unique(['userId', 'name'])
 export class OutfitFolder {
-  @PrimaryGeneratedColumn('uuid', { name: 'folder_id' })
-  folderId: string;
+  @PrimaryGeneratedColumn('uuid', { name: 'id' })
+  id: string;
 
   @Column({ name: 'user_id', type: 'char', length: 36 })
   userId: string;

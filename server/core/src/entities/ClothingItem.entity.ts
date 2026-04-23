@@ -10,11 +10,11 @@ import {
 } from 'typeorm';
 import { ColorGroup, GarmentCategory, Outfit, Season, User } from './index';
 
-@Entity('cloth')
-@Index('idx_cloth_user_lookups', ['userId', 'categoryId', 'colorGroupId'])
-export class Cloth {
-  @PrimaryGeneratedColumn('uuid', { name: 'item_id' })
-  itemId: string;
+@Entity('clothing_item')
+@Index('idx_clothing_item_user_lookups', ['userId', 'categoryId', 'colorGroupId'])
+export class ClothingItem {
+  @PrimaryGeneratedColumn('uuid', { name: 'id' })
+  id: string;
 
   @Column({ name: 'user_id', type: 'char', length: 36 })
   userId: string;
@@ -46,25 +46,25 @@ export class Cloth {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @ManyToOne(() => User, (user) => user.clothes, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.clothingItems, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => ColorGroup, (cg) => cg.clothes, {
+  @ManyToOne(() => ColorGroup, (cg) => cg.clothingItems, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   @JoinColumn({ name: 'color_group_id' })
   colorGroup: ColorGroup | null;
 
-  @ManyToOne(() => GarmentCategory, (gc) => gc.clothes, {
+  @ManyToOne(() => GarmentCategory, (gc) => gc.clothingItems, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   @JoinColumn({ name: 'category_id' })
   category: GarmentCategory | null;
 
-  @ManyToOne(() => Season, (s) => s.clothes, {
+  @ManyToOne(() => Season, (s) => s.clothingItems, {
     onDelete: 'SET NULL',
     nullable: true,
   })

@@ -7,12 +7,12 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Cloth, Gender, Outfit, OutfitFolder } from './index';
+import { ClothingItem, Gender, Outfit, OutfitFolder } from './index';
 
 @Entity('user')
 export class User {
-  @PrimaryGeneratedColumn('uuid', { name: 'user_id' })
-  userId: string;
+  @PrimaryGeneratedColumn('uuid', { name: 'id' })
+  id: string;
 
   @Column({ type: 'varchar', unique: true })
   username: string;
@@ -57,8 +57,8 @@ export class User {
   @OneToMany(() => OutfitFolder, (folder) => folder.user)
   outfitFolders: OutfitFolder[];
 
-  @OneToMany(() => Cloth, (cloth) => cloth.user)
-  clothes: Cloth[];
+  @OneToMany(() => ClothingItem, (item) => item.user)
+  clothingItems: ClothingItem[];
 
   @OneToMany(() => Outfit, (outfit) => outfit.user)
   outfits: Outfit[];
