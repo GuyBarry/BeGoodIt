@@ -16,7 +16,7 @@
  *               items:
  *                 type: object
  *                 properties:
- *                   colorId:
+ *                   id:
  *                     type: integer
  *                     example: 1
  *                   name:
