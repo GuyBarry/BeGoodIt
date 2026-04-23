@@ -1,5 +1,5 @@
 import { FirebaseStorageClient } from '../../firebase/firebase.storage';
-import { imagesService } from '../../images/images.service';
+import { imagesService } from '../../services/images.service';
 
 jest.mock('../../firebase/firebase.storage');
 

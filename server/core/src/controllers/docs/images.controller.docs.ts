@@ -90,4 +90,3 @@
  *                   type: string
  *                   example: Oops, something went wrong!
  */
-export {};
