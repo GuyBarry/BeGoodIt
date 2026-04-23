@@ -133,7 +133,7 @@ npm run db:start           # Container resumes with existing data
 ### Add new migration
 
 ```sh
-# Edit entities in server/core/entities/
+# Edit entities in server/core/db/entities/
 npm run migration:generate -- src/db/migrations/AddNewColumn
 npm run migration:run      # Apply the migration
 ```

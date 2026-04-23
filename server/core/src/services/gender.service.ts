@@ -1,4 +1,4 @@
-import { Gender } from '../entities';
+import { Gender } from '../db/entities';
 import { genderRepository } from '../repositories';
 
 const getAll = async (): Promise<Gender[]> => {

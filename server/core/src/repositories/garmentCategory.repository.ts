@@ -1,4 +1,4 @@
 import { AppDataSource } from '../db/datasource';
-import { GarmentCategory } from '../entities';
+import { GarmentCategory } from '../db/entities';
 
 export const garmentCategoryRepository = AppDataSource.getRepository(GarmentCategory);
