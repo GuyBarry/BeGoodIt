@@ -1,4 +1,4 @@
 export interface ColorGroup {
-  colorId: number;
+  id: number;
   name: string;
 }

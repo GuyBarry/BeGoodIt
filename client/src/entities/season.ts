@@ -1,4 +1,4 @@
 export interface Season {
-  seasonId: number;
+  id: number;
   name: string;
 }

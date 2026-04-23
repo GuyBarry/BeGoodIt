@@ -1,4 +1,4 @@
-export type { Cloth } from './cloth';
+export type { ClothingItem as Cloth } from './clothingItem';
 export type { ColorGroup } from './colorGroup';
 export type { GarmentCategory } from './garmentCategory';
 export type { Gender } from './gender';

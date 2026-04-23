@@ -1,13 +1,13 @@
-import type { Cloth } from './cloth';
+import type { ClothingItem } from './clothingItem';
 import type { OutfitFolder } from './outfitFolder';
 
 export interface Outfit {
-  outfitId: string;
+  id: string;
   userId: string;
   folderId: string | null;
   name: string | null;
   isFavorite: boolean;
   createdAt: string;
   folder?: OutfitFolder;
-  items?: Cloth[];
+  items?: ClothingItem[];
 }
