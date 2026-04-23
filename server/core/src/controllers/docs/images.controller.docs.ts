@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /image:
+ * /images:
  *   post:
  *     summary: Upload an image
  *     description: Uploads an image file and stores it in the database.
@@ -100,7 +100,7 @@
  *                   type: string
  *                   example: Oops, something went wrong!
  *
- * /image/{id}:
+ * /images/{id}:
  *   get:
  *     summary: Get an image by ID
  *     description: Returns the raw image file with the appropriate Content-Type header.
