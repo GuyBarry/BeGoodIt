@@ -3,8 +3,8 @@ import { User } from './index';
 
 @Entity('gender')
 export class Gender {
-  @PrimaryGeneratedColumn({ name: 'gender_id' })
-  genderId: number;
+  @PrimaryGeneratedColumn({ name: 'id' })
+  id: number;
 
   @Column({ type: 'varchar', unique: true })
   name: string;

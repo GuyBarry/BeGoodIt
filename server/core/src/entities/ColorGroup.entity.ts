@@ -1,14 +1,14 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Cloth } from './index';
+import { ClothingItem } from './index';
 
 @Entity('color_group')
 export class ColorGroup {
-  @PrimaryGeneratedColumn({ name: 'color_id' })
-  colorId: number;
+  @PrimaryGeneratedColumn({ name: 'id' })
+  id: number;
 
   @Column({ type: 'varchar', unique: true })
   name: string;
 
-  @OneToMany(() => Cloth, (cloth) => cloth.colorGroup)
-  clothes: Cloth[];
+  @OneToMany(() => ClothingItem, (item) => item.colorGroup)
+  clothingItems: ClothingItem[];
 }
