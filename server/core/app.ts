@@ -7,11 +7,12 @@ import {
   colorGroupRouter,
   garmentCategoryRouter,
   genderRouter,
-  seasonRouter,
   imagesRouter,
+  seasonRouter,
 } from "./src/controllers";
-import { errorHandler } from "./src/middlewares/error.middleware";
 import { AppDataSource } from "./src/db/datasource";
+import { errorHandler } from "./src/middlewares/error.middleware";
+import { noRouteHandler } from "./src/middlewares/noRoute.middleware";
 
 const PORT = serverConfig.port;
 
@@ -19,19 +20,21 @@ export const initApp = async (): Promise<Express> => {
   const app: Express = express();
 
   app.use(express.json());
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use(express.urlencoded({ extended: true }));
 
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use("/images", imagesRouter);
   app.use("/color-groups", colorGroupRouter);
   app.use("/garment-categories", garmentCategoryRouter);
   app.use("/genders", genderRouter);
   app.use("/seasons", seasonRouter);
 
-  app.use(errorHandler);
-
-  app.get("/", (req: Request, res: Response) => {
+  app.get("/", (_req: Request, res: Response) => {
     res.json({ message: "Welcome to BeGoodIt API" });
   });
+
+  app.use(noRouteHandler);
+  app.use(errorHandler);
 
   try {
     await AppDataSource.initialize();
