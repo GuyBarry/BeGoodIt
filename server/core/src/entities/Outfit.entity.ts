@@ -8,12 +8,12 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Cloth, OutfitFolder, User } from './index';
+import { ClothingItem, OutfitFolder, User } from './index';
 
 @Entity('outfit')
 export class Outfit {
-  @PrimaryGeneratedColumn('uuid', { name: 'outfit_id' })
-  outfitId: string;
+  @PrimaryGeneratedColumn('uuid', { name: 'id' })
+  id: string;
 
   @Column({ name: 'user_id', type: 'char', length: 36 })
   userId: string;
@@ -41,11 +41,11 @@ export class Outfit {
   @JoinColumn({ name: 'folder_id' })
   folder: OutfitFolder | null;
 
-  @ManyToMany(() => Cloth, (cloth) => cloth.outfits)
+  @ManyToMany(() => ClothingItem, (item) => item.outfits)
   @JoinTable({
     name: 'outfit_item',
-    joinColumn: { name: 'outfit_id', referencedColumnName: 'outfitId' },
-    inverseJoinColumn: { name: 'item_id', referencedColumnName: 'itemId' },
+    joinColumn: { name: 'outfit_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'item_id', referencedColumnName: 'id' },
   })
-  items: Cloth[];
+  items: ClothingItem[];
 }
