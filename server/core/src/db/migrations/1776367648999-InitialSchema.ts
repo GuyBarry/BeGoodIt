@@ -98,6 +98,17 @@ export class InitialSchema1776367648999 implements MigrationInterface {
             ) ENGINE = InnoDB
         `);
         await queryRunner.query(`
+            CREATE TABLE \`image\` (
+                \`id\`            varchar(36)  NOT NULL,
+                \`data\`          longblob     NOT NULL,
+                \`mime_type\`     varchar(50)  NOT NULL,
+                \`original_name\` varchar(255) NOT NULL,
+                \`size\`          int          NOT NULL,
+                \`created_at\`    datetime(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+                PRIMARY KEY (\`id\`)
+            ) ENGINE = InnoDB
+        `);
+        await queryRunner.query(`
             ALTER TABLE \`clothing_item\`
             ADD CONSTRAINT \`FK_40ffd7032b3aaca46037385f4cd\` FOREIGN KEY (\`user_id\`) REFERENCES \`user\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION
         `);
@@ -232,6 +243,7 @@ export class InitialSchema1776367648999 implements MigrationInterface {
         await queryRunner.query(`
             DROP TABLE \`clothing_item\`
         `);
+        await queryRunner.query(`DROP TABLE \`image\``);
     }
 
 }
