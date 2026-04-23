@@ -1,4 +1,4 @@
-export { Cloth } from './Cloth.entity';
+export { ClothingItem } from './ClothingItem.entity';
 export { ColorGroup } from './ColorGroup.entity';
 export { GarmentCategory } from './GarmentCategory.entity';
 export { Gender } from './Gender.entity';
