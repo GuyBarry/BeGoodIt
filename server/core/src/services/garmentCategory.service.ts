@@ -1,4 +1,4 @@
-import { GarmentCategory } from '../entities';
+import { GarmentCategory } from '../db/entities';
 import { garmentCategoryRepository } from '../repositories';
 
 const getAll = async (): Promise<GarmentCategory[]> => {

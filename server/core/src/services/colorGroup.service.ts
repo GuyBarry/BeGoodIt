@@ -1,4 +1,4 @@
-import { ColorGroup } from '../entities';
+import { ColorGroup } from '../db/entities';
 import { colorGroupRepository } from '../repositories';
 
 const getAll = async (): Promise<ColorGroup[]> => {
