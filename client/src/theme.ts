@@ -1,11 +1,12 @@
 import { createTheme } from '@mui/material/styles';
+import { PALETTE, SERIF_FONT } from './styles/tokens';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#c86432',
-      light: '#e8956d',
-      dark: '#a04e22',
+      main: PALETTE.primary,
+      light: PALETTE.primaryLight,
+      dark: PALETTE.primaryDark,
       contrastText: '#ffffff',
     },
     background: {
@@ -16,9 +17,9 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-    h6: {
-      fontFamily: '"Cormorant Garamond", Georgia, serif',
-    },
+    h4: { fontFamily: SERIF_FONT, fontWeight: 600 },
+    h5: { fontFamily: SERIF_FONT, fontWeight: 600 },
+    h6: { fontFamily: SERIF_FONT, fontWeight: 600 },
   },
   shape: {
     borderRadius: 12,

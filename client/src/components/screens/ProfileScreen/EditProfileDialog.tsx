@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
+import { GRADIENTS, SERIF_FONT } from '../../../styles/tokens';
 import type { User } from '../../../entities/user';
 
 const BODY_TYPES = ['Ectomorph', 'Mesomorph', 'Endomorph', 'Athletic', 'Average'];
@@ -31,7 +32,7 @@ export default function EditProfileDialog({ open, draft, onDraftChange, onSave, 
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle
         sx={{
-          fontFamily: '"Cormorant Garamond", serif',
+          fontFamily: SERIF_FONT,
           fontWeight: 600,
           display: 'flex',
           alignItems: 'center',
@@ -49,13 +50,13 @@ export default function EditProfileDialog({ open, draft, onDraftChange, onSave, 
                 width: 80,
                 height: 80,
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, #c86432, #e8956d)',
+                background: GRADIENTS.primary,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Typography sx={{ color: '#fff', fontSize: 32, fontFamily: '"Cormorant Garamond", serif', fontWeight: 600 }}>
+              <Typography sx={{ color: '#fff', fontSize: 32, fontFamily: SERIF_FONT, fontWeight: 600 }}>
                 {draft.username.charAt(0)}
               </Typography>
             </Box>

@@ -17,7 +17,7 @@ export default function StyleInsightsCard() {
     <Paper elevation={0} sx={{ borderRadius: 3, p: 3, border: '1px solid', borderColor: 'divider' }}>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 3 }}>
         <Box>
-          <Typography variant="h6" sx={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600 }}>
+          <Typography variant="h6">
             Style Insights
           </Typography>
           <Typography variant="caption" color="text.secondary">This month's summary</Typography>

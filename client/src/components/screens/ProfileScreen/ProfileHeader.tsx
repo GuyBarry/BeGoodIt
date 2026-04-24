@@ -18,7 +18,7 @@ export default function ProfileHeader() {
       }}
     >
       <Box sx={{ maxWidth: 900, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h4" sx={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600 }}>
+        <Typography variant="h4">
           Profile
         </Typography>
         <Box sx={{ display: 'flex', gap: 0.5 }}>
