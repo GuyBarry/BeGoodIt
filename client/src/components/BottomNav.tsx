@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { PRIMARY_ALPHA } from '../styles/tokens';
 import {
   BottomNavigation,
   BottomNavigationAction,
@@ -70,7 +71,7 @@ export default function BottomNav() {
                   sx={{
                     p: 0.75,
                     borderRadius: '50%',
-                    bgcolor: pathname === item.path ? 'rgba(200,100,50,0.1)' : 'transparent',
+                    bgcolor: pathname === item.path ? PRIMARY_ALPHA[10] : 'transparent',
                     transition: 'background-color 0.2s ease',
                     display: 'flex',
                     '& .MuiSvgIcon-root': {

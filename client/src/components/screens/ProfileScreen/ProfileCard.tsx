@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import { GRADIENTS, SERIF_FONT } from '../../../styles/tokens';
 import type { User } from '../../../entities/user';
 
 interface Props {
@@ -11,7 +12,7 @@ export default function ProfileCard({ user }: Props) {
     <Box
       sx={{
         position: 'relative',
-        background: 'linear-gradient(135deg, rgba(200,100,50,0.12) 0%, rgba(232,149,109,0.06) 100%)',
+        background: GRADIENTS.primarySubtle,
         borderRadius: 4,
         p: 4,
         overflow: 'hidden',
@@ -23,7 +24,7 @@ export default function ProfileCard({ user }: Props) {
           width: 80,
           height: 80,
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, #c86432, #e8956d)',
+          background: GRADIENTS.primary,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -31,11 +32,11 @@ export default function ProfileCard({ user }: Props) {
           mb: 2,
         }}
       >
-        <Typography sx={{ color: '#fff', fontSize: 32, fontFamily: '"Cormorant Garamond", serif', fontWeight: 600 }}>
+        <Typography sx={{ color: '#fff', fontSize: 32, fontFamily: SERIF_FONT, fontWeight: 600 }}>
           {user.username.charAt(0)}
         </Typography>
       </Box>
-      <Typography variant="h5" sx={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600 }}>
+      <Typography variant="h5">
         {user.username}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>

@@ -26,7 +26,7 @@ export default function PersonalInfoCard({ user }: Props) {
 
   return (
     <Paper elevation={0} sx={{ borderRadius: 3, p: 3, border: '1px solid', borderColor: 'divider' }}>
-      <Typography variant="h6" sx={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600, mb: 2 }}>
+      <Typography variant="h6" sx={{ mb: 2 }}>
         Personal Info
       </Typography>
       <Grid container spacing={1.5}>

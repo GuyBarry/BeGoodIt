@@ -1,6 +1,7 @@
 import { Box, Typography, Paper, Grid } from '@mui/material';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
 import PaletteIcon from '@mui/icons-material/Palette';
+import { PRIMARY_ALPHA } from '../../../styles/tokens';
 import type { SvgIconComponent } from '@mui/icons-material';
 
 interface Stat {
@@ -25,7 +26,7 @@ export default function StatsGrid() {
                 width: 40,
                 height: 40,
                 borderRadius: 2,
-                bgcolor: 'rgba(200,100,50,0.1)',
+                bgcolor: PRIMARY_ALPHA[10],
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -34,9 +35,7 @@ export default function StatsGrid() {
             >
               <Icon sx={{ color: 'primary.main', fontSize: 20 }} />
             </Box>
-            <Typography variant="h5" sx={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 700 }}>
-              {value}
-            </Typography>
+            <Typography variant="h5">{value}</Typography>
             <Typography variant="caption" color="text.secondary">{label}</Typography>
           </Paper>
         </Grid>
