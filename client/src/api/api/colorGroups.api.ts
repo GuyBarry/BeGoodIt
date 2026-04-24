@@ -1,13 +1,9 @@
-import axios from 'axios';
+import apiClient from '../client';
 import type { ColorGroup } from '../../entities';
-
-const client = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/color-groups`,
-});
 
 export const colorGroupsApi = {
   getAll: async (): Promise<ColorGroup[]> => {
-    const { data } = await client.get<ColorGroup[]>('/');
+    const { data } = await apiClient.get<ColorGroup[]>('/color-groups');
     return data;
   },
 };
