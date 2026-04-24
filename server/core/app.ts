@@ -9,6 +9,7 @@ import {
   genderRouter,
   imagesRouter,
   seasonRouter,
+  userRouter,
 } from "./src/controllers";
 import { AppDataSource } from "./src/db/datasource";
 import { errorHandler } from "./src/middlewares/error.middleware";
@@ -28,6 +29,7 @@ export const initApp = async (): Promise<Express> => {
   app.use("/garment-categories", garmentCategoryRouter);
   app.use("/genders", genderRouter);
   app.use("/seasons", seasonRouter);
+  app.use("/users", userRouter);
 
   app.get("/", (_req: Request, res: Response) => {
     res.json({ message: "Welcome to BeGoodIt API" });
