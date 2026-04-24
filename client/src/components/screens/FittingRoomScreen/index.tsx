@@ -32,8 +32,12 @@ export default function FittingRoomScreen() {
     setSuggestedItems([]);
   };
 
-  const handleUploadInspiration = () => {
-    setInspirationImage('https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400&h=500&fit=crop');
+  const handleFileSelect = (file: File) => {
+    setInspirationImage(URL.createObjectURL(file));
+  };
+
+  const handleFindMatches = () => {
+    if (!inspirationImage) return;
     setIsAnalyzingInspiration(true);
     setTimeout(() => {
       setIsAnalyzingInspiration(false);
@@ -88,7 +92,8 @@ export default function FittingRoomScreen() {
         inspirationImage={inspirationImage}
         isAnalyzing={isAnalyzingInspiration}
         onClose={handleCloseInspireDialog}
-        onUpload={handleUploadInspiration}
+        onFileSelect={handleFileSelect}
+        onFindMatches={handleFindMatches}
         onClearImage={() => setInspirationImage(null)}
       />
     </Box>
