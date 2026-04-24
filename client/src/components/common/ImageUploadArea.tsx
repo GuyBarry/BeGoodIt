@@ -27,26 +27,38 @@ export default function ImageUploadArea({
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isDragRejected, setIsDragRejected] = useState(false);
+
+  const isImageFile = (file: File) => file.type.startsWith('image/');
 
   const handleFiles = useCallback(
     (files: FileList | null) => {
-      if (files && files[0]) onFileSelect(files[0]);
+      if (!files || !files[0]) return;
+      if (isImageFile(files[0])) onFileSelect(files[0]);
     },
     [onFileSelect],
   );
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(true);
+    const hasNonImage = Array.from(e.dataTransfer.items).some(
+      item => item.kind === 'file' && !item.type.startsWith('image/'),
+    );
+    setIsDragging(!hasNonImage);
+    setIsDragRejected(hasNonImage);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragging(false);
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsDragging(false);
+      setIsDragRejected(false);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
+    setIsDragRejected(false);
     handleFiles(e.dataTransfer.files);
   };
 
@@ -71,7 +83,7 @@ export default function ImageUploadArea({
           >
             <CircularProgress sx={{ color: '#fff' }} size={56} />
             <Box sx={{ textAlign: 'center', color: '#fff' }}>
-              <Typography fontWeight={500} fontSize={17}>{processingLabel}</Typography>
+              <Typography sx={{ fontWeight: 500, fontSize: 17 }}>{processingLabel}</Typography>
               {processingSubLabel && (
                 <Typography variant="body2" sx={{ opacity: 0.8, mt: 0.5 }}>{processingSubLabel}</Typography>
               )}
@@ -118,8 +130,8 @@ export default function ImageUploadArea({
           aspectRatio,
           borderRadius: 3,
           border: '2px dashed',
-          borderColor: isDragging ? 'primary.main' : 'divider',
-          bgcolor: isDragging ? PRIMARY_ALPHA[10] : 'action.hover',
+          borderColor: isDragRejected ? 'error.main' : isDragging ? 'primary.main' : 'divider',
+          bgcolor: isDragRejected ? 'error.light' : isDragging ? PRIMARY_ALPHA[10] : 'action.hover',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -144,8 +156,8 @@ export default function ImageUploadArea({
           <UploadIcon sx={{ fontSize: 32, color: 'primary.main' }} />
         </Box>
         <Box sx={{ textAlign: 'center' }}>
-          <Typography fontWeight={500}>
-            {isDragging ? 'Drop image here' : 'Upload image'}
+          <Typography sx={{ fontWeight: 500 }}>
+            {isDragRejected ? 'Images only' : isDragging ? 'Drop image here' : 'Upload image'}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             Drag & drop or click to browse
