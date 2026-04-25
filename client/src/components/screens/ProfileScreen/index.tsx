@@ -47,7 +47,7 @@ export default function ProfileScreen() {
     );
   }
 
-  if (isError || !user) {
+  if (isError || !user || !user.username) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
         <Typography color="error">Failed to load profile.</Typography>

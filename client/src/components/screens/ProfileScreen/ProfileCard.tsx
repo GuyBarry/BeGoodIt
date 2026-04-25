@@ -33,7 +33,7 @@ export default function ProfileCard({ user }: Props) {
         }}
       >
         <Typography sx={{ color: '#fff', fontSize: 32, fontFamily: SERIF_FONT, fontWeight: 600 }}>
-          {user.username?.charAt(0) ?? '?'}
+          {user.username.charAt(0)}
         </Typography>
       </Box>
       <Typography variant="h5">
