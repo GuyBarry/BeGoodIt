@@ -2,14 +2,15 @@ import { Box, Chip, Typography } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { PRIMARY_ALPHA } from '../../../styles/tokens';
 import { useGarmentCategories } from '../../../api';
-import { closetItems, type ClosetItem } from './data';
+import type { ClothingItem } from '../../../entities/clothingItem';
 
 interface Props {
-  selectedItems: number[];
-  suggestedItems: number[];
+  clothingItems: ClothingItem[];
+  selectedItems: string[];
+  suggestedItems: string[];
   activeCategory: string;
   onCategoryChange: (cat: string) => void;
-  onToggleItem: (id: number) => void;
+  onToggleItem: (id: string) => void;
 }
 
 function ClosetItemCard({
@@ -19,12 +20,14 @@ function ClosetItemCard({
   selectionIndex,
   onToggle,
 }: {
-  item: ClosetItem;
+  item: ClothingItem;
   isSelected: boolean;
   isSuggested: boolean;
   selectionIndex: number;
   onToggle: () => void;
 }) {
+  const displayName = item.style || item.category?.name || 'Item';
+
   return (
     <Box
       component="button"
@@ -48,8 +51,8 @@ function ClosetItemCard({
     >
       <Box
         component="img"
-        src={item.image}
-        alt={item.name}
+        src={item.imageUrl}
+        alt={displayName}
         sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
       />
       {isSelected && (
@@ -66,18 +69,20 @@ function ClosetItemCard({
       )}
       <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, px: 1, py: 0.75, background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }}>
         <Typography sx={{ color: '#fff', fontSize: 10, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {item.name}
+          {displayName}
         </Typography>
       </Box>
     </Box>
   );
 }
 
-export default function ClosetItemGrid({ selectedItems, suggestedItems, activeCategory, onCategoryChange, onToggleItem }: Props) {
-  const { data: garmentCategories = [] } = useGarmentCategories();
+export default function ClosetItemGrid({ clothingItems, selectedItems, suggestedItems, activeCategory, onCategoryChange, onToggleItem }: Props) {
+  const { data: garmentCategoriesData } = useGarmentCategories();
+  const garmentCategories = Array.isArray(garmentCategoriesData) ? garmentCategoriesData : [];
+
   const filtered = activeCategory === 'all'
-    ? closetItems
-    : closetItems.filter(i => i.type.toLowerCase() === activeCategory.toLowerCase());
+    ? clothingItems
+    : clothingItems.filter(i => (i.category?.name ?? '').toLowerCase() === activeCategory.toLowerCase());
 
   return (
     <>

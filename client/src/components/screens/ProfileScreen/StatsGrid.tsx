@@ -6,16 +6,20 @@ import type { SvgIconComponent } from '@mui/icons-material';
 
 interface Stat {
   label: string;
-  value: string;
+  value: string | number;
   Icon: SvgIconComponent;
 }
 
-const STATS: Stat[] = [
-  { label: 'Total Items', value: '47', Icon: CheckroomIcon },
-  { label: 'Outfits Created', value: '23', Icon: PaletteIcon },
-];
+interface Props {
+  itemsCount: number;
+}
 
-export default function StatsGrid() {
+export default function StatsGrid({ itemsCount }: Props) {
+  const STATS: Stat[] = [
+    { label: 'Total Items', value: itemsCount, Icon: CheckroomIcon },
+    { label: 'Outfits Created', value: 23, Icon: PaletteIcon },
+  ];
+
   return (
     <Grid container spacing={1.5}>
       {STATS.map(({ label, value, Icon }) => (

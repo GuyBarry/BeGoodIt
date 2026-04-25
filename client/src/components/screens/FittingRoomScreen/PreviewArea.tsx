@@ -7,10 +7,10 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 
 interface Props {
-  selectedItems: number[];
+  selectedItems: string[];
   isGenerating: boolean;
   generatedLook: boolean;
-  suggestedItems: number[];
+  suggestedItems: string[];
   onReset: () => void;
 }
 

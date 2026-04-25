@@ -18,6 +18,11 @@ const getAllByUserId = async (userId: string): Promise<ClothingItemDto[]> => {
   return items.map(toDto);
 };
 
+const deleteById = async (id: string): Promise<void> => {
+  await clothingItemRepository.deleteById(id);
+};
+
 export const clothingItemService = {
   getAllByUserId,
+  deleteById,
 };

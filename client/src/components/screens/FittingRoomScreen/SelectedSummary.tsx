@@ -1,11 +1,12 @@
 import { Box, Typography } from '@mui/material';
-import { closetItems } from './data';
+import type { ClothingItem } from '../../../entities/clothingItem';
 
 interface Props {
-  selectedItems: number[];
+  selectedItems: string[];
+  clothingItems: ClothingItem[];
 }
 
-export default function SelectedSummary({ selectedItems }: Props) {
+export default function SelectedSummary({ selectedItems, clothingItems }: Props) {
   if (selectedItems.length === 0) return null;
 
   return (
@@ -15,12 +16,13 @@ export default function SelectedSummary({ selectedItems }: Props) {
       </Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
         {selectedItems.map(id => {
-          const item = closetItems.find(i => i.id === id);
-          return item ? (
+          const item = clothingItems.find(i => i.id === id);
+          const name = item ? (item.style || item.category?.name || 'Item') : 'Item';
+          return (
             <Box key={id} sx={{ px: 1.5, py: 0.75, bgcolor: 'background.paper', borderRadius: 2, fontSize: 13, fontWeight: 500 }}>
-              {item.name}
+              {name}
             </Box>
-          ) : null;
+          );
         })}
       </Box>
     </Box>

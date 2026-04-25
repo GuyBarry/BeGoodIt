@@ -1,3 +1,5 @@
+export { useClothingItems } from './hooks/useClothingItems';
+export { useDeleteClothingItem } from './hooks/useDeleteClothingItem';
 export { useColorGroups } from './hooks/useColorGroups';
 export { useGarmentCategories } from './hooks/useGarmentCategories';
 export { useGenders } from './hooks/useGenders';
