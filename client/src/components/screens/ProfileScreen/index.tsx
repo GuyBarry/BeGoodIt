@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import type { User } from '../../../entities/user';
-import { useUser, useUpdateUser } from '../../../api';
+import { useUser, useUpdateUser, useClothingItems } from '../../../api';
 import ProfileHeader from './ProfileHeader';
 import ProfileCard from './ProfileCard';
 import PersonalInfoCard from './PersonalInfoCard';
@@ -16,6 +16,7 @@ const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 export default function ProfileScreen() {
   const { data: user, isLoading, isError } = useUser(CURRENT_USER_ID);
   const { mutate: updateUser } = useUpdateUser(CURRENT_USER_ID);
+  const { data: clothingItems = [] } = useClothingItems(CURRENT_USER_ID);
 
   const [editOpen, setEditOpen] = useState(false);
   const [draft, setDraft] = useState<User | null>(null);
@@ -66,7 +67,7 @@ export default function ProfileScreen() {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <ProfileCard user={user} />
                 <PersonalInfoCard user={user} />
-                <StatsGrid />
+                <StatsGrid itemsCount={clothingItems.length} />
               </Box>
             </Grid>
 
