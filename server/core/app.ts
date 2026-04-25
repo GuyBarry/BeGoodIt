@@ -1,4 +1,5 @@
 import "dotenv/config";
+import cors from "cors";
 import express, { Express, Request, Response } from "express";
 import swaggerUi from "swagger-ui-express";
 import { serverConfig } from "./src/config/server.config";
@@ -20,6 +21,7 @@ const PORT = serverConfig.port;
 export const initApp = async (): Promise<Express> => {
   const app: Express = express();
 
+  app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 

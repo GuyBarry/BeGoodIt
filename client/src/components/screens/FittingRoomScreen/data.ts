@@ -16,4 +16,3 @@ export const closetItems: ClosetItem[] = [
   { id: 8, name: 'Striped Tee',    type: 'top',       image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=150&h=200&fit=crop' },
 ];
 
-export const categories = ['all', 'top', 'bottom', 'outerwear', 'dress'];

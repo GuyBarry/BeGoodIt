@@ -55,7 +55,7 @@ export default function FittingRoomScreen() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <FittingRoomHeader onOpenInspire={() => setShowInspireDialog(true)} />
+      <FittingRoomHeader />
 
       <Box component="main" sx={{ flex: 1, px: 4, py: 4 }}>
         <Box sx={{ maxWidth: 1280, mx: 'auto' }}>

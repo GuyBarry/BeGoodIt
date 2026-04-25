@@ -14,12 +14,10 @@ function calculateAge(birthdate: string): number {
   return age;
 }
 
-const GENDER_LABELS: Record<number, string> = { 1: 'Male', 2: 'Female', 3: 'Other', 4: 'Prefer not to say' };
-
 export default function PersonalInfoCard({ user }: Props) {
   const fields = [
     { label: 'Age', value: user.birthdate ? `${calculateAge(user.birthdate)} years` : '—' },
-    { label: 'Gender', value: user.genderId ? (GENDER_LABELS[user.genderId] ?? '—') : '—' },
+    { label: 'Gender', value: user.gender?.name ?? '—' },
     { label: 'Body Type', value: user.bodyType ?? '—' },
     { label: 'Height', value: user.heightCm ? `${user.heightCm} cm` : '—' },
   ];

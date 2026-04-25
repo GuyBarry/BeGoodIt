@@ -1,7 +1,8 @@
 import { Box, Chip, Typography } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { PRIMARY_ALPHA } from '../../../styles/tokens';
-import { closetItems, categories, type ClosetItem } from './data';
+import { useGarmentCategories } from '../../../api';
+import { closetItems, type ClosetItem } from './data';
 
 interface Props {
   selectedItems: number[];
@@ -73,21 +74,24 @@ function ClosetItemCard({
 }
 
 export default function ClosetItemGrid({ selectedItems, suggestedItems, activeCategory, onCategoryChange, onToggleItem }: Props) {
-  const filtered = activeCategory === 'all' ? closetItems : closetItems.filter(i => i.type === activeCategory);
+  const { data: garmentCategories = [] } = useGarmentCategories();
+  const filtered = activeCategory === 'all'
+    ? closetItems
+    : closetItems.filter(i => i.type.toLowerCase() === activeCategory.toLowerCase());
 
   return (
     <>
       <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-        {categories.map(cat => (
+        {[{ id: 'all', name: 'All' }, ...garmentCategories.map(c => ({ id: c.name.toLowerCase(), name: c.name }))].map(cat => (
           <Chip
-            key={cat}
-            label={cat.charAt(0).toUpperCase() + cat.slice(1)}
-            onClick={() => onCategoryChange(cat)}
+            key={cat.id}
+            label={cat.name}
+            onClick={() => onCategoryChange(cat.id)}
             sx={{
               fontWeight: 500,
               px: 1,
               borderRadius: 2.5,
-              ...(activeCategory === cat
+              ...(activeCategory === cat.id
                 ? { bgcolor: 'text.primary', color: 'background.paper', '&:hover': { bgcolor: 'text.primary' } }
                 : { bgcolor: 'action.hover', color: 'text.secondary', '&:hover': { bgcolor: 'action.selected' } }
               ),
