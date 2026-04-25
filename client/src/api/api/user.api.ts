@@ -8,12 +8,12 @@ export type UpdateUserPayload = Partial<
 >;
 
 export const userApi = {
-  getById: async (id: string): Promise<User> => {
+  getById: async (id: User["id"]): Promise<User> => {
     const { data } = await apiClient.get<User>(`/users/${id}`);
     return data;
   },
 
-  update: async (id: string, payload: UpdateUserPayload): Promise<User> => {
+  update: async (id: User["id"], payload: UpdateUserPayload): Promise<User> => {
     const { data } = await apiClient.put<User>(`/users/${id}`, payload);
     return data;
   },
