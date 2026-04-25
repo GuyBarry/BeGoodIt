@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import { UpdateUserDto, UserDto } from "../dtos/user.dto";
+import { UpdateUserDto, UserDto } from "../dtos";
 import { userService } from "../services";
 
 export const userRouter = Router();

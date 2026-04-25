@@ -1,6 +1,6 @@
 import { AppDataSource } from '../db/datasource';
 import { User } from '../db/entities';
-import { UpdateUserDto } from '../dtos/user.dto';
+import { UpdateUserDto } from '../dtos';
 
 export const userRepository = AppDataSource.getRepository(User).extend({
   getById(id: string): Promise<User | null> {
