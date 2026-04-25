@@ -11,4 +11,7 @@ export const queryKeys = {
   seasons: {
     getAll: ['seasons'],
   },
+  user: {
+    getById: (id: string) => ['user', id] as const,
+  },
 } as const;
