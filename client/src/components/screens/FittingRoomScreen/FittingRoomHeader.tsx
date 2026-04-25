@@ -1,12 +1,8 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Tooltip, Typography } from '@mui/material';
 import ImageIcon from '@mui/icons-material/Image';
 import { PRIMARY_ALPHA } from '../../../styles/tokens';
 
-interface Props {
-  onOpenInspire: () => void;
-}
-
-export default function FittingRoomHeader({ onOpenInspire }: Props) {
+export default function FittingRoomHeader() {
   return (
     <Box
       component="header"
@@ -29,19 +25,23 @@ export default function FittingRoomHeader({ onOpenInspire }: Props) {
             Create your perfect look
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<ImageIcon />}
-          onClick={onOpenInspire}
-          sx={{
-            background: PRIMARY_ALPHA[12],
-            color: 'primary.main',
-            boxShadow: 'none',
-            '&:hover': { background: PRIMARY_ALPHA[20], boxShadow: 'none' },
-          }}
-        >
-          Get Inspired
-        </Button>
+        <Tooltip title="Coming soon..." arrow>
+          <span>
+            <Button
+              variant="contained"
+              startIcon={<ImageIcon />}
+              disabled
+              sx={{
+                background: PRIMARY_ALPHA[12],
+                color: 'primary.main',
+                boxShadow: 'none',
+                '&.Mui-disabled': { background: PRIMARY_ALPHA[4], color: 'text.disabled' },
+              }}
+            >
+              Get Inspired
+            </Button>
+          </span>
+        </Tooltip>
       </Box>
     </Box>
   );
