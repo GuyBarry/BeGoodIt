@@ -3,7 +3,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 
 interface Props {
-  selectedItems: number[];
+  selectedItems: string[];
   isGenerating: boolean;
   onGenerate: () => void;
 }

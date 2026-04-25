@@ -6,18 +6,23 @@ import ClosetItemGrid from './ClosetItemGrid';
 import SelectedSummary from './SelectedSummary';
 import GenerateButton from './GenerateButton';
 import GetInspiredDialog from './GetInspiredDialog';
+import { useClothingItems } from '../../../api';
+
+const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 
 export default function FittingRoomScreen() {
-  const [selectedItems, setSelectedItems]                     = useState<number[]>([]);
+  const { data: clothingItems = [] } = useClothingItems(CURRENT_USER_ID);
+
+  const [selectedItems, setSelectedItems]                     = useState<string[]>([]);
   const [isGenerating, setIsGenerating]                       = useState(false);
   const [generatedLook, setGeneratedLook]                     = useState(false);
   const [activeCategory, setActiveCategory]                   = useState('all');
   const [showInspireDialog, setShowInspireDialog]             = useState(false);
   const [inspirationImage, setInspirationImage]               = useState<string | null>(null);
   const [isAnalyzingInspiration, setIsAnalyzingInspiration]   = useState(false);
-  const [suggestedItems, setSuggestedItems]                   = useState<number[]>([]);
+  const [suggestedItems, setSuggestedItems]                   = useState<string[]>([]);
 
-  const toggleItem = (id: number) =>
+  const toggleItem = (id: string) =>
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
 
   const handleGenerate = () => {
@@ -40,9 +45,10 @@ export default function FittingRoomScreen() {
     if (!inspirationImage) return;
     setIsAnalyzingInspiration(true);
     setTimeout(() => {
+      const suggested = clothingItems.slice(0, 3).map(i => i.id);
       setIsAnalyzingInspiration(false);
-      setSuggestedItems([1, 3, 5]);
-      setSelectedItems([1, 3, 5]);
+      setSuggestedItems(suggested);
+      setSelectedItems(suggested);
       setShowInspireDialog(false);
     }, 2000);
   };
@@ -70,13 +76,14 @@ export default function FittingRoomScreen() {
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <ClosetItemGrid
+                clothingItems={clothingItems}
                 selectedItems={selectedItems}
                 suggestedItems={suggestedItems}
                 activeCategory={activeCategory}
                 onCategoryChange={setActiveCategory}
                 onToggleItem={toggleItem}
               />
-              <SelectedSummary selectedItems={selectedItems} />
+              <SelectedSummary selectedItems={selectedItems} clothingItems={clothingItems} />
               <GenerateButton
                 selectedItems={selectedItems}
                 isGenerating={isGenerating}

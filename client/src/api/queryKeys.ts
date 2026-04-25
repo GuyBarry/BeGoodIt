@@ -16,4 +16,7 @@ export const queryKeys = {
   user: {
     getById: (id: User['id']) => ['user', id] as const,
   },
+  clothingItems: {
+    getByUserId: (userId: User['id']) => ['clothingItems', userId] as const,
+  },
 } as const;
