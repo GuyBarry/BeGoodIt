@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Box } from '@mui/material';
-import { useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
+import { useColorGroups, useGarmentCategories, useSeasons, useUploadImage } from '../../../api';
 import AddItemHeader from './AddItemHeader';
 import UploadPanel from './UploadPanel';
 import AvatarCard from './AvatarCard';
@@ -12,14 +12,17 @@ export default function AddItemScreen() {
   const { data: categories = [] } = useGarmentCategories();
   const { data: colors = [] } = useColorGroups();
   const { data: seasons = [] } = useSeasons();
+  const { mutate: uploadImage, isPending: isUploading } = useUploadImage();
 
+  const [file, setFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [tags, setTags] = useState<SelectedTags>(EMPTY_TAGS);
 
-  const handleFileSelect = useCallback((file: File) => {
-    setImageUrl(URL.createObjectURL(file));
+  const handleFileSelect = useCallback((selected: File) => {
+    setFile(selected);
+    setImageUrl(URL.createObjectURL(selected));
     setIsAnalyzing(true);
     setAnalysisComplete(false);
     setTags(EMPTY_TAGS);
@@ -36,6 +39,7 @@ export default function AddItemScreen() {
   }, [categories, colors, seasons]);
 
   const handleReset = () => {
+    setFile(null);
     setImageUrl(null);
     setIsAnalyzing(false);
     setAnalysisComplete(false);
@@ -46,7 +50,14 @@ export default function AddItemScreen() {
     setTags(prev => ({ ...prev, ...patch }));
 
   const handleSave = () => {
-    // TODO: call clothing item POST API
+    if (!file) return;
+    uploadImage(file, {
+      onSuccess: (result) => {
+        console.log('Uploaded:', result.url);
+        // TODO: POST clothing item with result.url + tags once that endpoint exists
+        handleReset();
+      },
+    });
   };
 
   return (
@@ -80,6 +91,7 @@ export default function AddItemScreen() {
                   tags={tags}
                   onTagChange={handleTagChange}
                   onSave={handleSave}
+                  isSaving={isUploading}
                 />
               )}
             </Box>
