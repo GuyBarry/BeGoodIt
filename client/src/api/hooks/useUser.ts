@@ -3,7 +3,7 @@ import type { User } from '../../entities';
 import { userApi, type UpdateUserPayload } from '../api/user.api';
 import { queryKeys } from '../queryKeys';
 
-export function useUser(id: string) {
+export function useUser(id: User['id']) {
   return useQuery<User>({
     queryKey: queryKeys.user.getById(id),
     queryFn: () => userApi.getById(id),
@@ -11,7 +11,7 @@ export function useUser(id: string) {
   });
 }
 
-export function useUpdateUser(id: string) {
+export function useUpdateUser(id: User['id']) {
   const queryClient = useQueryClient();
 
   return useMutation<User, Error, UpdateUserPayload>({

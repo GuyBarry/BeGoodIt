@@ -13,7 +13,7 @@ export const userApi = {
     return data;
   },
 
-  update: async (id: string, payload: UpdateUserPayload): Promise<User> => {
+  update: async (id: User["id"], payload: UpdateUserPayload): Promise<User> => {
     const { data } = await apiClient.put<User>(`/users/${id}`, payload);
     return data;
   },
