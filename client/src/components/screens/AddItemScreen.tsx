@@ -6,7 +6,7 @@ export default function AddItemScreen() {
     <Box sx={{ p: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
         <AddIcon sx={{ color: 'primary.main', fontSize: 32 }} />
-        <Typography variant="h4" sx={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600 }}>
+        <Typography variant="h4">
           Add Item
         </Typography>
       </Box>

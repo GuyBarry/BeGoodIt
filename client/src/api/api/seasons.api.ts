@@ -1,13 +1,9 @@
-import axios from 'axios';
+import apiClient from '../client';
 import type { Season } from '../../entities';
-
-const client = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/seasons`,
-});
 
 export const seasonsApi = {
   getAll: async (): Promise<Season[]> => {
-    const { data } = await client.get<Season[]>('/');
+    const { data } = await apiClient.get<Season[]>('/seasons');
     return data;
   },
 };
