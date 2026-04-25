@@ -7,20 +7,14 @@ export type UpdateUserPayload = Partial<
   }
 >;
 
-// Server returns `gender: { id, name }` — map to flat `genderId` the client uses
-const mapUser = (raw: User & { gender?: { id: number; name: string } | null }): User => ({
-  ...raw,
-  genderId: raw.gender?.id ?? null,
-});
-
 export const userApi = {
   getById: async (id: string): Promise<User> => {
-    const { data } = await apiClient.get(`/users/${id}`);
-    return mapUser(data);
+    const { data } = await apiClient.get<User>(`/users/${id}`);
+    return data;
   },
 
   update: async (id: string, payload: UpdateUserPayload): Promise<User> => {
-    const { data } = await apiClient.put(`/users/${id}`, payload);
-    return mapUser(data);
+    const { data } = await apiClient.put<User>(`/users/${id}`, payload);
+    return data;
   },
 };

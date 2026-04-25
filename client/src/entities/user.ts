@@ -5,10 +5,9 @@ export interface User {
   username: string;
   email: string;
   profilePictureUrl: string | null;
-  genderId: number | null;
+  gender: Gender | null;
   birthdate: string | null;
   heightCm: number | null;
   bodyType: string | null;
   createdAt: string;
-  gender?: Gender;
 }

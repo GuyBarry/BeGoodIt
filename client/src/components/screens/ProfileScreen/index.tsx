@@ -34,7 +34,7 @@ export default function ProfileScreen() {
       birthdate: draft.birthdate,
       heightCm: draft.heightCm,
       bodyType: draft.bodyType,
-      genderId: draft.genderId ?? undefined,
+      genderId: draft.gender?.id ?? undefined,
     });
     setEditOpen(false);
   };

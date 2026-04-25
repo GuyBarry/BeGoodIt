@@ -16,6 +16,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 import { GRADIENTS, SERIF_FONT } from '../../../styles/tokens';
 import type { User } from '../../../entities/user';
+import { useGenders } from '../../../api';
 
 const BODY_TYPES = ['Ectomorph', 'Mesomorph', 'Endomorph', 'Athletic', 'Average'];
 
@@ -28,6 +29,8 @@ interface Props {
 }
 
 export default function EditProfileDialog({ open, draft, onDraftChange, onSave, onClose }: Props) {
+  const { data: genders = [] } = useGenders();
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle
@@ -93,13 +96,13 @@ export default function EditProfileDialog({ open, draft, onDraftChange, onSave, 
             <InputLabel>Gender</InputLabel>
             <Select
               label="Gender"
-              value={draft.genderId ?? ''}
-              onChange={e => onDraftChange({ ...draft, genderId: Number(e.target.value) })}
+              value={draft.gender?.id ?? ''}
+              onChange={e => {
+                const selected = genders.find(g => g.id === Number(e.target.value)) ?? null;
+                onDraftChange({ ...draft, gender: selected });
+              }}
             >
-              <MenuItem value={1}>Male</MenuItem>
-              <MenuItem value={2}>Female</MenuItem>
-              <MenuItem value={3}>Other</MenuItem>
-              <MenuItem value={4}>Prefer not to say</MenuItem>
+              {genders.map(g => <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>)}
             </Select>
           </FormControl>
           <FormControl size="small" fullWidth>
