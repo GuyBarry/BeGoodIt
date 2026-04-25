@@ -11,9 +11,10 @@ interface Props {
   tags: SelectedTags;
   onTagChange: (patch: Partial<SelectedTags>) => void;
   onSave: () => void;
+  isSaving: boolean;
 }
 
-export default function TagEditor({ categories, colors, seasons, tags, onTagChange, onSave }: Props) {
+export default function TagEditor({ categories, colors, seasons, tags, onTagChange, onSave, isSaving }: Props) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Box>
@@ -71,6 +72,7 @@ export default function TagEditor({ categories, colors, seasons, tags, onTagChan
         fullWidth
         startIcon={<CheckIcon />}
         onClick={onSave}
+        disabled={isSaving}
         sx={{
           background: GRADIENTS.primary,
           color: '#fff',
@@ -82,7 +84,7 @@ export default function TagEditor({ categories, colors, seasons, tags, onTagChan
           '&:hover': { filter: 'brightness(1.08)', boxShadow: `0 6px 24px ${PRIMARY_ALPHA[45]}` },
         }}
       >
-        Add to Closet
+        {isSaving ? 'Uploading...' : 'Add to Closet'}
       </Button>
     </Box>
   );
