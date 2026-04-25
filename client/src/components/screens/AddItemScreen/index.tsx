@@ -30,9 +30,9 @@ export default function AddItemScreen() {
       setIsAnalyzing(false);
       setAnalysisComplete(true);
       setTags({
-        category: categories[4] ?? categories[0] ?? null,
-        color: colors[3] ?? colors[0] ?? null,
-        season: seasons[2] ?? seasons[0] ?? null,
+        category: categories.find(c => c.name === 'Outerwear') ?? categories[0] ?? null,
+        color: colors.find(c => c.name === 'Blue') ?? colors[0] ?? null,
+        season: seasons.find(s => s.name === 'Fall') ?? seasons[0] ?? null,
         style: 'Smart Casual',
       });
     }, 2000);
