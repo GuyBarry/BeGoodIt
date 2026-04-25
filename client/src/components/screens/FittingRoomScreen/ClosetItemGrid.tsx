@@ -74,7 +74,8 @@ function ClosetItemCard({
 }
 
 export default function ClosetItemGrid({ selectedItems, suggestedItems, activeCategory, onCategoryChange, onToggleItem }: Props) {
-  const { data: garmentCategories = [] } = useGarmentCategories();
+  const { data: garmentCategoriesData } = useGarmentCategories();
+  const garmentCategories = Array.isArray(garmentCategoriesData) ? garmentCategoriesData : [];
   const filtered = activeCategory === 'all'
     ? closetItems
     : closetItems.filter(i => i.type.toLowerCase() === activeCategory.toLowerCase());
