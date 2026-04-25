@@ -17,7 +17,7 @@ export const AppDataSource = new DataSource({
   host: process.env.DB_HOST ?? 'localhost',
   port: parseInt(process.env.DB_PORT ?? '3306', 10),
   username: process.env.DB_USER ?? 'begoodit_user',
-  password: process.env.DB_PASSWORD ?? '',
+  password: process.env.DB_PASSWORD ?? 'begoodit_password',
   database: process.env.DB_NAME ?? 'begoodit',
   synchronize: false, // Use migrations in production
   logging: process.env.NODE_ENV !== 'production',
