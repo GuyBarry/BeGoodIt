@@ -8,4 +8,8 @@ export const clothingItemRepository = AppDataSource.getRepository(ClothingItem).
       relations: ['colorGroup', 'category', 'season'],
     });
   },
+
+  deleteById(id: string): Promise<void> {
+    return this.delete(id).then(() => undefined);
+  },
 });
