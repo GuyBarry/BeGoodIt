@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import type { User } from '../../../entities/user';
+import { useUser, useUpdateUser } from '../../../api';
 import ProfileHeader from './ProfileHeader';
 import ProfileCard from './ProfileCard';
 import PersonalInfoCard from './PersonalInfoCard';
@@ -9,32 +10,50 @@ import StyleInsightsCard from './StyleInsightsCard';
 import EditProfileButton from './EditProfileButton';
 import EditProfileDialog from './EditProfileDialog';
 
-const INITIAL_USER: User = {
-  id: '1',
-  username: 'Sarah Johnson',
-  email: 'sarah@example.com',
-  profilePictureUrl: null,
-  genderId: 2,
-  birthdate: '1995-06-15',
-  heightCm: 165,
-  bodyType: 'Athletic',
-  createdAt: '2024-01-01T00:00:00.000Z',
-};
+// TODO: replace with real auth session user id
+const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 
 export default function ProfileScreen() {
-  const [user, setUser] = useState<User>(INITIAL_USER);
+  const { data: user, isLoading, isError } = useUser(CURRENT_USER_ID);
+  const { mutate: updateUser } = useUpdateUser(CURRENT_USER_ID);
+
   const [editOpen, setEditOpen] = useState(false);
-  const [draft, setDraft] = useState<User>(user);
+  const [draft, setDraft] = useState<User | null>(null);
 
   const openEdit = () => {
-    setDraft(user);
-    setEditOpen(true);
+    if (user) {
+      setDraft(user);
+      setEditOpen(true);
+    }
   };
 
   const handleSave = () => {
-    setUser(draft);
+    if (!draft) return;
+    updateUser({
+      username: draft.username,
+      birthdate: draft.birthdate,
+      heightCm: draft.heightCm,
+      bodyType: draft.bodyType,
+      genderId: draft.genderId ?? undefined,
+    });
     setEditOpen(false);
   };
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError || !user) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <Typography color="error">Failed to load profile.</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -61,13 +80,15 @@ export default function ProfileScreen() {
         </Box>
       </Box>
 
-      <EditProfileDialog
-        open={editOpen}
-        draft={draft}
-        onDraftChange={setDraft}
-        onSave={handleSave}
-        onClose={() => setEditOpen(false)}
-      />
+      {draft && (
+        <EditProfileDialog
+          open={editOpen}
+          draft={draft}
+          onDraftChange={setDraft}
+          onSave={handleSave}
+          onClose={() => setEditOpen(false)}
+        />
+      )}
     </Box>
   );
 }
