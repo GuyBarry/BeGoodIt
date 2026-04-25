@@ -8,7 +8,7 @@ export type UpdateUserPayload = Partial<
 >;
 
 export const userApi = {
-  getById: async (id: string): Promise<User> => {
+  getById: async (id: User["id"]): Promise<User> => {
     const { data } = await apiClient.get<User>(`/users/${id}`);
     return data;
   },
