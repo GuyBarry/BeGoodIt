@@ -6,6 +6,7 @@ import type { ClothingItem } from '../../../entities/clothingItem';
 interface Props {
   items: ClothingItem[];
   gridSize: 'normal' | 'compact';
+  onDelete: (id: ClothingItem['id']) => void;
 }
 
 const gridCols = {
@@ -13,7 +14,7 @@ const gridCols = {
   compact: { xs: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(6, 1fr)', xl: 'repeat(8, 1fr)' },
 };
 
-export default function ClothingGrid({ items, gridSize }: Props) {
+export default function ClothingGrid({ items, gridSize, onDelete }: Props) {
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: gridCols[gridSize], gap: 3 }}>
       {items.map(item => {
@@ -79,6 +80,7 @@ export default function ClothingGrid({ items, gridSize }: Props) {
             <IconButton
               className="delete-btn"
               size="small"
+              onClick={() => onDelete(item.id)}
               sx={{
                 position: 'absolute',
                 top: 8,

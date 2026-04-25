@@ -7,4 +7,8 @@ export const clothingItemsApi = {
     const { data } = await apiClient.get<ClothingItem[]>(`/clothing-items/user/${userId}`);
     return data;
   },
+
+  deleteById: async (id: ClothingItem['id']): Promise<void> => {
+    await apiClient.delete(`/clothing-items/${id}`);
+  },
 };

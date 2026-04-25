@@ -5,12 +5,13 @@ import ClothingGrid from './ClothingGrid';
 import OutfitsGrid from './OutfitsGrid';
 import OutfitDialog from './OutfitDialog';
 import { mockOutfits, type MockOutfit } from './data';
-import { useClothingItems } from '../../../api';
+import { useClothingItems, useDeleteClothingItem } from '../../../api';
 
 const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 
 export default function ClosetScreen() {
   const { data: clothingItems = [], isLoading } = useClothingItems(CURRENT_USER_ID);
+  const { mutate: deleteItem } = useDeleteClothingItem(CURRENT_USER_ID);
 
   const [activeTab,        setActiveTab]        = useState<'clothes' | 'outfits'>('clothes');
   const [searchQuery,      setSearchQuery]      = useState('');
@@ -54,7 +55,7 @@ export default function ClosetScreen() {
                 <CircularProgress />
               </Box>
             ) : (
-              <ClothingGrid items={filteredClothes} gridSize={gridSize} />
+              <ClothingGrid items={filteredClothes} gridSize={gridSize} onDelete={deleteItem} />
             )
           ) : (
             <OutfitsGrid outfits={mockOutfits} gridSize={gridSize} onSelect={setSelectedOutfit} />
