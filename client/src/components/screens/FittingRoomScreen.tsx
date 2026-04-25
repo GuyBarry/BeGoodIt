@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { GRADIENTS, PRIMARY_ALPHA, SERIF_FONT } from '../../styles/tokens';
 import {
   Box,
   Typography,
@@ -105,7 +106,7 @@ export default function FittingRoomScreen() {
       >
         <Box sx={{ maxWidth: 1280, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box>
-            <Typography variant="h4" sx={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600 }}>
+            <Typography variant="h4">
               Fitting Room
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
@@ -122,10 +123,10 @@ export default function FittingRoomScreen() {
               opacity: 0.12,
               '&:hover': { opacity: 1 },
               // soft variant: primary tinted bg
-              background: 'rgba(200,100,50,0.12)',
+              background: PRIMARY_ALPHA[12],
               color: 'primary.main',
               boxShadow: 'none',
-              '&:hover': { background: 'rgba(200,100,50,0.2)', boxShadow: 'none' },
+              '&:hover': { background: PRIMARY_ALPHA[20], boxShadow: 'none' },
             }}
           >
             Get Inspired
@@ -157,7 +158,7 @@ export default function FittingRoomScreen() {
                       <Box
                         sx={{
                           width: 96, height: 96, borderRadius: '50%',
-                          bgcolor: 'rgba(200,100,50,0.15)',
+                          bgcolor: PRIMARY_ALPHA[15],
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           mx: 'auto', mb: 3,
                         }}
@@ -178,11 +179,11 @@ export default function FittingRoomScreen() {
                       <Box
                         sx={{
                           width: 160, height: 160, borderRadius: '50%',
-                          background: 'linear-gradient(135deg, rgba(200,100,50,0.25) 0%, rgba(232,149,109,0.25) 100%)',
+                          background: GRADIENTS.primaryMedium,
                           display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3,
                         }}
                       >
-                        <AutoAwesomeIcon sx={{ fontSize: 64, color: 'rgba(200,100,50,0.55)' }} />
+                        <AutoAwesomeIcon sx={{ fontSize: 64, color: PRIMARY_ALPHA[55] }} />
                       </Box>
                       <Typography
                         variant="body1" color="text.secondary"
@@ -196,7 +197,7 @@ export default function FittingRoomScreen() {
                         <Box
                           sx={{
                             mt: 3, px: 3, py: 1.25,
-                            bgcolor: 'rgba(200,100,50,0.1)',
+                            bgcolor: PRIMARY_ALPHA[10],
                             borderRadius: 10,
                             fontSize: 13, color: 'primary.main', fontWeight: 500,
                           }}
@@ -340,7 +341,7 @@ export default function FittingRoomScreen() {
                         <Box
                           sx={{
                             position: 'absolute', inset: 0,
-                            bgcolor: 'rgba(200,100,50,0.2)',
+                            bgcolor: PRIMARY_ALPHA[20],
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                           }}
                         >
@@ -425,14 +426,14 @@ export default function FittingRoomScreen() {
                 onClick={handleGenerate}
                 disabled={selectedItems.length === 0 || isGenerating}
                 sx={{
-                  background: 'linear-gradient(135deg, #c86432 0%, #e8956d 100%)',
+                  background: GRADIENTS.primary,
                   color: '#fff',
                   py: 1.75,
                   borderRadius: 3,
                   fontSize: 16,
                   fontWeight: 500,
-                  boxShadow: '0 4px 20px rgba(200,100,50,0.35)',
-                  '&:hover': { filter: 'brightness(1.08)', boxShadow: '0 6px 24px rgba(200,100,50,0.45)' },
+                  boxShadow: `0 4px 20px ${PRIMARY_ALPHA[35]}`,
+                  '&:hover': { filter: 'brightness(1.08)', boxShadow: `0 6px 24px ${PRIMARY_ALPHA[45]}` },
                   '&.Mui-disabled': { background: 'action.disabledBackground', color: 'text.disabled' },
                 }}
               >
@@ -453,7 +454,7 @@ export default function FittingRoomScreen() {
         fullWidth
         PaperProps={{ sx: { borderRadius: 4 } }}
       >
-        <DialogTitle sx={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 22, fontWeight: 600, pr: 6 }}>
+        <DialogTitle sx={{ fontFamily: SERIF_FONT, fontSize: 22, fontWeight: 600, pr: 6 }}>
           Get Inspired
           <IconButton
             onClick={handleCloseInspireDialog}
@@ -488,13 +489,13 @@ export default function FittingRoomScreen() {
                 gap: 2,
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
-                '&:hover': { borderColor: 'primary.main', bgcolor: 'rgba(200,100,50,0.04)' },
+                '&:hover': { borderColor: 'primary.main', bgcolor: PRIMARY_ALPHA[4] },
               }}
             >
               <Box
                 sx={{
                   width: 64, height: 64, borderRadius: '50%',
-                  bgcolor: 'rgba(200,100,50,0.1)',
+                  bgcolor: PRIMARY_ALPHA[10],
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
@@ -567,7 +568,7 @@ export default function FittingRoomScreen() {
               sx={{
                 borderRadius: 2.5,
                 py: 1.25,
-                background: 'linear-gradient(135deg, #c86432 0%, #e8956d 100%)',
+                background: GRADIENTS.primary,
                 boxShadow: 'none',
                 '&:hover': { filter: 'brightness(1.08)', boxShadow: 'none' },
               }}

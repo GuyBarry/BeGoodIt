@@ -6,7 +6,7 @@ import ClosetScreen from './components/screens/ClosetScreen';
 import AddItemScreen from './components/screens/AddItemScreen';
 import FittingRoomScreen from './components/screens/FittingRoomScreen';
 import SmartBuyScreen from './components/screens/SmartBuyScreen';
-import ProfileScreen from './components/screens/ProfileScreen';
+import ProfileScreen from './components/screens/ProfileScreen/index';
 
 export default function App() {
   const theme = useTheme();
