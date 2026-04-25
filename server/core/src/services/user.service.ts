@@ -1,5 +1,5 @@
 import { User } from '../db/entities';
-import { UpdateUserDto, UserDto } from '../dtos/user.dto';
+import { UpdateUserDto, UserDto } from '../dtos';
 import { NotFoundException } from '../exceptions';
 import { userRepository } from '../repositories';
 

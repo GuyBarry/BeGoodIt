@@ -5,6 +5,7 @@ import swaggerUi from "swagger-ui-express";
 import { serverConfig } from "./src/config/server.config";
 import { swaggerSpec } from "./src/config/swagger.config";
 import {
+  clothingItemRouter,
   colorGroupRouter,
   garmentCategoryRouter,
   genderRouter,
@@ -32,6 +33,7 @@ export const initApp = async (): Promise<Express> => {
   app.use("/genders", genderRouter);
   app.use("/seasons", seasonRouter);
   app.use("/users", userRouter);
+  app.use("/clothing-items", clothingItemRouter);
 
   app.get("/", (_req: Request, res: Response) => {
     res.json({ message: "Welcome to BeGoodIt API" });

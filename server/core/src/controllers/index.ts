@@ -1,3 +1,4 @@
+export { clothingItemRouter } from './clothingItem.controller';
 export { colorGroupRouter } from './colorGroup.controller';
 export { garmentCategoryRouter } from './garmentCategory.controller';
 export { genderRouter } from './gender.controller';
