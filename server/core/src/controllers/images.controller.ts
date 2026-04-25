@@ -7,15 +7,34 @@ import { ImageValidationMiddleware } from '../middlewares/images.middleware';
 export const imagesRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Post image
+// POST /  — upload image, returns ImageDto (JSON)
 imagesRouter.post(
   '/',
   upload.single('file'),
   ImageValidationMiddleware.validate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await imagesService.uploadImage(req.file!);
+      const result = await imagesService.saveImage(req.file!);
       res.status(StatusCodes.CREATED).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// GET /:id — return raw image file with correct Content-Type
+imagesRouter.get(
+  '/:id',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const image = await imagesService.getImageById(req.params.id);
+      res.setHeader('Content-Type', image.mimeType);
+      res.setHeader('Content-Length', image.size);
+      res.setHeader(
+        'Content-Disposition',
+        `inline; filename="${encodeURIComponent(image.originalName)}"`
+      );
+      res.status(StatusCodes.OK).send(image.data);
     } catch (error) {
       next(error);
     }
