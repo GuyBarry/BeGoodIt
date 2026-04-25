@@ -21,7 +21,7 @@ const mockClothingItems = [
     userId: 'user-uuid-1',
     imageUrl: 'https://example.com/img1.jpg',
     style: 'casual',
-    colorGroup: { id: 1, name: 'Warm' },
+    colorGroup: { id: 1, name: 'Blue' },
     category: { id: 2, name: 'Tops' },
     season: { id: 1, name: 'Summer' },
     createdAt: new Date('2026-01-01T00:00:00.000Z'),

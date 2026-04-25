@@ -14,7 +14,7 @@ describe('colorGroupService', () => {
 
   describe('getAll', () => {
     it('should return all color groups from the repository', async () => {
-      const mockData = [{ id: 1, name: 'Warm' }, { id: 2, name: 'Cool' }];
+      const mockData = [{ id: 1, name: 'Blue' }, { id: 2, name: 'Green' }];
       (colorGroupRepository.find as jest.Mock).mockResolvedValue(mockData);
 
       const result = await colorGroupService.getAll();

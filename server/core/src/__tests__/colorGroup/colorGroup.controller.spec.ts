@@ -16,8 +16,8 @@ const mockErrorHandler = (error: any, _req: Request, res: Response, _next: NextF
 };
 
 const mockColorGroups = [
-  { id: 1, name: 'Warm' },
-  { id: 2, name: 'Cool' },
+  { id: 1, name: 'Blue' },
+  { id: 2, name: 'Green' },
 ];
 
 describe('colorGroupRouter', () => {

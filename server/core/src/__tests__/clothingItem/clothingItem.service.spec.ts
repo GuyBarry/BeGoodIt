@@ -15,7 +15,7 @@ describe('clothingItemService', () => {
       userId: 'user-uuid-1',
       imageUrl: 'https://example.com/img1.jpg',
       style: 'casual',
-      colorGroup: { id: 1, name: 'Warm' },
+      colorGroup: { id: 1, name: 'Blue' },
       category: { id: 2, name: 'Tops' },
       season: { id: 1, name: 'Summer' },
       colorGroupId: 1,
@@ -45,7 +45,7 @@ describe('clothingItemService', () => {
         userId: 'user-uuid-1',
         imageUrl: 'https://example.com/img1.jpg',
         style: 'casual',
-        colorGroup: { id: 1, name: 'Warm' },
+        colorGroup: { id: 1, name: 'Blue' },
         category: { id: 2, name: 'Tops' },
         season: { id: 1, name: 'Summer' },
       });
