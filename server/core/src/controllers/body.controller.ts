@@ -28,3 +28,27 @@ bodyRouter.post(
     }
   },
 );
+
+// POST /body/data — save or update body measurements for a user
+bodyRouter.post(
+  '/data',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userId, heightCm, weightKg, bodyType } = req.body ?? {};
+
+      if (!userId || !(userId as string).trim()) {
+        return next(new BadRequestException('userId is required'));
+      }
+
+      const result = await bodyService.saveBodyData((userId as string).trim(), {
+        heightCm: heightCm ?? null,
+        weightKg: weightKg ?? null,
+        bodyType: bodyType ?? null,
+      });
+
+      res.status(StatusCodes.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+);

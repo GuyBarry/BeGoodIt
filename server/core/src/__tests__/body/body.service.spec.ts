@@ -1,7 +1,7 @@
 import { bodyService } from '../../services/body.service';
 import { bodyMappingRepository } from '../../repositories/bodyMapping.repository';
 import { imagesService } from '../../services/images.service';
-import { BadRequestException } from '../../exceptions/httpExceptions';
+import { BadRequestException, NotFoundException } from '../../exceptions/httpExceptions';
 import { BodyMapping } from '../../db/entities/BodyMapping.entity';
 
 jest.mock('../../repositories/bodyMapping.repository', () => ({
@@ -148,6 +148,75 @@ describe('bodyService', () => {
       (bodyMappingRepository.save as jest.Mock).mockRejectedValue(new Error('DB write error'));
 
       await expect(bodyService.saveBodyImage(createMockFile(), 'user-uuid-1')).rejects.toThrow(
+        'DB write error',
+      );
+    });
+  });
+
+  describe('saveBodyData', () => {
+    it('should update height, weight, and body type on an existing record', async () => {
+      const existing = createMockBodyMapping();
+      const updated = createMockBodyMapping({ heightCm: 175.5, weightKg: 70.0, bodyType: 'athletic' });
+
+      (bodyMappingRepository.findOne as jest.Mock).mockResolvedValue(existing);
+      (bodyMappingRepository.save as jest.Mock).mockResolvedValue(updated);
+
+      const result = await bodyService.saveBodyData('user-uuid-1', {
+        heightCm: 175.5,
+        weightKg: 70.0,
+        bodyType: 'athletic',
+      });
+
+      expect(bodyMappingRepository.findOne).toHaveBeenCalledWith({ where: { userId: 'user-uuid-1' } });
+      expect(bodyMappingRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({ heightCm: 175.5, weightKg: 70.0, bodyType: 'athletic' }),
+      );
+      expect(result.heightCm).toBe(175.5);
+      expect(result.weightKg).toBe(70.0);
+      expect(result.bodyType).toBe('athletic');
+    });
+
+    it('should only update fields that are explicitly provided', async () => {
+      const existing = createMockBodyMapping({ heightCm: 160, weightKg: 60, bodyType: 'slim' });
+      const updated = createMockBodyMapping({ heightCm: 175, weightKg: 60, bodyType: 'slim' });
+
+      (bodyMappingRepository.findOne as jest.Mock).mockResolvedValue(existing);
+      (bodyMappingRepository.save as jest.Mock).mockResolvedValue(updated);
+
+      await bodyService.saveBodyData('user-uuid-1', { heightCm: 175 });
+
+      expect(bodyMappingRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({ heightCm: 175, weightKg: 60, bodyType: 'slim' }),
+      );
+    });
+
+    it('should throw NotFoundException when no body record exists for the user', async () => {
+      (bodyMappingRepository.findOne as jest.Mock).mockResolvedValue(null);
+
+      await expect(
+        bodyService.saveBodyData('user-uuid-1', { heightCm: 175 }),
+      ).rejects.toThrow(NotFoundException);
+      expect(bodyMappingRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when userId is empty string', async () => {
+      await expect(bodyService.saveBodyData('', { heightCm: 175 })).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(bodyMappingRepository.findOne).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when userId is blank whitespace', async () => {
+      await expect(bodyService.saveBodyData('   ', {})).rejects.toThrow(BadRequestException);
+      expect(bodyMappingRepository.findOne).not.toHaveBeenCalled();
+    });
+
+    it('should propagate errors from bodyMappingRepository.save', async () => {
+      const existing = createMockBodyMapping();
+      (bodyMappingRepository.findOne as jest.Mock).mockResolvedValue(existing);
+      (bodyMappingRepository.save as jest.Mock).mockRejectedValue(new Error('DB write error'));
+
+      await expect(bodyService.saveBodyData('user-uuid-1', { heightCm: 175 })).rejects.toThrow(
         'DB write error',
       );
     });

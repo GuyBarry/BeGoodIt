@@ -38,6 +38,7 @@ describe('bodyRouter', () => {
     jest.clearAllMocks();
 
     app = express();
+    app.use(express.json());
     app.use(bodyRouter);
     app.use(mockErrorHandler);
   });
@@ -144,6 +145,92 @@ describe('bodyRouter', () => {
         .post('/image')
         .field('userId', 'user-uuid-1')
         .attach('file', PNG_HEADER, { filename: 'body.png', contentType: 'image/png' });
+
+      expect(response.status).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body.message).toBe('Oops, something went wrong!');
+    });
+  });
+
+  describe('POST /data', () => {
+    const dataDto = {
+      ...mockDto,
+      heightCm: 175.5,
+      weightKg: 70.0,
+      bodyType: 'athletic',
+    };
+
+    it('should return 200 with updated BodyMappingDto', async () => {
+      (bodyService.saveBodyData as jest.Mock).mockResolvedValue(dataDto);
+
+      const response = await request(app)
+        .post('/data')
+        .send({ userId: 'user-uuid-1', heightCm: 175.5, weightKg: 70.0, bodyType: 'athletic' });
+
+      expect(response.status).toBe(StatusCodes.OK);
+      expect(response.body).toMatchObject({
+        userId: 'user-uuid-1',
+        heightCm: 175.5,
+        weightKg: 70.0,
+        bodyType: 'athletic',
+      });
+      expect(bodyService.saveBodyData).toHaveBeenCalledWith('user-uuid-1', {
+        heightCm: 175.5,
+        weightKg: 70.0,
+        bodyType: 'athletic',
+      });
+    });
+
+    it('should return 200 with partial fields (only heightCm provided)', async () => {
+      (bodyService.saveBodyData as jest.Mock).mockResolvedValue({ ...mockDto, heightCm: 180 });
+
+      const response = await request(app)
+        .post('/data')
+        .send({ userId: 'user-uuid-1', heightCm: 180 });
+
+      expect(response.status).toBe(StatusCodes.OK);
+      expect(response.body.heightCm).toBe(180);
+    });
+
+    it('should return 400 when userId is missing', async () => {
+      const response = await request(app)
+        .post('/data')
+        .send({ heightCm: 175 });
+
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+      expect(response.body.message).toBe('userId is required');
+      expect(bodyService.saveBodyData).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 when userId is blank whitespace', async () => {
+      const response = await request(app)
+        .post('/data')
+        .send({ userId: '   ' });
+
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+      expect(response.body.message).toBe('userId is required');
+      expect(bodyService.saveBodyData).not.toHaveBeenCalled();
+    });
+
+    it('should return 404 when no body record exists for the user', async () => {
+      const { NotFoundException } = jest.requireActual('../../exceptions/httpExceptions');
+      (bodyService.saveBodyData as jest.Mock).mockRejectedValue(
+        new NotFoundException("No body record found for user 'user-uuid-1'. Upload a body image first."),
+      );
+
+      const response = await request(app)
+        .post('/data')
+        .send({ userId: 'user-uuid-1', heightCm: 175 });
+
+      expect(response.status).toBe(StatusCodes.NOT_FOUND);
+      expect(response.body.message).toContain('No body record found');
+    });
+
+    it('should return 500 when service throws an unexpected error', async () => {
+      (bodyService.saveBodyData as jest.Mock).mockRejectedValue(new Error('DB failure'));
+
+      const response = await request(app)
+        .post('/data')
+        .send({ userId: 'user-uuid-1', heightCm: 175 });
 
       expect(response.status).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body.message).toBe('Oops, something went wrong!');
