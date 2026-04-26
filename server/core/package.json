@@ -27,6 +27,7 @@
     "migration:show:prod": "npm run typeorm:prod -- migration:show"
   },
   "dependencies": {
+    "@imgly/background-removal-node": "^1.4.5",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

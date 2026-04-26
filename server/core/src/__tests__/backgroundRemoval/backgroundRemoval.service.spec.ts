@@ -1,62 +1,74 @@
 import { backgroundRemovalService } from '../../services/backgroundRemoval.service';
-import * as childProcess from 'child_process';
-import * as fs from 'fs';
 
-jest.mock('child_process');
-jest.mock('fs');
+jest.mock('@imgly/background-removal-node', () => ({
+  removeBackground: jest.fn(),
+}));
+
 jest.mock('sharp', () => {
-  const mockToBuffer = jest.fn().mockResolvedValue(Buffer.from('png-data'));
-  const mockPng = jest.fn().mockReturnValue({ toBuffer: mockToBuffer });
-  const mockSharp = jest.fn().mockReturnValue({ png: mockPng });
+  const mockToBuffer = jest.fn();
+  const mockPng = jest.fn(() => ({ toBuffer: mockToBuffer }));
+  const mockSharp = jest.fn(() => ({ png: mockPng }));
+  (mockSharp as any).__mockToBuffer = mockToBuffer;
   return mockSharp;
 });
 
-describe('backgroundRemovalService', () => {
-  const createMockFile = (overrides?: Partial<Express.Multer.File>): Express.Multer.File => ({
-    fieldname: 'file',
-    originalname: 'photo.jpg',
-    encoding: '7bit',
-    mimetype: 'image/jpeg',
-    size: 2048,
-    buffer: Buffer.from('fake-image-data'),
-    stream: null as any,
-    destination: '',
-    filename: '',
-    path: '',
-    ...overrides,
-  });
+import { removeBackground as rembg } from '@imgly/background-removal-node';
+import sharp from 'sharp';
 
-  const mockOutputBuffer = Buffer.from('no-bg-image-data');
+const createMockFile = (overrides?: Partial<Express.Multer.File>): Express.Multer.File => ({
+  fieldname: 'file',
+  originalname: 'body.png',
+  encoding: '7bit',
+  mimetype: 'image/png',
+  size: 1024,
+  buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+  stream: null as any,
+  destination: '',
+  filename: '',
+  path: '',
+  ...overrides,
+});
+
+describe('backgroundRemovalService', () => {
+  const mockSharpInstance = (sharp as unknown as jest.Mock);
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    (fs.writeFileSync as jest.Mock).mockReturnValue(undefined);
-    (fs.readFileSync as jest.Mock).mockReturnValue(mockOutputBuffer);
-    (fs.existsSync as jest.Mock).mockReturnValue(true);
-    (fs.unlinkSync as jest.Mock).mockReturnValue(undefined);
-
-    (childProcess.exec as unknown as jest.Mock).mockImplementation(
-      (_cmd: string, callback: (error: Error | null, stdout: string, stderr: string) => void) => {
-        callback(null, '', '');
-      },
-    );
   });
 
   describe('removeBackground', () => {
-    it('should return a file with the background removed', async () => {
+    it('should return a modified file with background removed', async () => {
       const file = createMockFile();
+      const normalizedBuffer = Buffer.from('normalized-png-data');
+      const outputBuffer = Buffer.from('bg-removed-png-data');
+      const mockBlob = { arrayBuffer: jest.fn().mockResolvedValue(outputBuffer.buffer) } as unknown as Blob;
+
+      const mockToBuffer = jest.fn().mockResolvedValue(normalizedBuffer);
+      const mockPng = jest.fn(() => ({ toBuffer: mockToBuffer }));
+      mockSharpInstance.mockReturnValue({ png: mockPng });
+      (rembg as jest.Mock).mockResolvedValue(mockBlob);
 
       const result = await backgroundRemovalService.removeBackground(file);
 
-      expect(result.buffer).toEqual(mockOutputBuffer);
+      expect(mockSharpInstance).toHaveBeenCalledWith(file.buffer);
+      expect(mockPng).toHaveBeenCalled();
+      expect(mockToBuffer).toHaveBeenCalled();
+      expect(rembg).toHaveBeenCalledWith(expect.any(Blob));
       expect(result.mimetype).toBe('image/png');
-      expect(result.originalname).toBe('photo_no_bg.png');
-      expect(result.size).toBe(mockOutputBuffer.length);
+      expect(result.originalname).toBe('body_no_bg.png');
+      expect(result.buffer).toEqual(Buffer.from(outputBuffer.buffer));
+      expect(result.size).toBe(Buffer.from(outputBuffer.buffer).length);
     });
 
-    it('should preserve other file fields from the input', async () => {
-      const file = createMockFile();
+    it('should preserve other file properties from the original', async () => {
+      const file = createMockFile({ fieldname: 'file', encoding: '7bit' });
+      const normalizedBuffer = Buffer.from('normalized');
+      const outputBuffer = Buffer.from('output');
+      const mockBlob = { arrayBuffer: jest.fn().mockResolvedValue(outputBuffer.buffer) } as unknown as Blob;
+
+      const mockToBuffer = jest.fn().mockResolvedValue(normalizedBuffer);
+      mockSharpInstance.mockReturnValue({ png: jest.fn(() => ({ toBuffer: mockToBuffer })) });
+      (rembg as jest.Mock).mockResolvedValue(mockBlob);
 
       const result = await backgroundRemovalService.removeBackground(file);
 
@@ -64,108 +76,44 @@ describe('backgroundRemovalService', () => {
       expect(result.encoding).toBe(file.encoding);
     });
 
-    it('should write the converted PNG to a temp file before calling rembg', async () => {
-      const file = createMockFile();
+    it('should rename originalname with _no_bg suffix replacing the extension', async () => {
+      const file = createMockFile({ originalname: 'photo.jpg' });
+      const normalizedBuffer = Buffer.from('n');
+      const outputBuffer = Buffer.from('o');
+      const mockBlob = { arrayBuffer: jest.fn().mockResolvedValue(outputBuffer.buffer) } as unknown as Blob;
 
-      await backgroundRemovalService.removeBackground(file);
+      mockSharpInstance.mockReturnValue({ png: jest.fn(() => ({ toBuffer: jest.fn().mockResolvedValue(normalizedBuffer) })) });
+      (rembg as jest.Mock).mockResolvedValue(mockBlob);
 
-      expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-      const [writtenPath, writtenData] = (fs.writeFileSync as jest.Mock).mock.calls[0];
-      expect(writtenPath).toMatch(/rembg_input_/);
-      expect(writtenData).toEqual(Buffer.from('png-data'));
+      const result = await backgroundRemovalService.removeBackground(file);
+
+      expect(result.originalname).toBe('photo_no_bg.png');
     });
 
-    it('should call rembg with input and output temp file paths', async () => {
+    it('should throw an error when sharp fails', async () => {
       const file = createMockFile();
-
-      await backgroundRemovalService.removeBackground(file);
-
-      expect(childProcess.exec).toHaveBeenCalledTimes(1);
-      const [cmd] = (childProcess.exec as unknown as jest.Mock).mock.calls[0];
-      expect(cmd).toMatch(/^rembg i "/);
-      expect(cmd).toMatch(/rembg_input_/);
-      expect(cmd).toMatch(/rembg_output_/);
-    });
-
-    it('should read the rembg output file to build the result buffer', async () => {
-      const file = createMockFile();
-
-      await backgroundRemovalService.removeBackground(file);
-
-      expect(fs.readFileSync).toHaveBeenCalledTimes(1);
-      const [readPath] = (fs.readFileSync as jest.Mock).mock.calls[0];
-      expect(readPath).toMatch(/rembg_output_/);
-    });
-
-    it('should clean up both temp files after success', async () => {
-      const file = createMockFile();
-
-      await backgroundRemovalService.removeBackground(file);
-
-      expect(fs.unlinkSync).toHaveBeenCalledTimes(2);
-      const unlinkedPaths = (fs.unlinkSync as jest.Mock).mock.calls.map(([p]: [string]) => p);
-      expect(unlinkedPaths.some((p: string) => p.includes('rembg_input_'))).toBe(true);
-      expect(unlinkedPaths.some((p: string) => p.includes('rembg_output_'))).toBe(true);
-    });
-
-    it('should clean up temp files even when rembg fails', async () => {
-      (childProcess.exec as unknown as jest.Mock).mockImplementation(
-        (_cmd: string, callback: (error: Error | null, stdout: string, stderr: string) => void) => {
-          callback(new Error('rembg not found'), '', 'command not found: rembg');
-        },
-      );
-      // Output file is never written when rembg fails
-      (fs.existsSync as jest.Mock).mockImplementation((p: string) => p.includes('rembg_input_'));
-
-      const file = createMockFile();
-
-      await expect(backgroundRemovalService.removeBackground(file)).rejects.toThrow('rembg failed');
-
-      expect(fs.unlinkSync).toHaveBeenCalledTimes(1);
-      const [unlinkedPath] = (fs.unlinkSync as jest.Mock).mock.calls[0];
-      expect(unlinkedPath).toMatch(/rembg_input_/);
-    });
-
-    it('should throw an error with the rembg stderr message on failure', async () => {
-      (childProcess.exec as unknown as jest.Mock).mockImplementation(
-        (_cmd: string, callback: (error: Error | null, stdout: string, stderr: string) => void) => {
-          callback(new Error('exit 1'), '', 'model download failed');
-        },
-      );
-
-      const file = createMockFile();
+      mockSharpInstance.mockReturnValue({
+        png: jest.fn(() => ({ toBuffer: jest.fn().mockRejectedValue(new Error('sharp failure')) })),
+      });
 
       await expect(backgroundRemovalService.removeBackground(file)).rejects.toThrow(
-        'rembg failed: model download failed',
+        'Failed to remove background from the image.',
       );
+      expect(rembg).not.toHaveBeenCalled();
     });
 
-    it('should use the error message when stderr is empty on failure', async () => {
-      (childProcess.exec as unknown as jest.Mock).mockImplementation(
-        (_cmd: string, callback: (error: Error | null, stdout: string, stderr: string) => void) => {
-          callback(new Error('spawn error'), '', '');
-        },
-      );
-
+    it('should throw an error when rembg fails', async () => {
       const file = createMockFile();
+      const normalizedBuffer = Buffer.from('normalized');
+
+      mockSharpInstance.mockReturnValue({
+        png: jest.fn(() => ({ toBuffer: jest.fn().mockResolvedValue(normalizedBuffer) })),
+      });
+      (rembg as jest.Mock).mockRejectedValue(new Error('model inference failed'));
 
       await expect(backgroundRemovalService.removeBackground(file)).rejects.toThrow(
-        'rembg failed: spawn error',
+        'Failed to remove background from the image.',
       );
-    });
-
-    it('should rename the output file correctly for various extensions', async () => {
-      const cases = [
-        { originalname: 'shirt.jpg', expected: 'shirt_no_bg.png' },
-        { originalname: 'photo.jpeg', expected: 'photo_no_bg.png' },
-        { originalname: 'image.png', expected: 'image_no_bg.png' },
-        { originalname: 'no-extension', expected: 'no-extension_no_bg.png' },
-      ];
-
-      for (const { originalname, expected } of cases) {
-        const result = await backgroundRemovalService.removeBackground(createMockFile({ originalname }));
-        expect(result.originalname).toBe(expected);
-      }
     });
   });
 });

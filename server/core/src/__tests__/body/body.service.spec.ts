@@ -18,6 +18,12 @@ jest.mock('../../services/images.service', () => ({
   },
 }));
 
+jest.mock('../../services/backgroundRemoval.service', () => ({
+  backgroundRemovalService: {
+    removeBackground: jest.fn((file: Express.Multer.File) => Promise.resolve(file)),
+  },
+}));
+
 describe('bodyService', () => {
   const createMockFile = (overrides?: Partial<Express.Multer.File>): Express.Multer.File => ({
     fieldname: 'file',

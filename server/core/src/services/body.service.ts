@@ -1,5 +1,6 @@
 import { BodyMapping, BodyMappingDto } from '../db/entities';
 import { bodyMappingRepository } from '../repositories';
+import { backgroundRemovalService } from './backgroundRemoval.service';
 import { imagesService } from './images.service';
 import { BadRequestException, NotFoundException } from '../exceptions/httpExceptions';
 
@@ -28,7 +29,9 @@ const saveBodyImage = async (
     throw new BadRequestException('userId is required');
   }
 
-  const imageDto = await imagesService.saveImage(file);
+  const imageDto = await imagesService.saveImage(
+    await backgroundRemovalService.removeBackground(file),
+  );
 
   const existing = await bodyMappingRepository.findOne({ where: { userId } });
 

@@ -1,64 +1,36 @@
-import { exec } from 'child_process';
-import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
-import sharp from 'sharp';
+import { removeBackground as rembg } from "@imgly/background-removal-node";
+import sharp from "sharp";
 
-class BackgroundRemovalService {
-  async removeBackground(file: Express.Multer.File): Promise<Express.Multer.File> {
-    const tmpDir = os.tmpdir();
-    const uid = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    const inputPath = path.join(tmpDir, `rembg_input_${uid}.png`);
-    const outputPath = path.join(tmpDir, `rembg_output_${uid}.png`);
+const removeBackground = async (
+  file: Express.Multer.File,
+): Promise<Express.Multer.File> => {
+  try {
 
-    try {
-      const pngBuffer = await sharp(file.buffer).png().toBuffer();
-      fs.writeFileSync(inputPath, pngBuffer);
+    const normalizedBuffer = await sharp(file.buffer)
+        .png() 
+        .toBuffer();
 
-      await this.runRembg(inputPath, outputPath);
+        const inputBlob = new Blob([normalizedBuffer], { type: 'image/png' });
 
-      const outputBuffer = fs.readFileSync(outputPath);
+    const outputImage = await rembg(inputBlob);
 
-      return {
-        ...file,
-        buffer: outputBuffer,
-        mimetype: 'image/png',
-        originalname: this.toNoBgFilename(file.originalname),
-        size: outputBuffer.length,
-      };
-    } finally {
-      this.safeUnlink(inputPath);
-      this.safeUnlink(outputPath);
-    }
+    // 3. Convert the result back to a Buffer as a PNG
+    const arrayBuffer = await outputImage.arrayBuffer();
+    const newBuffer = Buffer.from(arrayBuffer);
+    // 4. Send the new image directly back to the client!
+    return {
+      ...file,
+      buffer: newBuffer,
+      mimetype: "image/png",
+      originalname: file.originalname.replace(/\.[^/.]+$/, "_no_bg.png"),
+      size: newBuffer.length,
+    };
+  } catch (error) {
+    console.error("Error removing background:", error);
+    throw new Error("Failed to remove background from the image.");
   }
+};
 
-  private runRembg(inputPath: string, outputPath: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      exec(`rembg i "${inputPath}" "${outputPath}"`, (error, _stdout, stderr) => {
-        if (error) {
-          reject(new Error(`rembg failed: ${stderr || error.message}`));
-        } else {
-          resolve();
-        }
-      });
-    });
-  }
-
-  private toNoBgFilename(originalname: string): string {
-    const ext = path.extname(originalname);
-    const base = path.basename(originalname, ext);
-    return `${base}_no_bg.png`;
-  }
-
-  private safeUnlink(filePath: string): void {
-    try {
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    } catch {
-      // Ignore cleanup errors
-    }
-  }
-}
-
-export const backgroundRemovalService = new BackgroundRemovalService();
+export const backgroundRemovalService = {
+  removeBackground,
+};
