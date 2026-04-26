@@ -3,10 +3,10 @@ import { Box, useMediaQuery, useTheme } from '@mui/material';
 import Sidebar from './components/Sidebar';
 import BottomNav from './components/BottomNav';
 import ClosetScreen from './components/screens/ClosetScreen';
-import AddItemScreen from './components/screens/AddItemScreen';
-import FittingRoomScreen from './components/screens/FittingRoomScreen';
+import AddItemScreen from './components/screens/AddItemScreen/index';
+import FittingRoomScreen from './components/screens/FittingRoomScreen/index';
 import SmartBuyScreen from './components/screens/SmartBuyScreen';
-import ProfileScreen from './components/screens/ProfileScreen';
+import ProfileScreen from './components/screens/ProfileScreen/index';
 
 export default function App() {
   const theme = useTheme();

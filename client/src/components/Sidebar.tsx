@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { GRADIENTS, PRIMARY_ALPHA } from '../styles/tokens';
 import {
   Box,
   Drawer,
@@ -82,7 +83,7 @@ export default function Sidebar() {
             width: 40,
             height: 40,
             borderRadius: 2.5,
-            background: 'linear-gradient(135deg, #c86432 0%, #e8956d 100%)',
+            background: GRADIENTS.primary,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -104,7 +105,7 @@ export default function Sidebar() {
         >
           <Typography
             variant="h6"
-            sx={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600, lineHeight: 1.2 }}
+            sx={{ fontWeight: 600, lineHeight: 1.2 }}
           >
             BeGoodIt
           </Typography>
@@ -132,7 +133,7 @@ export default function Sidebar() {
                   '&.Mui-selected': {
                     bgcolor: 'primary.main',
                     color: 'primary.contrastText',
-                    boxShadow: '0 4px 12px rgba(200, 100, 50, 0.35)',
+                    boxShadow: `0 4px 12px ${PRIMARY_ALPHA[35]}`,
                     '&:hover': { bgcolor: 'primary.dark' },
                     '& .MuiListItemIcon-root': { color: 'primary.contrastText' },
                   },

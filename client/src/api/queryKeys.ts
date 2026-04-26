@@ -1,3 +1,5 @@
+import type { User } from '../entities';
+
 export const queryKeys = {
   colorGroups: {
     getAll: ['colorGroups'],
@@ -10,5 +12,11 @@ export const queryKeys = {
   },
   seasons: {
     getAll: ['seasons'],
+  },
+  user: {
+    getById: (id: User['id']) => ['user', id] as const,
+  },
+  clothingItems: {
+    getByUserId: (userId: User['id']) => ['clothingItems', userId] as const,
   },
 } as const;
