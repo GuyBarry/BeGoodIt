@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import {
+  BodyMapping,
   ClothingItem,
   ColorGroup,
   GarmentCategory,
@@ -21,7 +22,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME ?? 'begoodit',
   synchronize: false, // Use migrations in production
   logging: process.env.NODE_ENV !== 'production',
-  entities: [ColorGroup, GarmentCategory, Gender, Season, User, OutfitFolder, ClothingItem, Outfit, Image],
+  entities: [BodyMapping, ColorGroup, GarmentCategory, Gender, Season, User, OutfitFolder, ClothingItem, Outfit, Image],
   migrations: ['src/db/migrations/**/*.ts'],
   subscribers: [],
 });

@@ -4,6 +4,7 @@ import swaggerUi from "swagger-ui-express";
 import { serverConfig } from "./src/config/server.config";
 import { swaggerSpec } from "./src/config/swagger.config";
 import {
+  bodyRouter,
   colorGroupRouter,
   garmentCategoryRouter,
   genderRouter,
@@ -23,6 +24,7 @@ export const initApp = async (): Promise<Express> => {
   app.use(express.urlencoded({ extended: true }));
 
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use("/body", bodyRouter);
   app.use("/images", imagesRouter);
   app.use("/color-groups", colorGroupRouter);
   app.use("/garment-categories", garmentCategoryRouter);

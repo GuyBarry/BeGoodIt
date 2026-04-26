@@ -109,8 +109,30 @@ export class InitialSchema1776367648999 implements MigrationInterface {
             ) ENGINE = InnoDB
         `);
         await queryRunner.query(`
+            CREATE TABLE \`body_mapping\` (
+                \`id\`            varchar(36)   NOT NULL,
+                \`user_id\`       char(36)      NOT NULL,
+                \`image_id\`      char(36)      NOT NULL,
+                \`picture\`       varchar(500)  NULL     DEFAULT NULL,
+                \`height_cm\`     decimal(5, 2) NULL     DEFAULT NULL,
+                \`weight_kg\`     decimal(5, 2) NULL     DEFAULT NULL,
+                \`body_type\`     varchar(100)  NULL     DEFAULT NULL,
+                \`created_at\`    datetime(6)   NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+                UNIQUE INDEX \`uq_body_mapping_user\` (\`user_id\`),
+                PRIMARY KEY (\`id\`)
+            ) ENGINE = InnoDB
+        `);
+        await queryRunner.query(`
             ALTER TABLE \`clothing_item\`
             ADD CONSTRAINT \`FK_40ffd7032b3aaca46037385f4cd\` FOREIGN KEY (\`user_id\`) REFERENCES \`user\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION
+        `);
+        await queryRunner.query(`
+            ALTER TABLE \`body_mapping\`
+            ADD CONSTRAINT \`FK_body_mapping_user\` FOREIGN KEY (\`user_id\`) REFERENCES \`user\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION
+        `);
+        await queryRunner.query(`
+            ALTER TABLE \`body_mapping\`
+            ADD CONSTRAINT \`FK_body_mapping_image\` FOREIGN KEY (\`image_id\`) REFERENCES \`image\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
             ALTER TABLE \`clothing_item\`
@@ -244,6 +266,10 @@ export class InitialSchema1776367648999 implements MigrationInterface {
             DROP TABLE \`clothing_item\`
         `);
         await queryRunner.query(`DROP TABLE \`image\``);
+        await queryRunner.query(`ALTER TABLE \`body_mapping\` DROP FOREIGN KEY \`FK_body_mapping_image\``);
+        await queryRunner.query(`ALTER TABLE \`body_mapping\` DROP FOREIGN KEY \`FK_body_mapping_user\``);
+        await queryRunner.query(`DROP INDEX \`uq_body_mapping_user\` ON \`body_mapping\``);
+        await queryRunner.query(`DROP TABLE \`body_mapping\``);
     }
 
 }

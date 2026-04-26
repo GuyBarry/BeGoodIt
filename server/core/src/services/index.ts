@@ -1,3 +1,4 @@
+export { bodyService } from './body.service';
 export { colorGroupService } from './colorGroup.service';
 export { garmentCategoryService } from './garmentCategory.service';
 export { genderService } from './gender.service';
