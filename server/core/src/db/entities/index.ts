@@ -1,3 +1,5 @@
+export { BodyMapping } from './BodyMapping.entity';
+export { BodyMappingDto } from './BodyMapping.dto';
 export { ClothingItem } from './ClothingItem.entity';
 export { ColorGroup } from './ColorGroup.entity';
 export { GarmentCategory } from './GarmentCategory.entity';
