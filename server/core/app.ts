@@ -7,6 +7,7 @@ import { swaggerSpec } from "./src/config/swagger.config";
 import {
   bodyRouter,
   clothingItemRouter,
+  closetRouter,
   colorGroupRouter,
   garmentCategoryRouter,
   genderRouter,
@@ -36,6 +37,7 @@ export const initApp = async (): Promise<Express> => {
   app.use("/seasons", seasonRouter);
   app.use("/users", userRouter);
   app.use("/clothing-items", clothingItemRouter);
+  app.use("/closet", closetRouter);
 
   app.get("/", (_req: Request, res: Response) => {
     res.json({ message: "Welcome to BeGoodIt API" });

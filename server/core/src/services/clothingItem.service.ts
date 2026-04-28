@@ -22,7 +22,22 @@ const deleteById = async (id: string): Promise<void> => {
   await clothingItemRepository.deleteById(id);
 };
 
+const addItem = async (userId: string, imageUrl: string): Promise<ClothingItemDto> => {
+  const item = clothingItemRepository.create({
+    userId,
+    imageUrl,
+    colorGroupId: null,
+    categoryId: null,
+    seasonId: null,
+    style: null,
+    imageEmbedding: null,
+  });
+  const saved = await clothingItemRepository.save(item);
+  return toDto(saved);
+};
+
 export const clothingItemService = {
   getAllByUserId,
   deleteById,
+  addItem,
 };
