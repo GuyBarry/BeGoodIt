@@ -1,4 +1,5 @@
 export { backgroundRemovalService } from './backgroundRemoval.service';
+export { imageSizingService } from './imageSizing.service';
 export { bodyService } from './body.service';
 export { closetService } from './closet.service';
 export { clothingItemService } from './clothingItem.service';

@@ -1,6 +1,7 @@
 import { Image, ImageDto } from "../db/entities";
 import { imageRepository } from "../repositories";
 import { NotFoundException } from "../exceptions/httpExceptions";
+import { imageSizingService } from "./imageSizing.service";
 
 const toDto = (image: Image): ImageDto => ({
   id: image.id,
@@ -11,11 +12,13 @@ const toDto = (image: Image): ImageDto => ({
 });
 
 const saveImage = async (file: Express.Multer.File): Promise<ImageDto> => {
+  const resizedBuffer = await imageSizingService.resizeToSquare(file.buffer);
+
   const image = imageRepository.create({
-    data: file.buffer,
+    data: resizedBuffer,
     mimeType: file.mimetype,
     originalName: file.originalname,
-    size: file.size,
+    size: resizedBuffer.length,
   });
 
   const saved = await imageRepository.save(image);
