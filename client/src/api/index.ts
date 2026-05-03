@@ -1,4 +1,5 @@
 export { useClothingItems } from './hooks/useClothingItems';
+export { useUploadBodyImage } from './hooks/useUploadBodyImage';
 export { useDeleteClothingItem } from './hooks/useDeleteClothingItem';
 export { useColorGroups } from './hooks/useColorGroups';
 export { useGarmentCategories } from './hooks/useGarmentCategories';

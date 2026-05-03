@@ -1,3 +1,4 @@
+export type { BodyMapping } from './bodyMapping';
 export type { ClothingItem as Cloth } from './clothingItem';
 export type { ColorGroup } from './colorGroup';
 export type { GarmentCategory } from './garmentCategory';

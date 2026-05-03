@@ -8,6 +8,9 @@ import TipsCard from './TipsCard';
 import TagEditor from './TagEditor';
 import { EMPTY_TAGS, type SelectedTags } from './types';
 
+// TODO: replace with real auth session user id
+const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
+
 export default function AddItemScreen() {
   const { data: categories = [] } = useGarmentCategories();
   const { data: colors = [] } = useColorGroups();
@@ -80,7 +83,7 @@ export default function AddItemScreen() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {!analysisComplete ? (
                 <>
-                  <AvatarCard />
+                  <AvatarCard userId={CURRENT_USER_ID} />
                   <TipsCard />
                 </>
               ) : (
