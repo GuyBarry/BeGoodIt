@@ -6,16 +6,16 @@ import ClosetItemGrid from './ClosetItemGrid';
 import SelectedSummary from './SelectedSummary';
 import GenerateButton from './GenerateButton';
 import GetInspiredDialog from './GetInspiredDialog';
-import { useClothingItems } from '../../../api';
+import { useClothingItems, useGenerateLook } from '../../../api';
 
 const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 
 export default function FittingRoomScreen() {
   const { data: clothingItems = [] } = useClothingItems(CURRENT_USER_ID);
+  const { mutate: generateLook, isPending: isGenerating } = useGenerateLook();
 
   const [selectedItems, setSelectedItems]                     = useState<string[]>([]);
-  const [isGenerating, setIsGenerating]                       = useState(false);
-  const [generatedLook, setGeneratedLook]                     = useState(false);
+  const [generatedLookUrl, setGeneratedLookUrl]               = useState<string | null>(null);
   const [activeCategory, setActiveCategory]                   = useState('all');
   const [showInspireDialog, setShowInspireDialog]             = useState(false);
   const [inspirationImage, setInspirationImage]               = useState<string | null>(null);
@@ -27,13 +27,21 @@ export default function FittingRoomScreen() {
 
   const handleGenerate = () => {
     if (selectedItems.length === 0) return;
-    setIsGenerating(true);
-    setTimeout(() => { setIsGenerating(false); setGeneratedLook(true); }, 2500);
+    generateLook(
+      { userId: CURRENT_USER_ID, clothingItemIds: selectedItems },
+      {
+        onSuccess: (url) => {
+          if (generatedLookUrl) URL.revokeObjectURL(generatedLookUrl);
+          setGeneratedLookUrl(url);
+        },
+      },
+    );
   };
 
   const handleReset = () => {
+    if (generatedLookUrl) URL.revokeObjectURL(generatedLookUrl);
     setSelectedItems([]);
-    setGeneratedLook(false);
+    setGeneratedLookUrl(null);
     setSuggestedItems([]);
   };
 
@@ -69,7 +77,7 @@ export default function FittingRoomScreen() {
             <PreviewArea
               selectedItems={selectedItems}
               isGenerating={isGenerating}
-              generatedLook={generatedLook}
+              generatedLookUrl={generatedLookUrl}
               suggestedItems={suggestedItems}
               onReset={handleReset}
             />

@@ -9,12 +9,12 @@ import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 interface Props {
   selectedItems: string[];
   isGenerating: boolean;
-  generatedLook: boolean;
+  generatedLookUrl: string | null;
   suggestedItems: string[];
   onReset: () => void;
 }
 
-export default function PreviewArea({ selectedItems, isGenerating, generatedLook, suggestedItems, onReset }: Props) {
+export default function PreviewArea({ selectedItems, isGenerating, generatedLookUrl, suggestedItems, onReset }: Props) {
   return (
     <Box
       sx={{
@@ -27,7 +27,7 @@ export default function PreviewArea({ selectedItems, isGenerating, generatedLook
         boxShadow: '0 4px 20px -4px rgba(0,0,0,0.08)',
       }}
     >
-      {!generatedLook ? (
+      {!generatedLookUrl ? (
         <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           {isGenerating ? (
             <Box sx={{ textAlign: 'center' }}>
@@ -88,7 +88,7 @@ export default function PreviewArea({ selectedItems, isGenerating, generatedLook
         <>
           <Box
             component="img"
-            src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&h=800&fit=crop"
+            src={generatedLookUrl}
             alt="Generated look"
             sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />

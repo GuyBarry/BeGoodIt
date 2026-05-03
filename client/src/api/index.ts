@@ -1,4 +1,5 @@
 export { useAddClothingItem } from './hooks/useAddClothingItem';
+export { useGenerateLook } from './hooks/useGenerateLook';
 export { useClothingItems } from './hooks/useClothingItems';
 export { useUploadBodyImage } from './hooks/useUploadBodyImage';
 export { useDeleteClothingItem } from './hooks/useDeleteClothingItem';
