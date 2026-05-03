@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Box } from '@mui/material';
-import { useColorGroups, useGarmentCategories, useSeasons, useUploadImage } from '../../../api';
+import { useAddClothingItem, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
 import AddItemHeader from './AddItemHeader';
 import UploadPanel from './UploadPanel';
 import AvatarCard from './BodyImageCard';
@@ -15,7 +15,7 @@ export default function AddItemScreen() {
   const { data: categories = [] } = useGarmentCategories();
   const { data: colors = [] } = useColorGroups();
   const { data: seasons = [] } = useSeasons();
-  const { mutate: uploadImage, isPending: isUploading } = useUploadImage();
+  const { mutate: addClothingItem, isPending: isUploading } = useAddClothingItem(CURRENT_USER_ID);
 
   const [file, setFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -54,13 +54,17 @@ export default function AddItemScreen() {
 
   const handleSave = () => {
     if (!file) return;
-    uploadImage(file, {
-      onSuccess: (result) => {
-        console.log('Uploaded:', result.id);
-        // TODO: POST clothing item with result.id + tags once that endpoint exists
-        handleReset();
+    addClothingItem(
+      {
+        file,
+        userId: CURRENT_USER_ID,
+        colorGroupId: tags.color?.id ?? null,
+        categoryId: tags.category?.id ?? null,
+        seasonId: tags.season?.id ?? null,
+        style: tags.style,
       },
-    });
+      { onSuccess: handleReset },
+    );
   };
 
   return (

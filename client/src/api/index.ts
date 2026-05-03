@@ -1,3 +1,4 @@
+export { useAddClothingItem } from './hooks/useAddClothingItem';
 export { useClothingItems } from './hooks/useClothingItems';
 export { useUploadBodyImage } from './hooks/useUploadBodyImage';
 export { useDeleteClothingItem } from './hooks/useDeleteClothingItem';

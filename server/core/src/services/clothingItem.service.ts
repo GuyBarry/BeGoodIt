@@ -26,14 +26,21 @@ const getMultipleByIds = async (ids: string[]): Promise<ClothingItem[]> => {
   return clothingItemRepository.getMultipleByIds(ids);
 };
 
-const addItem = async (userId: string, imageId: string): Promise<ClothingItemDto> => {
+export interface AddItemInput {
+  colorGroupId?: number | null;
+  categoryId?: number | null;
+  seasonId?: number | null;
+  style?: string | null;
+}
+
+const addItem = async (userId: string, imageId: string, tags: AddItemInput = {}): Promise<ClothingItemDto> => {
   const item = clothingItemRepository.create({
     userId,
     imageId,
-    colorGroupId: null,
-    categoryId: null,
-    seasonId: null,
-    style: null,
+    colorGroupId: tags.colorGroupId ?? null,
+    categoryId: tags.categoryId ?? null,
+    seasonId: tags.seasonId ?? null,
+    style: tags.style ?? null,
     imageEmbedding: null,
   });
   const saved = await clothingItemRepository.save(item);
