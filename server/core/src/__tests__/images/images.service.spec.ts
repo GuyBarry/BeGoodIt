@@ -2,6 +2,13 @@ import { imagesService } from '../../services/images.service';
 import { imageRepository } from '../../repositories/image.repository';
 import { NotFoundException } from '../../exceptions/httpExceptions';
 import { Image } from '../../db/entities/Image.entity';
+import { imageSizingService } from '../../services/imageSizing.service';
+
+jest.mock('../../services/imageSizing.service', () => ({
+  imageSizingService: {
+    resizeToSquare: jest.fn(),
+  },
+}));
 
 jest.mock('../../repositories/image.repository', () => ({
   imageRepository: {
@@ -41,20 +48,36 @@ describe('imagesService', () => {
   });
 
   describe('saveImage', () => {
-    it('should create and save an image entity and return a DTO', async () => {
+    it('should resize the image before saving', async () => {
       const file = createMockFile();
-      const mockImage = createMockImage();
+      const resizedBuffer = Buffer.from('resized');
+      const mockImage = createMockImage({ data: resizedBuffer, size: resizedBuffer.length });
 
+      (imageSizingService.resizeToSquare as jest.Mock).mockResolvedValue(resizedBuffer);
+      (imageRepository.create as jest.Mock).mockReturnValue(mockImage);
+      (imageRepository.save as jest.Mock).mockResolvedValue(mockImage);
+
+      await imagesService.saveImage(file);
+
+      expect(imageSizingService.resizeToSquare).toHaveBeenCalledWith(file.buffer);
+    });
+
+    it('should create and save an image entity using the resized buffer and return a DTO', async () => {
+      const file = createMockFile();
+      const resizedBuffer = Buffer.from('resized');
+      const mockImage = createMockImage({ data: resizedBuffer, size: resizedBuffer.length });
+
+      (imageSizingService.resizeToSquare as jest.Mock).mockResolvedValue(resizedBuffer);
       (imageRepository.create as jest.Mock).mockReturnValue(mockImage);
       (imageRepository.save as jest.Mock).mockResolvedValue(mockImage);
 
       const result = await imagesService.saveImage(file);
 
       expect(imageRepository.create).toHaveBeenCalledWith({
-        data: file.buffer,
+        data: resizedBuffer,
         mimeType: file.mimetype,
         originalName: file.originalname,
-        size: file.size,
+        size: resizedBuffer.length,
       });
       expect(imageRepository.save).toHaveBeenCalledWith(mockImage);
       expect(result).toEqual({
@@ -68,7 +91,15 @@ describe('imagesService', () => {
       expect((result as any).data).toBeUndefined();
     });
 
+    it('should propagate errors from imageSizingService', async () => {
+      (imageSizingService.resizeToSquare as jest.Mock).mockRejectedValue(new Error('Invalid image data'));
+
+      await expect(imagesService.saveImage(createMockFile())).rejects.toThrow('Invalid image data');
+    });
+
     it('should propagate repository errors', async () => {
+      const resizedBuffer = Buffer.from('resized');
+      (imageSizingService.resizeToSquare as jest.Mock).mockResolvedValue(resizedBuffer);
       (imageRepository.create as jest.Mock).mockReturnValue({});
       (imageRepository.save as jest.Mock).mockRejectedValue(new Error('DB error'));
 
