@@ -126,9 +126,10 @@
  *           type: string
  *           format: uuid
  *           example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
- *         imageUrl:
+ *         imageId:
  *           type: string
- *           example: /images/3fa85f64-5717-4562-b3fc-2c963f66afa6
+ *           format: uuid
+ *           example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
  *         style:
  *           type: string
  *           nullable: true

@@ -5,7 +5,7 @@ import { clothingItemRepository } from '../repositories';
 const toDto = (item: ClothingItem): ClothingItemDto => ({
   id: item.id,
   userId: item.userId,
-  imageUrl: item.imageUrl,
+  imageId: item.imageId,
   style: item.style,
   colorGroup: item.colorGroup ? { id: item.colorGroup.id, name: item.colorGroup.name } : null,
   category: item.category ? { id: item.category.id, name: item.category.name } : null,
@@ -26,10 +26,10 @@ const getMultipleByIds = async (ids: string[]): Promise<ClothingItem[]> => {
   return clothingItemRepository.getMultipleByIds(ids);
 };
 
-const addItem = async (userId: string, imageUrl: string): Promise<ClothingItemDto> => {
+const addItem = async (userId: string, imageId: string): Promise<ClothingItemDto> => {
   const item = clothingItemRepository.create({
     userId,
-    imageUrl,
+    imageId,
     colorGroupId: null,
     categoryId: null,
     seasonId: null,

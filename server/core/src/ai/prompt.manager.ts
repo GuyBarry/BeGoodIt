@@ -61,7 +61,7 @@ export const generateOutfit = async (
     `;
 
   const config = {
-    responseMimeType: "image/png",
+    responseModalities: ["IMAGE"],
     systemInstruction,
   };
 

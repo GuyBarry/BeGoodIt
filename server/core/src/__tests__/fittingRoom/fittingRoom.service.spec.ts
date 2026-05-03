@@ -58,7 +58,7 @@ describe('fittingRoomService', () => {
   const createMockClothingItem = (overrides?: Partial<ClothingItem>): ClothingItem => ({
     id: 'item-uuid-1',
     userId: 'user-uuid-1',
-    imageUrl: 'clothing-image-uuid-1',
+    imageId: 'clothing-image-uuid-1',
     style: 'casual',
     colorGroupId: null,
     categoryId: null,
@@ -178,8 +178,8 @@ describe('fittingRoomService', () => {
     it('should handle multiple clothing items correctly', async () => {
       const bodyMapping = createMockBodyMapping();
       const bodyImageEntity = createMockImage();
-      const item1 = createMockClothingItem({ id: 'item-uuid-1', imageUrl: 'clothing-image-uuid-1' });
-      const item2 = createMockClothingItem({ id: 'item-uuid-2', imageUrl: 'clothing-image-uuid-2' });
+      const item1 = createMockClothingItem({ id: 'item-uuid-1', imageId: 'clothing-image-uuid-1' });
+      const item2 = createMockClothingItem({ id: 'item-uuid-2', imageId: 'clothing-image-uuid-2' });
       const clothingImageEntity1 = createMockImage({ id: 'clothing-image-uuid-1' });
       const clothingImageEntity2 = createMockImage({ id: 'clothing-image-uuid-2' });
 

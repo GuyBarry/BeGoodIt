@@ -2,7 +2,7 @@ import { GoogleGenAI, type Part } from "@google/genai";
 import { geminiConfig } from "../config/gemini.config";
 
 export interface AIConfig {
-  responseMimeType?: string;
+  responseModalities?: string[];
   systemInstruction?: string;
 }
 

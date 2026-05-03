@@ -26,7 +26,7 @@ describe('closetService', () => {
   const mockDto: ClothingItemDto = {
     id: 'item-uuid-1',
     userId: 'user-uuid-1',
-    imageUrl: '/images/image-uuid-1',
+    imageId: 'image-uuid-1',
     style: null,
     colorGroup: null,
     category: null,
@@ -94,7 +94,7 @@ describe('closetService', () => {
       const result = await closetService.addToCloset('user-uuid-1', file);
 
       expect(imagesService.saveImage).toHaveBeenCalledWith(file);
-      expect(clothingItemService.addItem).toHaveBeenCalledWith('user-uuid-1', '/images/image-uuid-1');
+      expect(clothingItemService.addItem).toHaveBeenCalledWith('user-uuid-1', 'image-uuid-1');
       expect(result).toEqual(mockDto);
     });
 

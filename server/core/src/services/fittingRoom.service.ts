@@ -33,7 +33,7 @@ const createFit = async (userId: string, clothingItemIds: string[]): Promise<Buf
   }
 
   const clothingItemsImages = await Promise.all(
-    clothingItems.map((item) => imagesService.getImageById(item.imageUrl).then(toMulterFile)),
+    clothingItems.map((item) => imagesService.getImageById(item.imageId).then(toMulterFile)),
   );
 
   const input: GenerateOutfitInput = {
