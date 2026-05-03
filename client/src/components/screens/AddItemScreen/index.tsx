@@ -53,8 +53,8 @@ export default function AddItemScreen() {
     if (!file) return;
     uploadImage(file, {
       onSuccess: (result) => {
-        console.log('Uploaded:', result.url);
-        // TODO: POST clothing item with result.url + tags once that endpoint exists
+        console.log('Uploaded:', result.id);
+        // TODO: POST clothing item with result.id + tags once that endpoint exists
         handleReset();
       },
     });

@@ -2,6 +2,7 @@ import { Box, Typography, IconButton } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import type { ClothingItem } from '../../../entities/clothingItem';
+import { imagesApi } from '../../../api/api/images.api';
 
 interface Props {
   items: ClothingItem[];
@@ -49,7 +50,7 @@ export default function ClothingGrid({ items, gridSize, onDelete }: Props) {
             <Box sx={{ aspectRatio: '3/4', overflow: 'hidden', bgcolor: '#fff' }}>
               <Box
                 component="img"
-                src={item.imageUrl}
+                src={imagesApi.getImageUrl(item.imageId)}
                 alt={displayName}
                 sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
               />

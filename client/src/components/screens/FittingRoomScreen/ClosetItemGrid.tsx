@@ -3,6 +3,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { PRIMARY_ALPHA } from '../../../styles/tokens';
 import { useGarmentCategories } from '../../../api';
 import type { ClothingItem } from '../../../entities/clothingItem';
+import { imagesApi } from '../../../api/api/images.api';
 
 interface Props {
   clothingItems: ClothingItem[];
@@ -51,7 +52,7 @@ function ClosetItemCard({
     >
       <Box
         component="img"
-        src={item.imageUrl}
+        src={imagesApi.getImageUrl(item.imageId)}
         alt={displayName}
         sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
       />
