@@ -8,7 +8,7 @@ export interface ClothingItem {
   colorGroupId: number | null;
   categoryId: number | null;
   seasonId: number | null;
-  imageUrl: string;
+  imageId: string;
   style: string | null;
   createdAt: string;
   colorGroup?: ColorGroup;

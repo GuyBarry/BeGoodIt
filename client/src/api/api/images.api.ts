@@ -10,4 +10,8 @@ export const imagesApi = {
     });
     return data;
   },
+
+  getImageUrl: (id: string): string => {
+    return `${apiClient.defaults.baseURL}/images/${id}`;
+  },
 };
