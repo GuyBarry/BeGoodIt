@@ -22,6 +22,10 @@ const deleteById = async (id: string): Promise<void> => {
   await clothingItemRepository.deleteById(id);
 };
 
+const getMultipleByIds = async (ids: string[]): Promise<ClothingItem[]> => {
+  return clothingItemRepository.getMultipleByIds(ids);
+};
+
 const addItem = async (userId: string, imageUrl: string): Promise<ClothingItemDto> => {
   const item = clothingItemRepository.create({
     userId,
@@ -38,6 +42,7 @@ const addItem = async (userId: string, imageUrl: string): Promise<ClothingItemDt
 
 export const clothingItemService = {
   getAllByUserId,
+  getMultipleByIds,
   deleteById,
   addItem,
 };

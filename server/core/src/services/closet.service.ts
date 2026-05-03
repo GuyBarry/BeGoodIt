@@ -10,7 +10,7 @@ const getItemsByUserId = async (userId: string): Promise<ClothingItemDto[]> => {
 const addToCloset = async (userId: string, file: Express.Multer.File): Promise<ClothingItemDto> => {
   const processedFile = await backgroundRemovalService.removeBackground(file);
   const imageDto = await imagesService.saveImage(processedFile);
-  return clothingItemService.addItem(userId, imageDto.id);
+  return clothingItemService.addItem(userId, `/images/${imageDto.id}`);
 };
 
 export const closetService = {
