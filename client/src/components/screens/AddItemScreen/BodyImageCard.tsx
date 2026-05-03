@@ -13,7 +13,7 @@ interface Props {
 
 export default function AvatarCard({ userId }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [avatarImageId, setAvatarImageId] = useState<string | null>(null);
+  const [bodyImageId, setBodyImageId] = useState<string | null>(null);
   const { mutate: uploadBodyImage, isPending, error, reset } = useUploadBodyImage();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,7 +22,7 @@ export default function AvatarCard({ userId }: Props) {
     e.target.value = '';
     uploadBodyImage(
       { file, userId },
-      { onSuccess: (result) => setAvatarImageId(result.imageId) },
+      { onSuccess: (result) => setBodyImageId(result.imageId) },
     );
   };
 
@@ -39,14 +39,14 @@ export default function AvatarCard({ userId }: Props) {
       <Box sx={{ display: 'flex', gap: 2.5 }}>
         <Box sx={{
           width: 64, height: 64, borderRadius: 3, flexShrink: 0, overflow: 'hidden',
-          background: avatarImageId ? 'transparent' : GRADIENTS.primarySubtle,
+          background: bodyImageId ? 'transparent' : GRADIENTS.primarySubtle,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          {avatarImageId ? (
+          {bodyImageId ? (
             <Box
               component="img"
-              src={imagesApi.getImageUrl(avatarImageId)}
-              alt="Your avatar"
+              src={imagesApi.getImageUrl(bodyImageId)}
+              alt="Your body image"
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
@@ -56,10 +56,10 @@ export default function AvatarCard({ userId }: Props) {
 
         <Box sx={{ flex: 1 }}>
           <Typography variant="h6">
-            {avatarImageId ? 'Avatar Ready' : 'Create Your Avatar'}
+            {bodyImageId ? 'Body Image Ready' : 'Upload Your Body Image'}
           </Typography>
 
-          {avatarImageId ? (
+          {bodyImageId ? (
             <>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
                 <CheckCircleOutlineIcon sx={{ fontSize: 16, color: 'success.main' }} />

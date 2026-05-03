@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import { useColorGroups, useGarmentCategories, useSeasons, useUploadImage } from '../../../api';
 import AddItemHeader from './AddItemHeader';
 import UploadPanel from './UploadPanel';
-import AvatarCard from './AvatarCard';
+import AvatarCard from './BodyImageCard';
 import TipsCard from './TipsCard';
 import TagEditor from './TagEditor';
 import { EMPTY_TAGS, type SelectedTags } from './types';
