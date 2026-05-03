@@ -9,6 +9,7 @@ import {
   clothingItemRouter,
   closetRouter,
   colorGroupRouter,
+  fittingRoomRouter,
   garmentCategoryRouter,
   genderRouter,
   imagesRouter,
@@ -38,6 +39,7 @@ export const initApp = async (): Promise<Express> => {
   app.use("/users", userRouter);
   app.use("/clothing-items", clothingItemRouter);
   app.use("/closet", closetRouter);
+  app.use("/fitting-room", fittingRoomRouter);
 
   app.get("/", (_req: Request, res: Response) => {
     res.json({ message: "Welcome to BeGoodIt API" });

@@ -28,8 +28,8 @@ export class ClothingItem {
   @Column({ name: 'season_id', type: 'int', nullable: true })
   seasonId: number | null;
 
-  @Column({ name: 'image_url', type: 'text' })
-  imageUrl: string;
+  @Column({ name: 'image_id', type: 'char', length: 36 })
+  imageId: string;
 
   @Column({ type: 'varchar', nullable: true })
   style: string | null;

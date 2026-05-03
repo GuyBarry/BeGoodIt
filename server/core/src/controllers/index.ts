@@ -2,6 +2,7 @@ export { bodyRouter } from './body.controller';
 export { clothingItemRouter } from './clothingItem.controller';
 export { closetRouter } from './closet.controller';
 export { colorGroupRouter } from './colorGroup.controller';
+export { fittingRoomRouter } from './fittingRoom.controller';
 export { garmentCategoryRouter } from './garmentCategory.controller';
 export { genderRouter } from './gender.controller';
 export { seasonRouter } from './season.controller';

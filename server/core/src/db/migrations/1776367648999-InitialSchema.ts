@@ -11,7 +11,7 @@ export class InitialSchema1776367648999 implements MigrationInterface {
                 \`color_group_id\` int NULL,
                 \`category_id\` int NULL,
                 \`season_id\` int NULL,
-                \`image_url\` text NOT NULL,
+                \`image_id\` char(36) NOT NULL,
                 \`style\` varchar(255) NULL,
                 \`image_embedding\` longblob NULL,
                 \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
@@ -124,6 +124,10 @@ export class InitialSchema1776367648999 implements MigrationInterface {
         `);
         await queryRunner.query(`
             ALTER TABLE \`clothing_item\`
+            ADD CONSTRAINT \`FK_clothing_item_image\` FOREIGN KEY (\`image_id\`) REFERENCES \`image\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION
+        `);
+        await queryRunner.query(`
+            ALTER TABLE \`clothing_item\`
             ADD CONSTRAINT \`FK_40ffd7032b3aaca46037385f4cd\` FOREIGN KEY (\`user_id\`) REFERENCES \`user\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
@@ -204,6 +208,9 @@ export class InitialSchema1776367648999 implements MigrationInterface {
         `);
         await queryRunner.query(`
             ALTER TABLE \`clothing_item\` DROP FOREIGN KEY \`FK_cd93050251e6d2fa0eefae9c0f1\`
+        `);
+        await queryRunner.query(`
+            ALTER TABLE \`clothing_item\` DROP FOREIGN KEY \`FK_clothing_item_image\`
         `);
         await queryRunner.query(`
             ALTER TABLE \`clothing_item\` DROP FOREIGN KEY \`FK_40ffd7032b3aaca46037385f4cd\`
