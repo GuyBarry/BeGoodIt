@@ -62,6 +62,8 @@
   },
   "keywords": [],
   "overrides": {
-    "sharp": "^0.34.5"
+    "@imgly/background-removal-node": {
+      "sharp": "^0.34.5"
+    }
   }
 }
