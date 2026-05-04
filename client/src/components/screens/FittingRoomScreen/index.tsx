@@ -75,7 +75,6 @@ export default function FittingRoomScreen() {
         <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4 }}>
             <PreviewArea
-              selectedItems={selectedItems}
               isGenerating={isGenerating}
               generatedLookUrl={generatedLookUrl}
               suggestedItems={suggestedItems}

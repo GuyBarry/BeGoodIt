@@ -7,14 +7,13 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 
 interface Props {
-  selectedItems: string[];
   isGenerating: boolean;
   generatedLookUrl: string | null;
   suggestedItems: string[];
   onReset: () => void;
 }
 
-export default function PreviewArea({ selectedItems, isGenerating, generatedLookUrl, suggestedItems, onReset }: Props) {
+export default function PreviewArea({ isGenerating, generatedLookUrl, suggestedItems, onReset }: Props) {
   return (
     <Box
       sx={{
