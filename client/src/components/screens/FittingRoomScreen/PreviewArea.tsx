@@ -92,17 +92,6 @@ export default function PreviewArea({ selectedItems, isGenerating, generatedLook
             alt="Generated look"
             sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
-          <Box sx={{ position: 'absolute', top: 24, left: 24, right: 24 }}>
-            <Paper sx={{ borderRadius: 3, p: 2, bgcolor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(20px)' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'primary.main', mb: 0.5 }}>
-                <AutoAwesomeIcon sx={{ fontSize: 18 }} />
-                <Typography sx={{ fontWeight: 500, fontSize: 14 }}>AI Generated</Typography>
-              </Box>
-              <Typography variant="caption" color="text.secondary">
-                Based on {selectedItems.length} items from your closet
-              </Typography>
-            </Paper>
-          </Box>
           <Box sx={{ position: 'absolute', bottom: 24, left: 24, right: 24, display: 'flex', gap: 1.5 }}>
             <Button
               variant="contained"

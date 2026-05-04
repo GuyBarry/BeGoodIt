@@ -30,7 +30,7 @@ const saveBodyImage = async (
   }
 
   const imageDto = await imagesService.saveImage(
-    await backgroundRemovalService.removeBackground(file),
+    await backgroundRemovalService.removeBackground(file, true),
   );
 
   const existing = await bodyMappingRepository.findOne({ where: { userId } });
