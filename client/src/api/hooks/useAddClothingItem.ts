@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ClothingItem } from '../../entities/clothingItem';
 import type { User } from '../../entities/user';
-import { clothingItemsApi, type UploadClothingItemPayload } from '../api/clothingItems.api';
+import { clothingItemsApi, type UploadClothingItemPayload } from '../api/closet.api';
 import { queryKeys } from '../queryKeys';
 
 export function useAddClothingItem(userId: User['id']) {

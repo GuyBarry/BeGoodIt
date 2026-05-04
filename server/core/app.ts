@@ -6,7 +6,6 @@ import { serverConfig } from "./src/config/server.config";
 import { swaggerSpec } from "./src/config/swagger.config";
 import {
   bodyRouter,
-  clothingItemRouter,
   closetRouter,
   colorGroupRouter,
   fittingRoomRouter,
@@ -37,7 +36,6 @@ export const initApp = async (): Promise<Express> => {
   app.use("/genders", genderRouter);
   app.use("/seasons", seasonRouter);
   app.use("/users", userRouter);
-  app.use("/clothing-items", clothingItemRouter);
   app.use("/closet", closetRouter);
   app.use("/fitting-room", fittingRoomRouter);
 
