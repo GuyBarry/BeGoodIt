@@ -7,14 +7,13 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 
 interface Props {
-  selectedItems: string[];
   isGenerating: boolean;
-  generatedLook: boolean;
+  generatedLookUrl: string | null;
   suggestedItems: string[];
   onReset: () => void;
 }
 
-export default function PreviewArea({ selectedItems, isGenerating, generatedLook, suggestedItems, onReset }: Props) {
+export default function PreviewArea({ isGenerating, generatedLookUrl, suggestedItems, onReset }: Props) {
   return (
     <Box
       sx={{
@@ -27,7 +26,7 @@ export default function PreviewArea({ selectedItems, isGenerating, generatedLook
         boxShadow: '0 4px 20px -4px rgba(0,0,0,0.08)',
       }}
     >
-      {!generatedLook ? (
+      {!generatedLookUrl ? (
         <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           {isGenerating ? (
             <Box sx={{ textAlign: 'center' }}>
@@ -88,21 +87,10 @@ export default function PreviewArea({ selectedItems, isGenerating, generatedLook
         <>
           <Box
             component="img"
-            src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&h=800&fit=crop"
+            src={generatedLookUrl}
             alt="Generated look"
             sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
-          <Box sx={{ position: 'absolute', top: 24, left: 24, right: 24 }}>
-            <Paper sx={{ borderRadius: 3, p: 2, bgcolor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(20px)' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'primary.main', mb: 0.5 }}>
-                <AutoAwesomeIcon sx={{ fontSize: 18 }} />
-                <Typography sx={{ fontWeight: 500, fontSize: 14 }}>AI Generated</Typography>
-              </Box>
-              <Typography variant="caption" color="text.secondary">
-                Based on {selectedItems.length} items from your closet
-              </Typography>
-            </Paper>
-          </Box>
           <Box sx={{ position: 'absolute', bottom: 24, left: 24, right: 24, display: 'flex', gap: 1.5 }}>
             <Button
               variant="contained"

@@ -1,28 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import multer from 'multer';
 import { StatusCodes } from 'http-status-codes';
 import { imagesService } from '../services';
-import { ImageValidationMiddleware } from '../middlewares/images.middleware';
 
 export const imagesRouter = Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
-// POST /  — upload image, returns ImageDto (JSON)
-imagesRouter.post(
-  '/',
-  upload.single('file'),
-  ImageValidationMiddleware.validate,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const result = await imagesService.saveImage(req.file!);
-      res.status(StatusCodes.CREATED).json(result);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-// GET /:id — return raw image file with correct Content-Type
 imagesRouter.get(
   '/:id',
   async (req: Request, res: Response, next: NextFunction) => {

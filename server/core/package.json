@@ -60,5 +60,10 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
-  "keywords": []
+  "keywords": [],
+  "overrides": {
+    "@imgly/background-removal-node": {
+      "sharp": "^0.34.5"
+    }
+  }
 }

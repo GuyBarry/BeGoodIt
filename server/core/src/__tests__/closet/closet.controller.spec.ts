@@ -72,7 +72,7 @@ describe('closetRouter', () => {
   });
 
   describe('POST /:userId/items', () => {
-    it('should return 201 with ClothingItemDto on successful upload', async () => {
+    it('should return 201 with ClothingItemDto on successful upload without tags', async () => {
       (closetService.addToCloset as jest.Mock).mockResolvedValue(mockClothingItemDto);
 
       const response = await request(app)
@@ -84,6 +84,26 @@ describe('closetRouter', () => {
       expect(closetService.addToCloset).toHaveBeenCalledWith(
         'user-uuid-1',
         expect.objectContaining({ originalname: 'shirt.png', mimetype: 'image/png' }),
+        { colorGroupId: null, categoryId: null, seasonId: null, style: null },
+      );
+    });
+
+    it('should return 201 and pass tags to the service', async () => {
+      (closetService.addToCloset as jest.Mock).mockResolvedValue(mockClothingItemDto);
+
+      const response = await request(app)
+        .post('/user-uuid-1/items')
+        .attach('file', PNG_HEADER, { filename: 'shirt.png', contentType: 'image/png' })
+        .field('colorGroupId', '2')
+        .field('categoryId', '3')
+        .field('seasonId', '1')
+        .field('style', 'casual');
+
+      expect(response.status).toBe(StatusCodes.CREATED);
+      expect(closetService.addToCloset).toHaveBeenCalledWith(
+        'user-uuid-1',
+        expect.objectContaining({ originalname: 'shirt.png' }),
+        { colorGroupId: 2, categoryId: 3, seasonId: 1, style: 'casual' },
       );
     });
 
@@ -119,6 +139,36 @@ describe('closetRouter', () => {
       const response = await request(app)
         .post('/user-uuid-1/items')
         .attach('file', PNG_HEADER, { filename: 'shirt.png', contentType: 'image/png' });
+
+      expect(response.status).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body.message).toBe('Oops, something went wrong!');
+    });
+  });
+
+  describe('DELETE /:userId/items/:id', () => {
+    it('should return 204 on successful removal', async () => {
+      (closetService.removeFromCloset as jest.Mock).mockResolvedValue(undefined);
+
+      const response = await request(app).delete('/user-uuid-1/items/item-uuid-1');
+
+      expect(response.status).toBe(StatusCodes.NO_CONTENT);
+      expect(closetService.removeFromCloset).toHaveBeenCalledWith('user-uuid-1', 'item-uuid-1');
+    });
+
+    it('should return 404 when item does not exist or does not belong to user', async () => {
+      const { NotFoundException } = jest.requireActual('../../exceptions/httpExceptions');
+      (closetService.removeFromCloset as jest.Mock).mockRejectedValue(new NotFoundException('Clothing item not found'));
+
+      const response = await request(app).delete('/user-uuid-1/items/nonexistent-id');
+
+      expect(response.status).toBe(StatusCodes.NOT_FOUND);
+      expect(closetService.removeFromCloset).toHaveBeenCalledWith('user-uuid-1', 'nonexistent-id');
+    });
+
+    it('should return 500 when the service throws an unexpected error', async () => {
+      (closetService.removeFromCloset as jest.Mock).mockRejectedValue(new Error('DB error'));
+
+      const response = await request(app).delete('/user-uuid-1/items/item-uuid-1');
 
       expect(response.status).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body.message).toBe('Oops, something went wrong!');

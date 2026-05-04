@@ -1,33 +1,48 @@
 import { removeBackground as rembg } from "@imgly/background-removal-node";
 import sharp from "sharp";
 
+const buildProcessedFile = (
+  original: Express.Multer.File,
+  buffer: Buffer,
+  mimetype: string,
+  suffix: string,
+): Express.Multer.File => ({
+  ...original,
+  buffer,
+  mimetype,
+  originalname: original.originalname.replace(/\.[^/.]+$/, suffix),
+  size: buffer.length,
+});
+
 const removeBackground = async (
   file: Express.Multer.File,
+  applyWhiteBackground: boolean = false,
 ): Promise<Express.Multer.File> => {
   try {
-
     const normalizedBuffer = await sharp(file.buffer)
-        .png() 
-        .toBuffer();
+      .png()
+      .toBuffer();
 
-        const inputBlob = new Blob([normalizedBuffer], { type: 'image/png' });
+    const inputBlob = new Blob([normalizedBuffer], { type: 'image/png' });
 
     const outputImage = await rembg(inputBlob);
 
-    // 3. Convert the result back to a Buffer as a PNG
     const arrayBuffer = await outputImage.arrayBuffer();
-    const newBuffer = Buffer.from(arrayBuffer);
-    // 4. Send the new image directly back to the client!
-    return {
-      ...file,
-      buffer: newBuffer,
-      mimetype: "image/png",
-      originalname: file.originalname.replace(/\.[^/.]+$/, "_no_bg.png"),
-      size: newBuffer.length,
-    };
+    const transparentPngBuffer = Buffer.from(arrayBuffer);
+
+    if (applyWhiteBackground) {
+      const finalBuffer = await sharp(transparentPngBuffer)
+        .flatten({ background: { r: 255, g: 255, b: 255 } })
+        .png()
+        .toBuffer();
+
+      return buildProcessedFile(file, finalBuffer, 'image/png', '_white_bg.png');
+    }
+
+    return buildProcessedFile(file, transparentPngBuffer, 'image/png', '_no_bg.png');
   } catch (error) {
-    console.error("Error removing background:", error);
-    throw new Error("Failed to remove background from the image.");
+    console.error('Error removing background:', error);
+    throw new Error('Failed to remove background from the image.');
   }
 };
 

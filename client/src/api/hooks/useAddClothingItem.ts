@@ -1,14 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ClothingItem } from '../../entities/clothingItem';
 import type { User } from '../../entities/user';
-import { clothingItemsApi } from '../api/closet.api';
+import { clothingItemsApi, type UploadClothingItemPayload } from '../api/closet.api';
 import { queryKeys } from '../queryKeys';
 
-export function useDeleteClothingItem(userId: User['id']) {
+export function useAddClothingItem(userId: User['id']) {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, ClothingItem['id']>({
-    mutationFn: (id) => clothingItemsApi.deleteById(userId, id),
+  return useMutation<ClothingItem, Error, UploadClothingItemPayload>({
+    mutationFn: (payload) => clothingItemsApi.upload(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clothingItems.getByUserId(userId) });
     },
