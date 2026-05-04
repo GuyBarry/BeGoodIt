@@ -31,8 +31,10 @@
  *   post:
  *     summary: Add a clothing item to a user's closet
  *     description: >
- *       Uploads a clothing image, removes its background, saves it to the image
+ *       Uploads a clothing image (background removal is applied automatically), saves it to the image
  *       store, and creates a new clothing item record linked to the given user.
+ *       Optional metadata fields (colorGroupId, categoryId, seasonId, style) can be included
+ *       as multipart form fields alongside the image file.
  *     tags:
  *       - Closet
  *     parameters:
@@ -57,6 +59,26 @@
  *                 type: string
  *                 format: binary
  *                 description: The clothing image file to upload (JPEG, PNG, or WebP, max 5MB)
+ *               colorGroupId:
+ *                 type: integer
+ *                 nullable: true
+ *                 description: ID of the color group to associate with the item
+ *                 example: 2
+ *               categoryId:
+ *                 type: integer
+ *                 nullable: true
+ *                 description: ID of the garment category to associate with the item
+ *                 example: 3
+ *               seasonId:
+ *                 type: integer
+ *                 nullable: true
+ *                 description: ID of the season to associate with the item
+ *                 example: 1
+ *               style:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Free-text style label for the item
+ *                 example: casual
  *     responses:
  *       201:
  *         description: Clothing item created successfully
@@ -110,6 +132,45 @@
  *                       items:
  *                         type: string
  *                       example: [image/jpeg, image/png, image/webp]
+ *       500:
+ *         description: Internal server error
+ *
+ * /closet/{userId}/items/{id}:
+ *   delete:
+ *     summary: Remove a clothing item from a user's closet
+ *     description: Deletes the clothing item with the given ID, only if it belongs to the specified user.
+ *     tags:
+ *       - Closet
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The UUID of the user
+ *         example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The UUID of the clothing item to remove
+ *         example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+ *     responses:
+ *       204:
+ *         description: Item removed successfully
+ *       404:
+ *         description: Item not found or does not belong to the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Clothing item not found
  *       500:
  *         description: Internal server error
  *

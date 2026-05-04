@@ -17,7 +17,7 @@ export const clothingItemRepository = AppDataSource.getRepository(ClothingItem).
     });
   },
 
-  deleteById(id: string): Promise<void> {
-    return this.delete(id).then(() => undefined);
+  deleteByIdAndUserId(id: string, userId: string): Promise<boolean> {
+    return this.delete({ id, userId }).then((result) => (result.affected ?? 0) > 0);
   },
 });

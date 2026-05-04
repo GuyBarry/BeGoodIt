@@ -7,6 +7,7 @@ jest.mock('../../services/clothingItem.service', () => ({
   clothingItemService: {
     getAllByUserId: jest.fn(),
     addItem: jest.fn(),
+    deleteById: jest.fn(),
   },
 }));
 
@@ -86,7 +87,7 @@ describe('closetService', () => {
   });
 
   describe('addToCloset', () => {
-    it('should remove background, save image, call clothingItemService.addItem, and return DTO', async () => {
+    it('should remove background, save image, call clothingItemService.addItem without tags, and return DTO', async () => {
       const file = createMockFile();
       (imagesService.saveImage as jest.Mock).mockResolvedValue(mockImageDto);
       (clothingItemService.addItem as jest.Mock).mockResolvedValue(mockDto);
@@ -94,7 +95,19 @@ describe('closetService', () => {
       const result = await closetService.addToCloset('user-uuid-1', file);
 
       expect(imagesService.saveImage).toHaveBeenCalledWith(file);
-      expect(clothingItemService.addItem).toHaveBeenCalledWith('user-uuid-1', 'image-uuid-1');
+      expect(clothingItemService.addItem).toHaveBeenCalledWith('user-uuid-1', 'image-uuid-1', {});
+      expect(result).toEqual(mockDto);
+    });
+
+    it('should pass tags to clothingItemService.addItem', async () => {
+      const file = createMockFile();
+      (imagesService.saveImage as jest.Mock).mockResolvedValue(mockImageDto);
+      (clothingItemService.addItem as jest.Mock).mockResolvedValue(mockDto);
+
+      const tags = { colorGroupId: 2, categoryId: 3, seasonId: 1, style: 'casual' };
+      const result = await closetService.addToCloset('user-uuid-1', file, tags);
+
+      expect(clothingItemService.addItem).toHaveBeenCalledWith('user-uuid-1', 'image-uuid-1', tags);
       expect(result).toEqual(mockDto);
     });
 
@@ -121,6 +134,22 @@ describe('closetService', () => {
       (clothingItemService.addItem as jest.Mock).mockRejectedValue(new Error('DB error'));
 
       await expect(closetService.addToCloset('user-uuid-1', createMockFile())).rejects.toThrow('DB error');
+    });
+  });
+
+  describe('removeFromCloset', () => {
+    it('should call clothingItemService.deleteById with userId and itemId', async () => {
+      (clothingItemService.deleteById as jest.Mock).mockResolvedValue(undefined);
+
+      await closetService.removeFromCloset('user-uuid-1', 'item-uuid-1');
+
+      expect(clothingItemService.deleteById).toHaveBeenCalledWith('item-uuid-1', 'user-uuid-1');
+    });
+
+    it('should propagate errors from clothingItemService.deleteById', async () => {
+      (clothingItemService.deleteById as jest.Mock).mockRejectedValue(new Error('Not found'));
+
+      await expect(closetService.removeFromCloset('user-uuid-1', 'item-uuid-1')).rejects.toThrow('Not found');
     });
   });
 });

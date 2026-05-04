@@ -1,5 +1,6 @@
 import { ClothingItem } from '../db/entities';
 import { ClothingItemDto } from '../dtos';
+import { NotFoundException } from '../exceptions/httpExceptions';
 import { clothingItemRepository } from '../repositories';
 
 const toDto = (item: ClothingItem): ClothingItemDto => ({
@@ -18,8 +19,11 @@ const getAllByUserId = async (userId: string): Promise<ClothingItemDto[]> => {
   return items.map(toDto);
 };
 
-const deleteById = async (id: string): Promise<void> => {
-  await clothingItemRepository.deleteById(id);
+const deleteById = async (id: string, userId: string): Promise<void> => {
+  const deleted = await clothingItemRepository.deleteByIdAndUserId(id, userId);
+  if (!deleted) {
+    throw new NotFoundException(`Clothing item not found`);
+  }
 };
 
 const getMultipleByIds = async (ids: string[]): Promise<ClothingItem[]> => {
