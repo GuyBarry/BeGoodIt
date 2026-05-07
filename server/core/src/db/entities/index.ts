@@ -1,0 +1,12 @@
+export { BodyMapping } from './BodyMapping.entity';
+export { BodyMappingDto } from './BodyMapping.dto';
+export { ClothingItem } from './ClothingItem.entity';
+export { ColorGroup } from './ColorGroup.entity';
+export { GarmentCategory } from './GarmentCategory.entity';
+export { Gender } from './Gender.entity';
+export { Image } from './Image.entity';
+export { ImageDto } from './Image.dto';
+export { Outfit } from './Outfit.entity';
+export { OutfitFolder } from './OutfitFolder.entity';
+export { Season } from './Season.entity';
+export { User } from './User.entity';

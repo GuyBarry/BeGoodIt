@@ -1,0 +1,17 @@
+import type { ColorGroup } from './colorGroup';
+import type { GarmentCategory } from './garmentCategory';
+import type { Season } from './season';
+
+export interface ClothingItem {
+  id: string;
+  userId: string;
+  colorGroupId: number | null;
+  categoryId: number | null;
+  seasonId: number | null;
+  imageId: string;
+  style: string | null;
+  createdAt: string;
+  colorGroup?: ColorGroup;
+  category?: GarmentCategory;
+  season?: Season;
+}
