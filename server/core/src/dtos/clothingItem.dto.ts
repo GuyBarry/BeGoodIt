@@ -12,3 +12,8 @@ export type ClothingItemDto = {
   season: SeasonDto | null;
   createdAt: Date;
 };
+
+export type PaginatedClothingItemsDto = {
+  items: ClothingItemDto[];
+  total: number;
+};

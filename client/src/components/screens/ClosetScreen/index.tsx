@@ -1,20 +1,45 @@
-import { useState } from 'react';
-import { Box, CircularProgress } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Box, CircularProgress, Typography, Button } from '@mui/material';
+import { keyframes } from '@emotion/react';
 import ClosetHeader from './ClosetHeader';
 import ClothingGrid from './ClothingGrid';
 import OutfitsGrid from './OutfitsGrid';
 import OutfitDialog from './OutfitDialog';
 import { mockOutfits, type MockOutfit } from './data';
-import { useClothingItems, useDeleteClothingItem } from '../../../api';
+import { useClosetItems, useDeleteClothingItem } from '../../../api';
+import type { ClosetFilters } from '../../../api/api/closet.api';
 
 const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 
-export default function ClosetScreen() {
-  const { data: clothingItems = [], isLoading } = useClothingItems(CURRENT_USER_ID);
-  const { mutate: deleteItem } = useDeleteClothingItem(CURRENT_USER_ID);
+const bounce = keyframes`
+  0%, 100% { transform: translateY(0); opacity: 0.35; }
+  50%       { transform: translateY(-5px); opacity: 1; }
+`;
 
+function LoadingDots() {
+  return (
+    <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', justifyContent: 'center', py: 1 }}>
+      {[0, 1, 2].map(i => (
+        <Box
+          key={i}
+          sx={{
+            width: 7,
+            height: 7,
+            borderRadius: '50%',
+            bgcolor: 'primary.main',
+            animation: `${bounce} 1.2s ease-in-out infinite`,
+            animationDelay: `${i * 0.2}s`,
+          }}
+        />
+      ))}
+    </Box>
+  );
+}
+
+export default function ClosetScreen() {
   const [activeTab,        setActiveTab]        = useState<'clothes' | 'outfits'>('clothes');
   const [searchQuery,      setSearchQuery]      = useState('');
+  const [debouncedSearch,  setDebouncedSearch]  = useState('');
   const [showFilters,      setShowFilters]      = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedColor,    setSelectedColor]    = useState('All');
@@ -22,28 +47,42 @@ export default function ClosetScreen() {
   const [gridSize,         setGridSize]         = useState<'normal' | 'compact'>('normal');
   const [selectedOutfit,   setSelectedOutfit]   = useState<MockOutfit | null>(null);
 
-  const filteredClothes = clothingItems.filter(item => {
-    const q    = searchQuery.toLowerCase();
-    const name = (item.style || item.category?.name || '').toLowerCase();
-    return (
-      name.includes(q) &&
-      (selectedCategory === 'All' || item.category?.name === selectedCategory) &&
-      (selectedColor    === 'All' || item.colorGroup?.name === selectedColor) &&
-      (selectedSeason   === 'All' || item.season?.name === selectedSeason)
-    );
-  });
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const limit = gridSize === 'compact' ? 40 : 20;
+
+  const filters: ClosetFilters = {
+    ...(debouncedSearch            && { search:   debouncedSearch }),
+    ...(selectedCategory !== 'All' && { category: selectedCategory }),
+    ...(selectedColor    !== 'All' && { color:    selectedColor }),
+    ...(selectedSeason   !== 'All' && { season:   selectedSeason }),
+    limit,
+  };
+
+  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage, resetToFirstPage } =
+    useClosetItems(CURRENT_USER_ID, filters);
+  const { mutate: deleteItem } = useDeleteClothingItem(CURRENT_USER_ID);
+
+  const items = data?.pages.flatMap(p => p.items) ?? [];
+  const total = data?.pages[0]?.total ?? 0;
+
+  const allLoaded = !hasNextPage && items.length > 0;
+  const showLess  = allLoaded && items.length > limit;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <ClosetHeader
-        activeTab={activeTab}           onTabChange={setActiveTab}
-        searchQuery={searchQuery}       onSearchChange={setSearchQuery}
-        showFilters={showFilters}       onFiltersToggle={() => setShowFilters(v => !v)}
-        gridSize={gridSize}             onGridSizeChange={setGridSize}
+        activeTab={activeTab}               onTabChange={setActiveTab}
+        searchQuery={searchQuery}           onSearchChange={setSearchQuery}
+        showFilters={showFilters}           onFiltersToggle={() => setShowFilters(v => !v)}
+        gridSize={gridSize}                 onGridSizeChange={setGridSize}
         selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory}
         selectedColor={selectedColor}       onColorChange={setSelectedColor}
         selectedSeason={selectedSeason}     onSeasonChange={setSelectedSeason}
-        itemsCount={clothingItems.length}
+        itemsCount={total}
         outfitsCount={mockOutfits.length}
       />
 
@@ -55,7 +94,37 @@ export default function ClosetScreen() {
                 <CircularProgress />
               </Box>
             ) : (
-              <ClothingGrid items={filteredClothes} gridSize={gridSize} onDelete={deleteItem} />
+              <>
+                <ClothingGrid items={items} gridSize={gridSize} onDelete={deleteItem} />
+
+                {items.length > 0 && (
+                  <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Showing {items.length} of {total} items
+                    </Typography>
+
+                    {isFetchingNextPage ? (
+                      <LoadingDots />
+                    ) : showLess ? (
+                      <Button
+                        variant="outlined"
+                        onClick={resetToFirstPage}
+                        sx={{ borderRadius: 2.5, textTransform: 'none', fontWeight: 500, px: 4 }}
+                      >
+                        Show less
+                      </Button>
+                    ) : hasNextPage ? (
+                      <Button
+                        variant="outlined"
+                        onClick={() => fetchNextPage()}
+                        sx={{ borderRadius: 2.5, textTransform: 'none', fontWeight: 500, px: 4 }}
+                      >
+                        Load more
+                      </Button>
+                    ) : null}
+                  </Box>
+                )}
+              </>
             )
           ) : (
             <OutfitsGrid outfits={mockOutfits} gridSize={gridSize} onSelect={setSelectedOutfit} />

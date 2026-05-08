@@ -1,5 +1,5 @@
 export { bodyMappingRepository } from './bodyMapping.repository';
-export { clothingItemRepository } from './clothingItem.repository';
+export { clothingItemRepository, type ClothingFilters } from './clothingItem.repository';
 export { colorGroupRepository } from './colorGroup.repository';
 export { garmentCategoryRepository } from './garmentCategory.repository';
 export { genderRepository } from './gender.repository';

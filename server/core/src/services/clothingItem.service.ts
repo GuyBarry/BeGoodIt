@@ -1,7 +1,7 @@
 import { ClothingItem } from '../db/entities';
-import { ClothingItemDto } from '../dtos';
+import { ClothingItemDto, PaginatedClothingItemsDto } from '../dtos';
 import { NotFoundException } from '../exceptions/httpExceptions';
-import { clothingItemRepository } from '../repositories';
+import { clothingItemRepository, ClothingFilters } from '../repositories';
 
 const toDto = (item: ClothingItem): ClothingItemDto => ({
   id: item.id,
@@ -14,9 +14,14 @@ const toDto = (item: ClothingItem): ClothingItemDto => ({
   createdAt: item.createdAt,
 });
 
-const getAllByUserId = async (userId: string): Promise<ClothingItemDto[]> => {
-  const items = await clothingItemRepository.getAllByUserId(userId);
-  return items.map(toDto);
+const getFilteredByUserId = async (
+  userId: string,
+  filters: ClothingFilters,
+  page: number,
+  limit: number,
+): Promise<PaginatedClothingItemsDto> => {
+  const { items, total } = await clothingItemRepository.getFilteredByUserId(userId, filters, page, limit);
+  return { items: items.map(toDto), total };
 };
 
 const deleteById = async (id: string, userId: string): Promise<void> => {
@@ -52,7 +57,7 @@ const addItem = async (userId: string, imageId: string, tags: AddItemInput = {})
 };
 
 export const clothingItemService = {
-  getAllByUserId,
+  getFilteredByUserId,
   getMultipleByIds,
   deleteById,
   addItem,

@@ -1,10 +1,16 @@
-import { ClothingItemDto } from '../dtos';
+import { ClothingItemDto, PaginatedClothingItemsDto } from '../dtos';
+import { ClothingFilters } from '../repositories';
 import { backgroundRemovalService } from './backgroundRemoval.service';
 import { imagesService } from './images.service';
 import { AddItemInput, clothingItemService } from './clothingItem.service';
 
-const getItemsByUserId = async (userId: string): Promise<ClothingItemDto[]> => {
-  return clothingItemService.getAllByUserId(userId);
+const getItemsByUserId = async (
+  userId: string,
+  filters: ClothingFilters,
+  page: number,
+  limit: number,
+): Promise<PaginatedClothingItemsDto> => {
+  return clothingItemService.getFilteredByUserId(userId, filters, page, limit);
 };
 
 const addToCloset = async (

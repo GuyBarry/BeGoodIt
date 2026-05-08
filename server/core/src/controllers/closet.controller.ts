@@ -11,8 +11,16 @@ closetRouter.get(
   "/:userId",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const items = await closetService.getItemsByUserId(req.params.userId);
-      res.status(StatusCodes.OK).json(items);
+      const page  = Math.max(1, parseInt(req.query.page  as string) || 1);
+      const limit = Math.min(100, parseInt(req.query.limit as string) || 20);
+      const filters = {
+        search:   req.query.search   as string | undefined,
+        category: req.query.category as string | undefined,
+        color:    req.query.color    as string | undefined,
+        season:   req.query.season   as string | undefined,
+      };
+      const result = await closetService.getItemsByUserId(req.params.userId, filters, page, limit);
+      res.status(StatusCodes.OK).json(result);
     } catch (error) {
       next(error);
     }

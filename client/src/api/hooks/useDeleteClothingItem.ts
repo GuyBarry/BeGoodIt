@@ -10,7 +10,7 @@ export function useDeleteClothingItem(userId: User['id']) {
   return useMutation<void, Error, ClothingItem['id']>({
     mutationFn: (id) => clothingItemsApi.deleteById(userId, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clothingItems.getByUserId(userId) });
+      queryClient.invalidateQueries({ queryKey: ['clothingItems', userId] });
     },
   });
 }
