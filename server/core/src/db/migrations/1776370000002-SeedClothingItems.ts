@@ -14,9 +14,9 @@ const USER_ID = '00000000-0000-0000-0000-000000000001';
 
 export class SeedClothingItems1776370000002 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE \`clothing_item\` DROP FOREIGN KEY \`FK_clothing_item_image\``);
-    await queryRunner.query(`ALTER TABLE \`clothing_item\` MODIFY \`image_id\` char(36) NULL`);
-    await queryRunner.query(`ALTER TABLE \`clothing_item\` ADD CONSTRAINT \`FK_clothing_item_image\` FOREIGN KEY (\`image_id\`) REFERENCES \`image\`(\`id\`) ON DELETE SET NULL ON UPDATE NO ACTION`);
+    await queryRunner.query(`
+      ALTER TABLE \`clothing_item\` MODIFY \`image_id\` char(36) NULL
+    `);
     await queryRunner.query(`
       INSERT INTO \`clothing_item\` (\`id\`, \`user_id\`, \`color_group_id\`, \`category_id\`, \`season_id\`, \`style\`) VALUES
       ('ci000001-0000-0000-0000-000000000001', '${USER_ID}', 2,  1, 5, 'White Button Shirt'),
@@ -43,9 +43,11 @@ export class SeedClothingItems1776370000002 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DELETE FROM \`clothing_item\` WHERE \`user_id\` = '${USER_ID}'`);
-    await queryRunner.query(`ALTER TABLE \`clothing_item\` DROP FOREIGN KEY \`FK_clothing_item_image\``);
-    await queryRunner.query(`ALTER TABLE \`clothing_item\` MODIFY \`image_id\` char(36) NOT NULL`);
-    await queryRunner.query(`ALTER TABLE \`clothing_item\` ADD CONSTRAINT \`FK_clothing_item_image\` FOREIGN KEY (\`image_id\`) REFERENCES \`image\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
+    await queryRunner.query(`
+      DELETE FROM \`clothing_item\` WHERE \`user_id\` = '${USER_ID}'
+    `);
+    await queryRunner.query(`
+      ALTER TABLE \`clothing_item\` MODIFY \`image_id\` char(36) NOT NULL
+    `);
   }
 }
