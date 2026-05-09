@@ -5,10 +5,15 @@ import { SeasonDto } from './season.dto';
 export type ClothingItemDto = {
   id: string;
   userId: string;
-  imageId: string;
+  imageId: string | null;
   style: string | null;
   colorGroup: ColorGroupDto | null;
   category: GarmentCategoryDto | null;
   season: SeasonDto | null;
   createdAt: Date;
+};
+
+export type PaginatedClothingItemsDto = {
+  items: ClothingItemDto[];
+  total: number;
 };
