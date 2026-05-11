@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Box } from '@mui/material';
 import { useAddClothingItem, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
+import { clothingItemsApi } from '../../../api/api/closet.api';
 import AddItemHeader from './AddItemHeader';
 import UploadPanel from './UploadPanel';
 import AvatarCard from './BodyImageCard';
@@ -23,22 +24,34 @@ export default function AddItemScreen() {
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [tags, setTags] = useState<SelectedTags>(EMPTY_TAGS);
 
-  const handleFileSelect = useCallback((selected: File) => {
+  const handleFileSelect = useCallback(async (selected: File) => {
     setFile(selected);
     setImageUrl(URL.createObjectURL(selected));
     setIsAnalyzing(true);
     setAnalysisComplete(false);
     setTags(EMPTY_TAGS);
-    setTimeout(() => {
+
+    try {
+      const classification = await clothingItemsApi.classify(selected);
+      console.log('[classify] response:', classification);
+      setTags({
+        category: categories.find(c => c.name === classification.category) ?? null,
+        color: colors.find(c => c.name === classification.colorGroup) ?? null,
+        season: seasons.find(s => s.name === classification.season) ?? null,
+        style: classification.style,
+      });
+    } catch (err) {
+      console.error('[classify] failed:', err);
+      setTags({
+        category: categories[0] ?? null,
+        color: colors[0] ?? null,
+        season: seasons[0] ?? null,
+        style: '',
+      });
+    } finally {
       setIsAnalyzing(false);
       setAnalysisComplete(true);
-      setTags({
-        category: categories.find(c => c.name === 'Outerwear') ?? categories[0] ?? null,
-        color: colors.find(c => c.name === 'Blue') ?? colors[0] ?? null,
-        season: seasons.find(s => s.name === 'Fall') ?? seasons[0] ?? null,
-        style: 'Smart Casual',
-      });
-    }, 2000);
+    }
   }, [categories, colors, seasons]);
 
   const handleReset = () => {
