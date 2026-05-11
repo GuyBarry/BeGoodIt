@@ -14,6 +14,7 @@ export enum AICreativity {
 
 export enum AIModel {
   GEMINI_2_5_FLASH_IMAGE = "gemini-2.5-flash-image",
+  GEMINI_2_0_FLASH = "gemini-2.0-flash",
 }
 
 export interface AIImageInput {
