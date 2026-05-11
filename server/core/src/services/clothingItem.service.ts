@@ -2,6 +2,8 @@ import { ClothingItem } from '../db/entities';
 import { ClothingItemDto, PaginatedClothingItemsDto } from '../dtos';
 import { NotFoundException } from '../exceptions/httpExceptions';
 import { clothingItemRepository, ClothingFilters } from '../repositories';
+import { classifyClothingItem, ClothingClassification } from '../ai/classifyClothingItem';
+import { backgroundRemovalService } from './backgroundRemoval.service';
 
 const toDto = (item: ClothingItem): ClothingItemDto => ({
   id: item.id,
@@ -56,9 +58,20 @@ const addItem = async (userId: string, imageId: string, tags: AddItemInput = {})
   return toDto(saved);
 };
 
+const classifyItem = async (file: Express.Multer.File): Promise<ClothingClassification> => {
+  let imageFile = file;
+  try {
+    imageFile = await backgroundRemovalService.removeBackground(file);
+  } catch {
+    // fall back to original image if background removal fails
+  }
+  return classifyClothingItem({ mimeType: imageFile.mimetype, data: imageFile.buffer });
+};
+
 export const clothingItemService = {
   getFilteredByUserId,
   getMultipleByIds,
   deleteById,
   addItem,
+  classifyItem,
 };

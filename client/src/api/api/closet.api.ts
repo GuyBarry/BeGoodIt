@@ -16,6 +16,13 @@ export interface PaginatedClothingItems {
   total: number;
 }
 
+export interface ClothingClassification {
+  category: string;
+  colorGroup: string;
+  season: string;
+  style: string;
+}
+
 export interface UploadClothingItemPayload {
   file: File;
   userId: User['id'];
@@ -53,5 +60,14 @@ export const clothingItemsApi = {
 
   deleteById: async (userId: User['id'], id: ClothingItem['id']): Promise<void> => {
     await apiClient.delete(`/closet/${userId}/items/${id}`);
+  },
+
+  classify: async (file: File): Promise<ClothingClassification> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await apiClient.post<ClothingClassification>(`/clothing-items/classify`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
   },
 };
