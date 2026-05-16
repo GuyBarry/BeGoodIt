@@ -45,7 +45,8 @@ export default function RecentTests({ tests, onRetest }: Props) {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
+          gridAutoRows: '1fr',
           gap: 2,
         }}
       >
@@ -61,6 +62,8 @@ export default function RecentTests({ tests, onRetest }: Props) {
               p: 2,
               border: 'none',
               cursor: 'pointer',
+              width: '100%',
+              height: '100%',
               transition: 'background-color 0.15s',
               '&:hover': { bgcolor: 'action.selected' },
             }}

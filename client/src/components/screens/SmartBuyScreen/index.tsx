@@ -203,7 +203,7 @@ export default function SmartBuyScreen() {
             <UploadPanel onAnalyze={runAnalysis} />
           )}
 
-          <RecentTests tests={recentTests} onRetest={t => setSelectedRecentTest(t)} />
+          {!testImage && !isAnalyzing && <RecentTests tests={recentTests} onRetest={t => setSelectedRecentTest(t)} />}
         </Box>
       </Box>
 
