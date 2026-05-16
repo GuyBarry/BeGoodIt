@@ -84,6 +84,7 @@ export default function SmartBuyScreen() {
       setTestClassification(response.uploadedClassification);
 
       const displayName = response.suggestedName || name;
+      setTestName(displayName);
 
       const saved = await smartBuyApi.saveTest(CURRENT_USER_ID, file ?? null, {
         name: displayName,

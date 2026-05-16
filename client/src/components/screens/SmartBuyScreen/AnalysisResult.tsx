@@ -3,7 +3,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GRADIENTS, SERIF_FONT } from '../../../styles/tokens';
 import { imagesApi } from '../../../api/api/images.api';
 import type { AnalysisResult as AnalysisResultType } from './types';
@@ -28,6 +28,8 @@ export default function AnalysisResult({
 }: Props) {
   const [namingStep, setNamingStep] = useState(false);
   const [customName, setCustomName] = useState(testName);
+
+  useEffect(() => { setCustomName(testName); }, [testName]);
 
   return (
     <Box
