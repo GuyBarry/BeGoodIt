@@ -11,6 +11,7 @@ import {
   OutfitFolder,
   Season,
   User,
+  SmartBuyTest,
 } from './entities';
 
 export const AppDataSource = new DataSource({
@@ -22,7 +23,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME ?? 'begoodit',
   synchronize: false, // Use migrations in production
   logging: process.env.DB_LOGGING !== 'false' && process.env.NODE_ENV !== 'production',
-  entities: [BodyMapping, ColorGroup, GarmentCategory, Gender, Season, User, OutfitFolder, ClothingItem, Outfit, Image],
+  entities: [BodyMapping, ColorGroup, GarmentCategory, Gender, Season, User, OutfitFolder, ClothingItem, Outfit, Image, SmartBuyTest],
   migrations: ['src/db/migrations/**/*.ts'],
   subscribers: [],
 });

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useClothingItems, useAddClothingItem, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
 import UploadPanel from './UploadPanel';
@@ -7,41 +7,10 @@ import RecentTests from './RecentTests';
 import RecentTestDialog from './RecentTestDialog';
 import type { AnalysisResult as AnalysisResultType, RecentTest } from './types';
 import { smartBuyApi } from '../../../api/api/smartBuy.api';
+import { imagesApi } from '../../../api/api/images.api';
 
 const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
-const STORAGE_KEY = 'smart-buy-recent-tests';
 const MAX_RECENT = 6;
-
-async function blobUrlToDataUrl(url: string): Promise<string> {
-  if (!url.startsWith('blob:')) return url;
-  const res = await fetch(url);
-  const blob = await res.blob();
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
-function saveRecentTests(tests: RecentTest[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tests));
-  } catch {
-    // Storage full or unavailable — silently skip
-  }
-}
-
-function loadRecentTests(): RecentTest[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as Array<RecentTest & { testedAt: string }>;
-    return parsed.map(t => ({ ...t, testedAt: new Date(t.testedAt) }));
-  } catch {
-    return [];
-  }
-}
 
 
 export default function SmartBuyScreen() {
@@ -57,7 +26,28 @@ export default function SmartBuyScreen() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResultType | null>(null);
   const [isVirtualTryOn, setIsVirtualTryOn] = useState(false);
-  const [recentTests, setRecentTests] = useState<RecentTest[]>(() => loadRecentTests());
+  const [recentTests, setRecentTests] = useState<RecentTest[]>([]);
+
+  useEffect(() => {
+    smartBuyApi.getTests(CURRENT_USER_ID).then(records => {
+      setRecentTests(records.map(r => ({
+        id: r.id,
+        imageUrl: r.imageId ? imagesApi.getImageUrl(r.imageId) : '',
+        name: r.name,
+        testedAt: new Date(r.testedAt),
+        compatibilityPct: r.compatibilityPct,
+        matchCount: r.matchCount,
+        outfitCount: r.outfitCount,
+        matchedItems: r.matchedItems
+          .map(m => {
+            const item = clothingItems.find(c => c.id === m.itemId);
+            return item ? { item, matchPct: m.compatibilityPct } : null;
+          })
+          .filter((m): m is NonNullable<typeof m> => m !== null),
+        classification: r.classification ?? undefined,
+      })));
+    }).catch(() => {});
+  }, [clothingItems]);
   const [selectedRecentTest, setSelectedRecentTest] = useState<RecentTest | null>(null);
   const [testClassification, setTestClassification] = useState<{ category: string; colorGroup: string; season: string; style: string } | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -93,11 +83,21 @@ export default function SmartBuyScreen() {
       setResult(analysis);
       setTestClassification(response.uploadedClassification);
 
-      const persistedImageUrl = await blobUrlToDataUrl(imageUrl).catch(() => imageUrl);
+      const displayName = response.suggestedName || name;
+
+      const saved = await smartBuyApi.saveTest(CURRENT_USER_ID, file ?? null, {
+        name: displayName,
+        compatibilityPct: analysis.compatibilityPct,
+        matchCount: analysis.matchedItems.length,
+        outfitCount: analysis.outfitCount,
+        matchedItems: response.matches,
+        classification: response.uploadedClassification,
+      }).catch(() => null);
+
       const entry: RecentTest = {
-        id: crypto.randomUUID(),
-        imageUrl: persistedImageUrl,
-        name,
+        id: saved?.id ?? crypto.randomUUID(),
+        imageUrl: saved?.imageId ? imagesApi.getImageUrl(saved.imageId) : imageUrl,
+        name: displayName,
         testedAt: new Date(),
         compatibilityPct: analysis.compatibilityPct,
         matchCount: analysis.matchedItems.length,
@@ -106,11 +106,7 @@ export default function SmartBuyScreen() {
         classification: response.uploadedClassification,
       };
 
-      setRecentTests(prev => {
-        const next = [entry, ...prev.slice(0, MAX_RECENT - 1)];
-        saveRecentTests(next);
-        return next;
-      });
+      setRecentTests(prev => [entry, ...prev.slice(0, MAX_RECENT - 1)]);
     } finally {
       setIsAnalyzing(false);
     }

@@ -45,3 +45,30 @@ smartBuyRouter.post('/analyze', upload.single('image'), async (req: Request, res
     next(err);
   }
 });
+
+smartBuyRouter.post('/tests/:userId', upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId } = req.params;
+    const { name, compatibilityPct, matchCount, outfitCount, matchedItems, classification } = req.body;
+    const test = await smartBuyService.saveTest(userId, req.file ?? null, {
+      name,
+      compatibilityPct: parseInt(compatibilityPct, 10),
+      matchCount: parseInt(matchCount, 10),
+      outfitCount: parseInt(outfitCount, 10),
+      matchedItems: JSON.parse(matchedItems),
+      classification: classification ? JSON.parse(classification) : null,
+    });
+    res.status(StatusCodes.CREATED).json(test);
+  } catch (err) {
+    next(err);
+  }
+});
+
+smartBuyRouter.get('/tests/:userId', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const tests = await smartBuyService.getUserTests(req.params.userId);
+    res.status(StatusCodes.OK).json(tests);
+  } catch (err) {
+    next(err);
+  }
+});

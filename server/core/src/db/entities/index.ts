@@ -10,3 +10,4 @@ export { Outfit } from './Outfit.entity';
 export { OutfitFolder } from './OutfitFolder.entity';
 export { Season } from './Season.entity';
 export { User } from './User.entity';
+export { SmartBuyTest } from './SmartBuyTest.entity';

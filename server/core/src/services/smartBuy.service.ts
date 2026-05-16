@@ -4,7 +4,8 @@ puppeteerExtra.use(StealthPlugin());
 
 import { BadRequestException, BotProtectedException } from '../exceptions/httpExceptions';
 import { classifyClothingItem, ClothingClassification } from '../ai/classifyClothingItem';
-import { clothingItemRepository } from '../repositories';
+import { clothingItemRepository, smartBuyTestRepository } from '../repositories';
+import { imagesService } from './images.service';
 
 const BROWSER_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
@@ -136,6 +137,7 @@ export interface SmartBuyMatch { itemId: string; compatibilityPct: number; }
 
 export interface SmartBuyAnalysisResult {
   uploadedClassification: ClothingClassification;
+  suggestedName: string;
   matches: SmartBuyMatch[];
   compatibilityPct: number;
   outfitCount: number;
@@ -213,6 +215,47 @@ export const smartBuyService = {
       : 0;
     const outfitCount = scored.filter(m => m.compatibilityPct >= 70).length;
 
-    return { uploadedClassification, matches: top, compatibilityPct, outfitCount };
+    const suggestedName = [uploadedClassification.colorGroup, uploadedClassification.style, uploadedClassification.category]
+      .filter(Boolean).join(' ');
+
+    return { uploadedClassification, suggestedName, matches: top, compatibilityPct, outfitCount };
+  },
+
+  async saveTest(
+    userId: string,
+    file: Express.Multer.File | null,
+    data: {
+      name: string;
+      compatibilityPct: number;
+      matchCount: number;
+      outfitCount: number;
+      matchedItems: { itemId: string; matchPct: number }[];
+      classification: { category: string; colorGroup: string; season: string; style: string } | null;
+    },
+  ) {
+    let imageId: string | null = null;
+    if (file) {
+      const saved = await imagesService.saveImage(file);
+      imageId = saved.id;
+    }
+
+    await smartBuyTestRepository.pruneOldTests(userId);
+
+    const test = smartBuyTestRepository.create({
+      userId,
+      imageId,
+      name: data.name,
+      compatibilityPct: data.compatibilityPct,
+      matchCount: data.matchCount,
+      outfitCount: data.outfitCount,
+      matchedItems: data.matchedItems,
+      classification: data.classification,
+    });
+
+    return smartBuyTestRepository.save(test);
+  },
+
+  async getUserTests(userId: string) {
+    return smartBuyTestRepository.getByUserId(userId);
   },
 };
