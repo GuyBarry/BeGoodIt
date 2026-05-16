@@ -30,7 +30,7 @@ smartBuyRouter.get('/product-image', async (req: Request, res: Response, next: N
 
 smartBuyRouter.post('/analyze', upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { userId } = req.body;
+    const { userId, productTitle } = req.body;
     if (!userId || typeof userId !== 'string') {
       res.status(StatusCodes.BAD_REQUEST).json({ error: 'userId is required' });
       return;
@@ -39,7 +39,7 @@ smartBuyRouter.post('/analyze', upload.single('image'), async (req: Request, res
       res.status(StatusCodes.BAD_REQUEST).json({ error: 'image file is required' });
       return;
     }
-    const result = await smartBuyService.analyzeCompatibility(req.file, userId);
+    const result = await smartBuyService.analyzeCompatibility(req.file, userId, productTitle || undefined);
     res.status(StatusCodes.OK).json(result);
   } catch (err) {
     next(err);

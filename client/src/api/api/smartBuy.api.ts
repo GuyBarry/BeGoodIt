@@ -18,10 +18,11 @@ export interface SmartBuyAnalysisResponse {
 }
 
 export const smartBuyApi = {
-  analyze: async (file: File, userId: string): Promise<SmartBuyAnalysisResponse> => {
+  analyze: async (file: File, userId: string, productTitle?: string): Promise<SmartBuyAnalysisResponse> => {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('userId', userId);
+    if (productTitle) formData.append('productTitle', productTitle);
     const response = await apiClient.post<SmartBuyAnalysisResponse>('/smart-buy/analyze', formData);
     return response.data;
   },

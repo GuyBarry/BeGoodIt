@@ -11,6 +11,13 @@ export interface AnalysisResult {
   outfitCount: number;
 }
 
+export interface ItemClassification {
+  category: string;
+  colorGroup: string;
+  season: string;
+  style: string;
+}
+
 export interface RecentTest {
   id: string;
   imageUrl: string;
@@ -20,4 +27,5 @@ export interface RecentTest {
   matchCount: number;
   outfitCount: number;
   matchedItems: MatchedItem[];
+  classification?: ItemClassification;
 }

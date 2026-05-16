@@ -59,7 +59,7 @@ export default function SmartBuyScreen() {
   const [isVirtualTryOn, setIsVirtualTryOn] = useState(false);
   const [recentTests, setRecentTests] = useState<RecentTest[]>(() => loadRecentTests());
   const [selectedRecentTest, setSelectedRecentTest] = useState<RecentTest | null>(null);
-  const [testCategoryId] = useState<number | null>(null);
+  const [testClassification, setTestClassification] = useState<{ category: string; colorGroup: string; season: string; style: string } | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
 
@@ -75,7 +75,7 @@ export default function SmartBuyScreen() {
 
     try {
       const imageFile = file ?? await fetch(imageUrl).then(r => r.blob()).then(b => new File([b], 'item.jpg', { type: b.type }));
-      const response = await smartBuyApi.analyze(imageFile as File, CURRENT_USER_ID);
+      const response = await smartBuyApi.analyze(imageFile as File, CURRENT_USER_ID, name || undefined);
 
       const matchedItems = response.matches
         .map(m => {
@@ -91,6 +91,7 @@ export default function SmartBuyScreen() {
       };
 
       setResult(analysis);
+      setTestClassification(response.uploadedClassification);
 
       const persistedImageUrl = await blobUrlToDataUrl(imageUrl).catch(() => imageUrl);
       const entry: RecentTest = {
@@ -102,6 +103,7 @@ export default function SmartBuyScreen() {
         matchCount: analysis.matchedItems.length,
         outfitCount: analysis.outfitCount,
         matchedItems: analysis.matchedItems,
+        classification: response.uploadedClassification,
       };
 
       setRecentTests(prev => {
@@ -136,9 +138,9 @@ export default function SmartBuyScreen() {
         file,
         userId: CURRENT_USER_ID,
         style: name || undefined,
-        colorGroupId: colorGroups[0]?.id ?? null,
-        categoryId: testCategoryId ?? garmentCategories[0]?.id ?? null,
-        seasonId: seasons[0]?.id ?? null,
+        colorGroupId: colorGroups.find(c => c.name === testClassification?.colorGroup)?.id ?? null,
+        categoryId: garmentCategories.find(c => c.name === testClassification?.category)?.id ?? null,
+        seasonId: seasons.find(s => s.name === testClassification?.season)?.id ?? null,
       });
       setAddSuccess(true);
     } finally {
@@ -154,9 +156,9 @@ export default function SmartBuyScreen() {
       file,
       userId: CURRENT_USER_ID,
       style: name || undefined,
-      colorGroupId: colorGroups[0]?.id ?? null,
-      categoryId: garmentCategories[0]?.id ?? null,
-      seasonId: seasons[0]?.id ?? null,
+      colorGroupId: colorGroups.find(c => c.name === test.classification?.colorGroup)?.id ?? null,
+      categoryId: garmentCategories.find(c => c.name === test.classification?.category)?.id ?? null,
+      seasonId: seasons.find(s => s.name === test.classification?.season)?.id ?? null,
     });
   };
 
@@ -169,6 +171,7 @@ export default function SmartBuyScreen() {
     setIsVirtualTryOn(false);
     setIsAdding(false);
     setAddSuccess(false);
+    setTestClassification(null);
   };
 
   return (

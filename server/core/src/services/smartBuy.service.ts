@@ -188,9 +188,10 @@ export const smartBuyService = {
   async analyzeCompatibility(
     file: Express.Multer.File,
     userId: string,
+    productTitle?: string,
   ): Promise<SmartBuyAnalysisResult> {
     const [uploadedClassification, { items: closetItems }] = await Promise.all([
-      classifyClothingItem({ mimeType: file.mimetype, data: file.buffer }),
+      classifyClothingItem({ mimeType: file.mimetype, data: file.buffer }, productTitle),
       clothingItemRepository.getFilteredByUserId(userId, {}, 1, 1000),
     ]);
 
