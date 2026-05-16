@@ -6,7 +6,7 @@ import AnalysisResult from './AnalysisResult';
 import RecentTests from './RecentTests';
 import RecentTestDialog from './RecentTestDialog';
 import type { AnalysisResult as AnalysisResultType, RecentTest } from './types';
-import type { ClothingItem } from '../../../entities/clothingItem';
+import { smartBuyApi } from '../../../api/api/smartBuy.api';
 
 const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 const STORAGE_KEY = 'smart-buy-recent-tests';
@@ -43,15 +43,6 @@ function loadRecentTests(): RecentTest[] {
   }
 }
 
-function generateAnalysis(items: ClothingItem[]): AnalysisResultType {
-  const compatibilityPct = Math.floor(Math.random() * 26) + 70;
-  const matchCount = Math.min(items.length, Math.max(1, Math.floor(Math.random() * 5) + 3));
-  const matchedItems = [...items]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, matchCount)
-    .map(item => ({ item, matchPct: Math.floor(Math.random() * 26) + 70 }));
-  return { compatibilityPct, matchedItems, outfitCount: Math.floor(matchCount * 1.5) + 2 };
-}
 
 export default function SmartBuyScreen() {
   const { data: clothingItems = [] } = useClothingItems(CURRENT_USER_ID);
@@ -72,7 +63,7 @@ export default function SmartBuyScreen() {
   const [isAdding, setIsAdding] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
 
-  const runAnalysis = (imageUrl: string, name: string, file?: File) => {
+  const runAnalysis = async (imageUrl: string, name: string, file?: File) => {
     setTestImage(imageUrl);
     setTestFile(file ?? null);
     setTestName(name);
@@ -82,10 +73,24 @@ export default function SmartBuyScreen() {
     setAddSuccess(false);
     setIsAnalyzing(true);
 
-    setTimeout(async () => {
-      const analysis = generateAnalysis(clothingItems);
+    try {
+      const imageFile = file ?? await fetch(imageUrl).then(r => r.blob()).then(b => new File([b], 'item.jpg', { type: b.type }));
+      const response = await smartBuyApi.analyze(imageFile as File, CURRENT_USER_ID);
+
+      const matchedItems = response.matches
+        .map(m => {
+          const item = clothingItems.find(c => c.id === m.itemId);
+          return item ? { item, matchPct: m.compatibilityPct } : null;
+        })
+        .filter((m): m is { item: typeof clothingItems[0]; matchPct: number } => m !== null);
+
+      const analysis: AnalysisResultType = {
+        compatibilityPct: response.compatibilityPct,
+        matchedItems,
+        outfitCount: response.outfitCount,
+      };
+
       setResult(analysis);
-      setIsAnalyzing(false);
 
       const persistedImageUrl = await blobUrlToDataUrl(imageUrl).catch(() => imageUrl);
       const entry: RecentTest = {
@@ -104,7 +109,9 @@ export default function SmartBuyScreen() {
         saveRecentTests(next);
         return next;
       });
-    }, 2000);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleAddToCloset = async (name: string) => {
