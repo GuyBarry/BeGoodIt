@@ -76,7 +76,13 @@ const saveBodyData = async (
   return toDto(updated);
 };
 
+const getByUserId = async (userId: string): Promise<BodyMappingDto | null> => {
+  const existing = await bodyMappingRepository.findOne({ where: { userId } });
+  return existing ? toDto(existing) : null;
+};
+
 export const bodyService = {
+  getByUserId,
   saveBodyImage,
   saveBodyData,
 };

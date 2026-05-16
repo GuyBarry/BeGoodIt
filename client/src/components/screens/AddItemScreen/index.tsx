@@ -4,7 +4,6 @@ import { useAddClothingItem, useColorGroups, useGarmentCategories, useSeasons } 
 import { clothingItemsApi } from '../../../api/api/closet.api';
 import AddItemHeader from './AddItemHeader';
 import UploadPanel from './UploadPanel';
-import AvatarCard from './BodyImageCard';
 import TipsCard from './TipsCard';
 import TagEditor from './TagEditor';
 import { EMPTY_TAGS, type SelectedTags } from './types';
@@ -99,10 +98,7 @@ export default function AddItemScreen() {
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {!analysisComplete ? (
-                <>
-                  <AvatarCard userId={CURRENT_USER_ID} />
-                  <TipsCard />
-                </>
+                <TipsCard />
               ) : (
                 <TagEditor
                   categories={categories}

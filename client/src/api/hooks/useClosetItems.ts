@@ -14,7 +14,7 @@ export function useClosetItems(userId: User['id'], filters: ClosetFilters = {}) 
       clothingItemsApi.getByUserId(userId, { ...filters, page: pageParam, limit }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
-      const loaded = allPages.reduce((sum, page) => sum + page.items.length, 0);
+      const loaded = allPages.reduce((sum, page) => sum + (page?.items?.length ?? 0), 0);
       return loaded < lastPage.total ? allPages.length + 1 : undefined;
     },
     enabled: !!userId,

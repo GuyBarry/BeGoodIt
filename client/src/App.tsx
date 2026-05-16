@@ -7,6 +7,7 @@ import AddItemScreen from './components/screens/AddItemScreen/index';
 import FittingRoomScreen from './components/screens/FittingRoomScreen/index';
 import SmartBuyScreen from './components/screens/SmartBuyScreen';
 import ProfileScreen from './components/screens/ProfileScreen/index';
+import BodyImageScreen from './components/screens/BodyImageScreen/index';
 
 export default function App() {
   const theme = useTheme();
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/fitting"  element={<FittingRoomScreen />} />
           <Route path="/smartbuy" element={<SmartBuyScreen />} />
           <Route path="/profile"  element={<ProfileScreen />} />
+          <Route path="/body"     element={<BodyImageScreen />} />
           <Route path="*"         element={<Navigate to="/fitting" replace />} />
         </Routes>
       </Box>
