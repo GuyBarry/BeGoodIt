@@ -8,3 +8,4 @@ export { genderRouter } from './gender.controller';
 export { seasonRouter } from './season.controller';
 export { imagesRouter } from './images.controller';
 export { userRouter } from './user.controller';
+export { smartBuyRouter } from './smartBuy.controller';

@@ -1,0 +1,34 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start DB",
+      "type": "shell",
+      "command": "npm run db:start",
+      "options": { "cwd": "${workspaceFolder}/server/core" },
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "begoodit" }
+    },
+    {
+      "label": "Start Server",
+      "type": "shell",
+      "command": "npm run start:development",
+      "options": { "cwd": "${workspaceFolder}/server/core" },
+      "dependsOn": ["Start DB"],
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "begoodit" }
+    },
+    {
+      "label": "Start Client",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": { "cwd": "${workspaceFolder}/client" },
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "begoodit" }
+    },
+    {
+      "label": "Start All",
+      "dependsOn": ["Start Server", "Start Client"],
+      "dependsOrder": "parallel",
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "begoodit" }
+    }
+  ]
+}

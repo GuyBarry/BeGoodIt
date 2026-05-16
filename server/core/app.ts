@@ -15,6 +15,7 @@ import {
   imagesRouter,
   seasonRouter,
   userRouter,
+  smartBuyRouter,
 } from "./src/controllers";
 import { AppDataSource } from "./src/db/datasource";
 import { errorHandler } from "./src/middlewares/error.middleware";
@@ -40,6 +41,7 @@ export const initApp = async (): Promise<Express> => {
   app.use("/users", userRouter);
   app.use("/closet", closetRouter);
   app.use("/fitting-room", fittingRoomRouter);
+  app.use("/smart-buy", smartBuyRouter);
 
   app.get("/", (_req: Request, res: Response) => {
     res.json({ message: "Welcome to BeGoodIt API" });
