@@ -1,4 +1,5 @@
 export { useAddClothingItem } from './hooks/useAddClothingItem';
+export { useBodyImage, useInvalidateBodyImage } from './hooks/useBodyImage';
 export { useGenerateLook } from './hooks/useGenerateLook';
 export { useClothingItems } from './hooks/useClothingItems';
 export { useClosetItems } from './hooks/useClosetItems';

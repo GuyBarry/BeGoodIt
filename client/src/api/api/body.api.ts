@@ -3,6 +3,11 @@ import type { BodyMapping } from '../../entities/bodyMapping';
 import type { User } from '../../entities/user';
 
 export const bodyApi = {
+  getByUserId: async (userId: User['id']): Promise<BodyMapping | null> => {
+    const { data } = await apiClient.get<BodyMapping | null>(`/body/${userId}`);
+    return data;
+  },
+
   uploadImage: async (file: File, userId: User['id']): Promise<BodyMapping> => {
     const formData = new FormData();
     formData.append('file', file);
