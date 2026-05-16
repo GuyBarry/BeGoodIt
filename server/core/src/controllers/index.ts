@@ -1,4 +1,5 @@
 export { bodyRouter } from './body.controller';
+export { clothingItemRouter } from './clothingItem.controller';
 export { closetRouter } from './closet.controller';
 export { colorGroupRouter } from './colorGroup.controller';
 export { fittingRoomRouter } from './fittingRoom.controller';

@@ -32,8 +32,13 @@ const createFit = async (userId: string, clothingItemIds: string[]): Promise<Buf
     throw new NotFoundException('No clothing items found for the provided IDs');
   }
 
+  const itemsWithImages = clothingItems.filter((item) => item.imageId != null);
+  if (itemsWithImages.length === 0) {
+    throw new NotFoundException('None of the selected clothing items have an uploaded image');
+  }
+
   const clothingItemsImages = await Promise.all(
-    clothingItems.map((item) => imagesService.getImageById(item.imageId).then(toMulterFile)),
+    itemsWithImages.map((item) => imagesService.getImageById(item.imageId!).then(toMulterFile)),
   );
 
   const input: GenerateOutfitInput = {

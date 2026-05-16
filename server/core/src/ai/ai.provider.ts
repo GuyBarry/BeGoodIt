@@ -14,7 +14,7 @@ export enum AICreativity {
 
 export enum AIModel {
   GEMINI_2_5_FLASH_IMAGE = "gemini-2.5-flash-image",
-  GEMINI_2_0_FLASH = "gemini-2.0-flash",
+  GEMINI_2_5_FLASH = "gemini-2.5-flash",
 }
 
 export interface AIImageInput {
@@ -90,4 +90,37 @@ export async function generateAIImage(
   }
 
   return Buffer.from(imagePart.inlineData.data, "base64");
+}
+
+export async function generateNewItemClassificationInput<T>(
+  model: AIModel,
+  prompt: string,
+  schema: object,
+  images?: AIImageInput[],
+): Promise<T> {
+  const parts: Part[] = [];
+
+  if (images && images.length > 0) {
+    for (const image of images) {
+      parts.push({
+        inlineData: {
+          mimeType: image.mimeType,
+          data: image.data.toString("base64"),
+        },
+      });
+    }
+  }
+
+  parts.push({ text: prompt });
+
+  const response = await ai.models.generateContent({
+    model,
+    contents: [{ parts }],
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: schema,
+    },
+  });
+
+  return JSON.parse(response.text ?? "{}") as T;
 }
