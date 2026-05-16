@@ -20,10 +20,12 @@ fittingRoomRouter.post(
         return next(new BadRequestException('clothingItemIds must be a non-empty array'));
       }
 
-      const imageBuffer = await fittingRoomService.createFit(userId, clothingItemIds);
+      const { imageBuffer, imageId } = await fittingRoomService.createFit(userId, clothingItemIds);
 
       res.setHeader('Content-Type', 'image/png');
       res.setHeader('Content-Length', imageBuffer.length);
+      res.setHeader('X-Image-Id', imageId);
+      res.setHeader('Access-Control-Expose-Headers', 'X-Image-Id');
       res.status(StatusCodes.OK).send(imageBuffer);
     } catch (error) {
       next(error);

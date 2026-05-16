@@ -8,7 +8,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ClothingItem, OutfitFolder, User } from './index';
+import { ClothingItem, Image, OutfitFolder, User } from './index';
 
 @Entity('outfit')
 export class Outfit {
@@ -27,8 +27,15 @@ export class Outfit {
   @Column({ name: 'is_favorite', type: 'boolean', default: false })
   isFavorite: boolean;
 
+  @Column({ name: 'image_id', type: 'char', length: 36, nullable: true })
+  imageId: string | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @ManyToOne(() => Image, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'image_id' })
+  image: Image | null;
 
   @ManyToOne(() => User, (user) => user.outfits, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
