@@ -43,13 +43,7 @@ export default function RecentTestDialog({ test, onClose, onAddToCloset }: Props
       slotProps={{ paper: { sx: { borderRadius: 4, p: 0, overflow: 'hidden' } } }}
     >
       {/* Header */}
-      <Box
-        sx={{
-          display: 'flex', alignItems: 'center', gap: 1,
-          px: 2.5, py: 2,
-          borderBottom: '1px solid', borderColor: 'divider',
-        }}
-      >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2.5, py: 2 }}>
         <IconButton size="small" onClick={onClose} sx={{ color: 'text.primary' }}>
           <ArrowBackIcon fontSize="small" />
         </IconButton>
@@ -61,15 +55,14 @@ export default function RecentTestDialog({ test, onClose, onAddToCloset }: Props
         </IconButton>
       </Box>
 
-      <DialogContent sx={{ px: 3, py: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <DialogContent sx={{ px: 3, pt: 0, pb: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Image + stats row */}
         <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'flex-start' }}>
           <Box
             sx={{
-              width: 140, height: 140, flexShrink: 0,
+              width: 130, height: 130, flexShrink: 0,
               borderRadius: 3, overflow: 'hidden',
               bgcolor: 'action.hover',
-              border: '1px solid', borderColor: 'divider',
             }}
           >
             <Box
@@ -80,18 +73,19 @@ export default function RecentTestDialog({ test, onClose, onAddToCloset }: Props
             />
           </Box>
 
-          <Box sx={{ flex: 1, pt: 0.5 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <Box sx={{ flex: 1, pt: 0.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="body2" color="text.secondary">
               Tested on {formatDate(test.testedAt)}
             </Typography>
-            <Typography
-              sx={{ fontFamily: SERIF_FONT, fontSize: 40, fontWeight: 700, color: 'primary.main', lineHeight: 1 }}
-            >
-              {test.compatibilityPct}%
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              Compatibility
-            </Typography>
+
+            {/* % + label inline */}
+            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+              <Typography sx={{ fontFamily: SERIF_FONT, fontSize: 44, fontWeight: 700, color: 'primary.main', lineHeight: 1 }}>
+                {test.compatibilityPct}%
+              </Typography>
+              <Typography variant="body1" color="text.secondary">Compatibility</Typography>
+            </Box>
+
             <LinearProgress
               variant="determinate"
               value={test.compatibilityPct}
@@ -103,11 +97,11 @@ export default function RecentTestDialog({ test, onClose, onAddToCloset }: Props
         {/* Matching items */}
         {test.matchedItems.length > 0 && (
           <Box>
-            <Typography sx={{ fontWeight: 600, mb: 2 }}>Matching Items from Your Closet</Typography>
+            <Typography sx={{ fontWeight: 500, fontSize: 17, mb: 2 }}>Matching Items from Your Closet</Typography>
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateColumns: `repeat(${Math.min(test.matchedItems.length, 3)}, 1fr)`,
+                gridTemplateColumns: `repeat(${Math.min(test.matchedItems.length, 3)}, minmax(0, 1fr))`,
                 gap: 1.5,
               }}
             >
@@ -115,8 +109,8 @@ export default function RecentTestDialog({ test, onClose, onAddToCloset }: Props
                 <Box key={item.id} sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                   <Box
                     sx={{
-                      aspectRatio: '3/4',
-                      borderRadius: 2.5,
+                      height: 180,
+                      borderRadius: 3,
                       overflow: 'hidden',
                       bgcolor: 'action.hover',
                     }}
@@ -155,19 +149,14 @@ export default function RecentTestDialog({ test, onClose, onAddToCloset }: Props
         ) : namingStep ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <TextField
-              fullWidth
-              autoFocus
+              fullWidth autoFocus
               label="Name in your closet"
               value={customName}
               onChange={e => setCustomName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleAdd()}
             />
             <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <Button
-                variant="outlined"
-                onClick={() => setNamingStep(false)}
-                sx={{ flex: 1, borderRadius: 2, textTransform: 'none' }}
-              >
+              <Button variant="outlined" onClick={() => setNamingStep(false)} sx={{ flex: 1, borderRadius: 2, textTransform: 'none' }}>
                 Back
               </Button>
               <Button
@@ -187,12 +176,9 @@ export default function RecentTestDialog({ test, onClose, onAddToCloset }: Props
             size="large"
             startIcon={<AddShoppingCartIcon />}
             onClick={() => setNamingStep(true)}
-            sx={{
-              borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.5,
-              background: GRADIENTS.primary,
-            }}
+            sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.5, background: GRADIENTS.primary }}
           >
-            I Bought It — Add to Closet
+            + I Bought It — Add to Closet
           </Button>
         )}
       </DialogContent>

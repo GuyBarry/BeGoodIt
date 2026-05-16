@@ -34,8 +34,7 @@ export default function AnalysisResult({
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', lg: '2fr 3fr' },
-        alignItems: 'stretch',
-        height: { lg: 560 },
+        alignItems: 'start',
         gap: 3,
       }}
     >
@@ -45,7 +44,7 @@ export default function AnalysisResult({
           position: 'relative',
           borderRadius: 4,
           overflow: 'hidden',
-          height: { xs: 400, lg: '100%' },
+          height: { xs: 400, lg: 560 },
           boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
         }}
       >
@@ -119,7 +118,7 @@ export default function AnalysisResult({
       </Box>
 
       {/* ── Right: analysis content ── */}
-      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2.5, height: '100%' }}>
+      <Box sx={{ p: '8px', display: 'flex', flexDirection: 'column', gap: 2.5 }}>
         {result && (
           <>
             {/* Best Matches */}
