@@ -8,6 +8,19 @@ import { BadRequestException } from '../exceptions/httpExceptions';
 export const bodyRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+// GET /body/:userId — fetch body mapping for a user (null if not set up)
+bodyRouter.get(
+  '/:userId',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await bodyService.getByUserId(req.params.userId);
+      res.status(StatusCodes.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
 // POST /body/image — upload a body image for a user
 bodyRouter.post(
   '/image',

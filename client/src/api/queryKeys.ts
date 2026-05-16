@@ -16,6 +16,9 @@ export const queryKeys = {
   user: {
     getById: (id: User['id']) => ['user', id] as const,
   },
+  bodyMapping: {
+    getByUserId: (userId: User['id']) => ['bodyMapping', userId] as const,
+  },
   clothingItems: {
     getByUserId: (userId: User['id']) => ['clothingItems', userId] as const,
     closet: (userId: User['id'], filters: object) => ['clothingItems', userId, 'closet', filters] as const,

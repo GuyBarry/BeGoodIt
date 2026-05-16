@@ -1,7 +1,11 @@
 import { useState } from 'react';
-import { Box, CircularProgress, Grid, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { Box, Button, CircularProgress, Grid, Paper, Typography } from '@mui/material';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutlineOutlined';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import type { User } from '../../../entities/user';
-import { useUser, useUpdateUser, useClothingItems } from '../../../api';
+import { useUser, useUpdateUser, useClothingItems, useBodyImage } from '../../../api';
+import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 import ProfileHeader from './ProfileHeader';
 import ProfileCard from './ProfileCard';
 import PersonalInfoCard from './PersonalInfoCard';
@@ -17,7 +21,9 @@ export default function ProfileScreen() {
   const { data: user, isLoading, isError } = useUser(CURRENT_USER_ID);
   const { mutate: updateUser } = useUpdateUser(CURRENT_USER_ID);
   const { data: clothingItems = [] } = useClothingItems(CURRENT_USER_ID);
+  const { data: bodyImage } = useBodyImage(CURRENT_USER_ID);
 
+  const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
   const [draft, setDraft] = useState<User | null>(null);
 
@@ -73,6 +79,51 @@ export default function ProfileScreen() {
 
             <Grid size={{ xs: 12, lg: 6 }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {/* Virtual Try-On Model card */}
+                <Paper
+                  elevation={0}
+                  sx={{
+                    borderRadius: 4, overflow: 'hidden',
+                    border: '1px solid', borderColor: 'divider',
+                  }}
+                >
+                  <Box sx={{ background: GRADIENTS.primarySubtle, px: 3, pt: 3, pb: 2.5 }}>
+                    <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'flex-start' }}>
+                      <Box sx={{
+                        width: 52, height: 52, borderRadius: 3, flexShrink: 0,
+                        background: GRADIENTS.primary,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <PersonOutlineIcon sx={{ color: '#fff', fontSize: 26 }} />
+                      </Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="h6">Virtual Try-On Model</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, lineHeight: 1.6 }}>
+                          Upload a full-body photo so the Fitting Room can show how outfits look on you.
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                  <Box sx={{ px: 3, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{
+                      px: 1.5, py: 0.5, borderRadius: 10,
+                      bgcolor: bodyImage ? 'success.light' : PRIMARY_ALPHA[10],
+                    }}>
+                      <Typography variant="caption" sx={{ color: bodyImage ? 'success.dark' : 'primary.main', fontWeight: 500 }}>
+                        {bodyImage ? 'Ready' : 'Not set up yet'}
+                      </Typography>
+                    </Box>
+                    <Button
+                      size="small"
+                      endIcon={<ArrowForwardIcon />}
+                      onClick={() => navigate('/body')}
+                      sx={{ textTransform: 'none', fontWeight: 500 }}
+                    >
+                      Set up
+                    </Button>
+                  </Box>
+                </Paper>
+
                 <StyleInsightsCard />
                 <EditProfileButton onClick={openEdit} />
               </Box>
