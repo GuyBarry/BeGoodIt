@@ -7,6 +7,7 @@ export interface Outfit {
   folderId: string | null;
   name: string | null;
   isFavorite: boolean;
+  imageId: string | null;
   createdAt: string;
   folder?: OutfitFolder;
   items?: ClothingItem[];

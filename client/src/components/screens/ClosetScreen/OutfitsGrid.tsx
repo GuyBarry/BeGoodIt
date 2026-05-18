@@ -1,12 +1,13 @@
 import { Box, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import type { MockOutfit } from './data';
+import type { Outfit } from '../../../entities/outfit';
+import { imagesApi } from '../../../api/api/images.api';
 
 interface Props {
-  outfits: MockOutfit[];
+  outfits: Outfit[];
   gridSize: 'normal' | 'compact';
-  onSelect: (outfit: MockOutfit) => void;
+  onSelect: (outfit: Outfit) => void;
 }
 
 const gridCols = {
@@ -42,12 +43,16 @@ export default function OutfitsGrid({ outfits, gridSize, onSelect }: Props) {
           }}
         >
           <Box sx={{ aspectRatio: '3/4', overflow: 'hidden' }}>
-            <Box
-              component="img"
-              src={outfit.image}
-              alt={outfit.name}
-              sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            />
+            {outfit.imageId ? (
+              <Box
+                component="img"
+                src={imagesApi.getImageUrl(outfit.imageId)}
+                alt={outfit.name ?? 'Outfit'}
+                sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            ) : (
+              <Box sx={{ width: '100%', height: '100%', bgcolor: 'grey.100' }} />
+            )}
           </Box>
 
           <Box
@@ -60,27 +65,33 @@ export default function OutfitsGrid({ outfits, gridSize, onSelect }: Props) {
               background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
             }}
           >
-            <Typography sx={{ color: '#fff', fontWeight: 600, fontSize: 14 }}>{outfit.name}</Typography>
-            <Typography sx={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>{outfit.clothingItems.length} items</Typography>
+            <Typography sx={{ color: '#fff', fontWeight: 600, fontSize: 14 }}>
+              {outfit.name ?? 'Outfit'}
+            </Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>
+              {outfit.items?.length ?? 0} items
+            </Typography>
           </Box>
 
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              bgcolor: alpha('#fff', 0.85),
-              backdropFilter: 'blur(4px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <FavoriteIcon sx={{ fontSize: 18, color: 'primary.main' }} />
-          </Box>
+          {outfit.isFavorite && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                bgcolor: alpha('#fff', 0.85),
+                backdropFilter: 'blur(4px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <FavoriteIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+            </Box>
+          )}
         </Box>
       ))}
     </Box>
