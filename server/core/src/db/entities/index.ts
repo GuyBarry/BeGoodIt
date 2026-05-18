@@ -7,6 +7,7 @@ export { Gender } from './Gender.entity';
 export { Image } from './Image.entity';
 export { ImageDto } from './Image.dto';
 export { Outfit } from './Outfit.entity';
+export { OutfitDto } from './Outfit.dto';
 export { OutfitFolder } from './OutfitFolder.entity';
 export { Season } from './Season.entity';
 export { User } from './User.entity';

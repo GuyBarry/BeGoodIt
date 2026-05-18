@@ -5,9 +5,9 @@ import ClosetHeader from './ClosetHeader';
 import ClothingGrid from './ClothingGrid';
 import OutfitsGrid from './OutfitsGrid';
 import OutfitDialog from './OutfitDialog';
-import { mockOutfits, type MockOutfit } from './data';
-import { useClosetItems, useDeleteClothingItem } from '../../../api';
+import { useClosetItems, useDeleteClothingItem, useGetOutfits } from '../../../api';
 import type { ClosetFilters } from '../../../api/api/closet.api';
+import type { Outfit } from '../../../entities/outfit';
 
 const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -45,7 +45,7 @@ export default function ClosetScreen() {
   const [selectedColor,    setSelectedColor]    = useState('All');
   const [selectedSeason,   setSelectedSeason]   = useState('All');
   const [gridSize,         setGridSize]         = useState<'normal' | 'compact'>('normal');
-  const [selectedOutfit,   setSelectedOutfit]   = useState<MockOutfit | null>(null);
+  const [selectedOutfit,   setSelectedOutfit]   = useState<Outfit | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
@@ -65,6 +65,7 @@ export default function ClosetScreen() {
   const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage, resetToFirstPage } =
     useClosetItems(CURRENT_USER_ID, filters);
   const { mutate: deleteItem } = useDeleteClothingItem(CURRENT_USER_ID);
+  const { data: outfits = [], isLoading: outfitsLoading } = useGetOutfits(CURRENT_USER_ID);
 
   const items = data?.pages.flatMap(p => p.items) ?? [];
   const total = data?.pages[0]?.total ?? 0;
@@ -83,7 +84,7 @@ export default function ClosetScreen() {
         selectedColor={selectedColor}       onColorChange={setSelectedColor}
         selectedSeason={selectedSeason}     onSeasonChange={setSelectedSeason}
         itemsCount={total}
-        outfitsCount={mockOutfits.length}
+        outfitsCount={outfits.length}
       />
 
       <Box component="main" sx={{ flex: 1, px: { xs: 2, sm: 4 }, py: 4 }}>
@@ -126,8 +127,12 @@ export default function ClosetScreen() {
                 )}
               </>
             )
+          ) : outfitsLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+              <CircularProgress />
+            </Box>
           ) : (
-            <OutfitsGrid outfits={mockOutfits} gridSize={gridSize} onSelect={setSelectedOutfit} />
+            <OutfitsGrid outfits={outfits} gridSize={gridSize} onSelect={setSelectedOutfit} />
           )}
         </Box>
       </Box>

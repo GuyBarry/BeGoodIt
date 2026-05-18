@@ -5,6 +5,7 @@ export { closetService } from './closet.service';
 export { clothingItemService } from './clothingItem.service';
 export { colorGroupService } from './colorGroup.service';
 export { fittingRoomService } from './fittingRoom.service';
+export { outfitService } from './outfit.service';
 export { garmentCategoryService } from './garmentCategory.service';
 export { genderService } from './gender.service';
 export { seasonService } from './season.service';

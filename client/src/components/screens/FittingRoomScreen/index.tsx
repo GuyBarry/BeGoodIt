@@ -6,21 +6,23 @@ import ClosetItemGrid from './ClosetItemGrid';
 import SelectedSummary from './SelectedSummary';
 import GenerateButton from './GenerateButton';
 import GetInspiredDialog from './GetInspiredDialog';
-import { useClothingItems, useGenerateLook } from '../../../api';
+import { useClothingItems, useGenerateLook, useSaveOutfit } from '../../../api';
 
 const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 
 export default function FittingRoomScreen() {
   const { data: clothingItems = [] } = useClothingItems(CURRENT_USER_ID);
   const { mutate: generateLook, isPending: isGenerating } = useGenerateLook();
+  const { mutate: saveOutfit, isPending: isSaving, isSuccess: isSaved } = useSaveOutfit();
 
-  const [selectedItems, setSelectedItems]                     = useState<string[]>([]);
-  const [generatedLookUrl, setGeneratedLookUrl]               = useState<string | null>(null);
-  const [activeCategory, setActiveCategory]                   = useState('all');
-  const [showInspireDialog, setShowInspireDialog]             = useState(false);
-  const [inspirationImage, setInspirationImage]               = useState<string | null>(null);
-  const [isAnalyzingInspiration, setIsAnalyzingInspiration]   = useState(false);
-  const [suggestedItems, setSuggestedItems]                   = useState<string[]>([]);
+  const [selectedItems, setSelectedItems]                   = useState<string[]>([]);
+  const [generatedLookUrl, setGeneratedLookUrl]             = useState<string | null>(null);
+  const [generatedImageId, setGeneratedImageId]             = useState<string | null>(null);
+  const [activeCategory, setActiveCategory]                 = useState('all');
+  const [showInspireDialog, setShowInspireDialog]           = useState(false);
+  const [inspirationImage, setInspirationImage]             = useState<string | null>(null);
+  const [isAnalyzingInspiration, setIsAnalyzingInspiration] = useState(false);
+  const [suggestedItems, setSuggestedItems]                 = useState<string[]>([]);
 
   const toggleItem = (id: string) =>
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -30,18 +32,25 @@ export default function FittingRoomScreen() {
     generateLook(
       { userId: CURRENT_USER_ID, clothingItemIds: selectedItems },
       {
-        onSuccess: (url) => {
+        onSuccess: ({ url, imageId }) => {
           if (generatedLookUrl) URL.revokeObjectURL(generatedLookUrl);
           setGeneratedLookUrl(url);
+          setGeneratedImageId(imageId);
         },
       },
     );
+  };
+
+  const handleSave = () => {
+    if (!generatedImageId) return;
+    saveOutfit({ userId: CURRENT_USER_ID, imageId: generatedImageId, clothingItemIds: selectedItems });
   };
 
   const handleReset = () => {
     if (generatedLookUrl) URL.revokeObjectURL(generatedLookUrl);
     setSelectedItems([]);
     setGeneratedLookUrl(null);
+    setGeneratedImageId(null);
     setSuggestedItems([]);
   };
 
@@ -77,7 +86,10 @@ export default function FittingRoomScreen() {
             <PreviewArea
               isGenerating={isGenerating}
               generatedLookUrl={generatedLookUrl}
+              isSaving={isSaving}
+              isSaved={isSaved}
               suggestedItems={suggestedItems}
+              onSave={handleSave}
               onReset={handleReset}
             />
 
