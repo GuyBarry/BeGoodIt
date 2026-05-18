@@ -3,6 +3,7 @@ import { ClothingFilters } from '../repositories';
 import { backgroundRemovalService } from './backgroundRemoval.service';
 import { imagesService } from './images.service';
 import { AddItemInput, clothingItemService } from './clothingItem.service';
+import { classifyClothingItem } from '../ai/classifyClothingItem';
 
 const getItemsByUserId = async (
   userId: string,
@@ -19,8 +20,17 @@ const addToCloset = async (
   tags: AddItemInput = {},
 ): Promise<ClothingItemDto> => {
   const processedFile = await backgroundRemovalService.removeBackground(file);
-  const imageDto = await imagesService.saveImage(processedFile);
-  return clothingItemService.addItem(userId, imageDto.id, tags);
+
+  // Run classification and image save in parallel — both only need the processed file
+  const [imageDto, classification] = await Promise.all([
+    imagesService.saveImage(processedFile),
+    classifyClothingItem({ mimeType: processedFile.mimetype, data: processedFile.buffer }).catch(() => null),
+  ]);
+
+  return clothingItemService.addItem(userId, imageDto.id, {
+    ...tags,
+    description: classification?.description ?? null,
+  });
 };
 
 const removeFromCloset = async (userId: string, itemId: string): Promise<void> => {

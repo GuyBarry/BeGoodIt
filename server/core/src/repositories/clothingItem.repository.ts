@@ -52,4 +52,37 @@ export const clothingItemRepository = AppDataSource.getRepository(ClothingItem).
   deleteByIdAndUserId(id: string, userId: string): Promise<boolean> {
     return this.delete({ id, userId }).then((result) => (result.affected ?? 0) > 0);
   },
+
+  async findMatchingForItem(
+    userId: string,
+    category: string,
+    colorGroup: string,
+    season: string,
+    style: string,
+    limit = 10,
+  ): Promise<ClothingItem[]> {
+    // Base builder — uses idx_clothing_item_user_lookups (user_id, category_id, color_group_id)
+    const base = () =>
+      this.createQueryBuilder('ci')
+        .select(['ci.id', 'ci.imageEmbedding', 'ci.style'])
+        .innerJoin('ci.category', 'cat')
+        .innerJoin('ci.colorGroup', 'cg')
+        .leftJoin('ci.season', 'season')
+        .where('ci.userId = :userId', { userId })
+        .andWhere('cat.name = :category', { category })
+        .andWhere('cg.name = :colorGroup', { colorGroup })
+        .limit(limit);
+
+    // Perfect match: category + color + season + style
+    // All-Season items always count as a season match
+    const perfect = await base()
+      .andWhere('(season.name = :season OR season.name = :allSeason)', { season, allSeason: 'All-Season' })
+      .andWhere('ci.style = :style', { style })
+      .getMany();
+
+    if (perfect.length > 0) return perfect;
+
+    // Fallback: category + color only
+    return base().getMany();
+  },
 });
