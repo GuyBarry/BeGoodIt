@@ -42,6 +42,7 @@ export interface AddItemInput {
   categoryId?: number | null;
   seasonId?: number | null;
   style?: string | null;
+  description?: string | null;
 }
 
 const addItem = async (userId: string, imageId: string, tags: AddItemInput = {}): Promise<ClothingItemDto> => {
@@ -52,7 +53,7 @@ const addItem = async (userId: string, imageId: string, tags: AddItemInput = {})
     categoryId: tags.categoryId ?? null,
     seasonId: tags.seasonId ?? null,
     style: tags.style ?? null,
-    imageEmbedding: null,
+    imageEmbedding: tags.description ? Buffer.from(tags.description, 'utf8') : null,
   });
   const saved = await clothingItemRepository.save(item);
   return toDto(saved);

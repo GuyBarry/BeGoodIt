@@ -6,23 +6,24 @@ import ClosetItemGrid from './ClosetItemGrid';
 import SelectedSummary from './SelectedSummary';
 import GenerateButton from './GenerateButton';
 import GetInspiredDialog from './GetInspiredDialog';
-import { useClothingItems, useGenerateLook, useSaveOutfit } from '../../../api';
+import { useClothingItems, useGenerateLook, useSaveOutfit, useFindMatches } from '../../../api';
 
 const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 
 export default function FittingRoomScreen() {
   const { data: clothingItems = [] } = useClothingItems(CURRENT_USER_ID);
-  const { mutate: generateLook, isPending: isGenerating } = useGenerateLook();
-  const { mutate: saveOutfit, isPending: isSaving, isSuccess: isSaved } = useSaveOutfit();
+  const { mutate: generateLook, isPending: isGenerating }             = useGenerateLook();
+  const { mutate: saveOutfit,   isPending: isSaving, isSuccess: isSaved } = useSaveOutfit();
+  const { mutate: findMatches,  isPending: isAnalyzingInspiration }   = useFindMatches();
 
-  const [selectedItems, setSelectedItems]                   = useState<string[]>([]);
-  const [generatedLookUrl, setGeneratedLookUrl]             = useState<string | null>(null);
-  const [generatedImageId, setGeneratedImageId]             = useState<string | null>(null);
-  const [activeCategory, setActiveCategory]                 = useState('all');
-  const [showInspireDialog, setShowInspireDialog]           = useState(false);
-  const [inspirationImage, setInspirationImage]             = useState<string | null>(null);
-  const [isAnalyzingInspiration, setIsAnalyzingInspiration] = useState(false);
-  const [suggestedItems, setSuggestedItems]                 = useState<string[]>([]);
+  const [selectedItems, setSelectedItems]     = useState<string[]>([]);
+  const [generatedLookUrl, setGeneratedLookUrl] = useState<string | null>(null);
+  const [generatedImageId, setGeneratedImageId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory]   = useState('all');
+  const [showInspireDialog, setShowInspireDialog] = useState(false);
+  const [inspirationImage, setInspirationImage]   = useState<string | null>(null);
+  const [inspirationFile, setInspirationFile]     = useState<File | null>(null);
+  const [suggestedItems, setSuggestedItems]   = useState<string[]>([]);
 
   const toggleItem = (id: string) =>
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -56,24 +57,28 @@ export default function FittingRoomScreen() {
 
   const handleFileSelect = (file: File) => {
     setInspirationImage(URL.createObjectURL(file));
+    setInspirationFile(file);
   };
 
   const handleFindMatches = () => {
-    if (!inspirationImage) return;
-    setIsAnalyzingInspiration(true);
-    setTimeout(() => {
-      const suggested = clothingItems.slice(0, 3).map(i => i.id);
-      setIsAnalyzingInspiration(false);
-      setSuggestedItems(suggested);
-      setSelectedItems(suggested);
-      setShowInspireDialog(false);
-    }, 2000);
+    if (!inspirationFile) return;
+    findMatches(
+      { userId: CURRENT_USER_ID, file: inspirationFile },
+      {
+        onSuccess: (matchedItemIds) => {
+          setSuggestedItems(matchedItemIds);
+          setSelectedItems(matchedItemIds);
+          setShowInspireDialog(false);
+        },
+      },
+    );
   };
 
   const handleCloseInspireDialog = () => {
     setShowInspireDialog(false);
+    if (inspirationImage) URL.revokeObjectURL(inspirationImage);
     setInspirationImage(null);
-    setIsAnalyzingInspiration(false);
+    setInspirationFile(null);
   };
 
   return (
@@ -120,7 +125,11 @@ export default function FittingRoomScreen() {
         onClose={handleCloseInspireDialog}
         onFileSelect={handleFileSelect}
         onFindMatches={handleFindMatches}
-        onClearImage={() => setInspirationImage(null)}
+        onClearImage={() => {
+          if (inspirationImage) URL.revokeObjectURL(inspirationImage);
+          setInspirationImage(null);
+          setInspirationFile(null);
+        }}
       />
     </Box>
   );
