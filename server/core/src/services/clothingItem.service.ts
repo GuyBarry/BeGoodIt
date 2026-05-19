@@ -42,7 +42,22 @@ export interface AddItemInput {
   categoryId?: number | null;
   seasonId?: number | null;
   style?: string | null;
-  description?: string | null;
+  embedding?: number[] | null;
+}
+
+export const EMBEDDING_DIM = 768;
+export const EMBEDDING_BYTES = EMBEDDING_DIM * 4;
+
+export function floatsToBuffer(floats: number[]): Buffer {
+  const buf = Buffer.allocUnsafe(floats.length * 4);
+  floats.forEach((v, i) => buf.writeFloatLE(v, i * 4));
+  return buf;
+}
+
+export function bufferToFloats(buf: Buffer): number[] {
+  const out: number[] = new Array(buf.length / 4);
+  for (let i = 0; i < out.length; i++) out[i] = buf.readFloatLE(i * 4);
+  return out;
 }
 
 const addItem = async (userId: string, imageId: string, tags: AddItemInput = {}): Promise<ClothingItemDto> => {
@@ -53,7 +68,7 @@ const addItem = async (userId: string, imageId: string, tags: AddItemInput = {})
     categoryId: tags.categoryId ?? null,
     seasonId: tags.seasonId ?? null,
     style: tags.style ?? null,
-    imageEmbedding: tags.description ? Buffer.from(tags.description, 'utf8') : null,
+    imageEmbedding: tags.embedding ? floatsToBuffer(tags.embedding) : null,
   });
   const saved = await clothingItemRepository.save(item);
   return toDto(saved);

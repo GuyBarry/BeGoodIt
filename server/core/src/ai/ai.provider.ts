@@ -15,6 +15,7 @@ export enum AICreativity {
 export enum AIModel {
   GEMINI_2_5_FLASH_IMAGE = "gemini-2.5-flash-image",
   GEMINI_2_5_FLASH = "gemini-2.5-flash",
+  GEMINI_EMBEDDING_001 = "gemini-embedding-001",
 }
 
 export interface AIImageInput {
@@ -90,6 +91,15 @@ export async function generateAIImage(
   }
 
   return Buffer.from(imagePart.inlineData.data, "base64");
+}
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+  const response = await ai.models.embedContent({
+    model: AIModel.GEMINI_EMBEDDING_001,
+    contents: text,
+    config: { outputDimensionality: 768 },
+  });
+  return response.embeddings?.[0]?.values ?? [];
 }
 
 export async function generateNewItemClassificationInput<T>(
