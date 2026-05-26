@@ -82,12 +82,12 @@ export default function FittingRoomScreen() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       <FittingRoomHeader onGetInspired={() => setShowInspireDialog(true)} />
 
-      <Box component="main" sx={{ flex: 1, px: 4, py: 4 }}>
-        <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4 }}>
+      <Box component="main" sx={{ flex: 1, minHeight: 0, px: 4, py: 4, overflow: 'hidden' }}>
+        <Box sx={{ maxWidth: 1280, mx: 'auto', height: '100%' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4, height: '100%' }}>
             <PreviewArea
               isGenerating={isGenerating}
               generatedLookUrl={generatedLookUrl}
@@ -98,21 +98,25 @@ export default function FittingRoomScreen() {
               onReset={handleReset}
             />
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <ClosetItemGrid
-                clothingItems={clothingItems}
-                selectedItems={selectedItems}
-                suggestedItems={suggestedItems}
-                activeCategory={activeCategory}
-                onCategoryChange={setActiveCategory}
-                onToggleItem={toggleItem}
-              />
-              <SelectedSummary selectedItems={selectedItems} clothingItems={clothingItems} />
-              <GenerateButton
-                selectedItems={selectedItems}
-                isGenerating={isGenerating}
-                onGenerate={handleGenerate}
-              />
+            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+              <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3, pr: 1, pb: 2 }}>
+                <ClosetItemGrid
+                  clothingItems={clothingItems}
+                  selectedItems={selectedItems}
+                  suggestedItems={suggestedItems}
+                  activeCategory={activeCategory}
+                  onCategoryChange={setActiveCategory}
+                  onToggleItem={toggleItem}
+                />
+                <SelectedSummary selectedItems={selectedItems} clothingItems={clothingItems} />
+              </Box>
+              <Box sx={{ pt: 2 }}>
+                <GenerateButton
+                  selectedItems={selectedItems}
+                  isGenerating={isGenerating}
+                  onGenerate={handleGenerate}
+                />
+              </Box>
             </Box>
           </Box>
         </Box>

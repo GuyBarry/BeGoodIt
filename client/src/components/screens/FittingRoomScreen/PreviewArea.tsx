@@ -22,8 +22,9 @@ export default function PreviewArea({ isGenerating, generatedLookUrl, isSaving, 
     <Box
       sx={{
         position: 'relative',
-        aspectRatio: '3/4',
-        maxHeight: 600,
+        height: '100%',
+        aspectRatio: { xs: '3/4', lg: 'unset' },
+        maxHeight: { xs: 600, lg: 'unset' },
         borderRadius: 4,
         overflow: 'hidden',
         background: 'linear-gradient(180deg, #f5f0ea 0%, #ede5d8 100%)',

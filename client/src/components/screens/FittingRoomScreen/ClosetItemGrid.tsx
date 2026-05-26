@@ -92,11 +92,13 @@ export default function ClosetItemGrid({ clothingItems, selectedItems, suggested
           <Chip
             key={cat.id}
             label={cat.name}
+            size="small"
             onClick={() => onCategoryChange(cat.id)}
             sx={{
               fontWeight: 500,
-              px: 1,
+              px: 0.8,
               borderRadius: 2.5,
+              fontSize: 13,
               ...(activeCategory === cat.id
                 ? { bgcolor: 'text.primary', color: 'background.paper', '&:hover': { bgcolor: 'text.primary' } }
                 : { bgcolor: 'action.hover', color: 'text.secondary', '&:hover': { bgcolor: 'action.selected' } }
