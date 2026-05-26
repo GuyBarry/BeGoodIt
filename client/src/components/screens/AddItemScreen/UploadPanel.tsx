@@ -14,13 +14,13 @@ interface Props {
 
 export default function UploadPanel({ imageUrl, isAnalyzing, analysisComplete, tags, onFileSelect, onClear }: Props) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 3 }}>
       <ImageUploadArea
         imageUrl={imageUrl}
         isProcessing={isAnalyzing}
         processingLabel="Analyzing your item..."
         processingSubLabel="AI is detecting attributes"
-        aspectRatio="4/5"
+        sx={{ flex: 1, minHeight: 0, aspectRatio: 'unset', width: '100%' }}
         onFileSelect={onFileSelect}
         onClear={onClear}
       />

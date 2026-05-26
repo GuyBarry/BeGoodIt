@@ -80,12 +80,12 @@ export default function AddItemScreen() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       <AddItemHeader />
 
-      <Box component="main" sx={{ flex: 1, px: 4, py: 4 }}>
-        <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4 }}>
+      <Box component="main" sx={{ flex: 1, minHeight: 0, px: 4, py: 4, overflow: 'hidden' }}>
+        <Box sx={{ maxWidth: 1280, mx: 'auto', height: '100%' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4, height: '100%' }}>
 
             <UploadPanel
               imageUrl={imageUrl}
@@ -96,7 +96,7 @@ export default function AddItemScreen() {
               onClear={handleReset}
             />
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ height: '100%', overflowY: 'auto' }}>
               {!analysisComplete ? (
                 <TipsCard />
               ) : (
