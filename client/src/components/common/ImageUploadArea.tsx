@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback } from 'react';
 import { Box, CircularProgress, IconButton, Typography } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material';
 import UploadIcon from '@mui/icons-material/Upload';
 import CloseIcon from '@mui/icons-material/Close';
 import { PRIMARY_ALPHA } from '../../styles/tokens';
@@ -11,6 +12,7 @@ interface Props {
   processingSubLabel?: string;
   accept?: string;
   aspectRatio?: string;
+  sx?: SxProps<Theme>;
   onFileSelect: (file: File) => void;
   onClear: () => void;
 }
@@ -22,6 +24,7 @@ export default function ImageUploadArea({
   processingSubLabel,
   accept = 'image/*',
   aspectRatio = '16/9',
+  sx,
   onFileSelect,
   onClear,
 }: Props) {
@@ -64,7 +67,7 @@ export default function ImageUploadArea({
 
   if (imageUrl) {
     return (
-      <Box sx={{ position: 'relative', aspectRatio, borderRadius: 3, overflow: 'hidden' }}>
+      <Box sx={{ position: 'relative', aspectRatio, borderRadius: 3, overflow: 'hidden', ...sx as object }}>
         <Box component="img" src={imageUrl} alt="Upload preview" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
 
         {isProcessing && (
@@ -140,6 +143,7 @@ export default function ImageUploadArea({
           cursor: 'pointer',
           transition: 'all 0.2s ease',
           '&:hover': { borderColor: 'primary.main', bgcolor: PRIMARY_ALPHA[4] },
+          ...sx as object,
         }}
       >
         <Box
