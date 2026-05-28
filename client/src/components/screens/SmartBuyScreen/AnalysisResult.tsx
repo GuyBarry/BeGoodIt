@@ -213,16 +213,18 @@ export default function AnalysisResult({
 
             {/* Buttons */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 'auto' }}>
-              <Button
-                variant="outlined"
-                size="large"
-                startIcon={isTryingOn ? <CircularProgress size={18} sx={{ color: PALETTE.primary }} /> : <AutoAwesomeIcon />}
-                onClick={onVirtualTryOn}
-                disabled={isTryingOn}
-                sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.5 }}
-              >
-                {isTryingOn ? 'Generating...' : tryOnImage ? 'Try Again' : 'Virtual Try-On'}
-              </Button>
+              {!tryOnImage && (
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={isTryingOn ? <CircularProgress size={18} sx={{ color: PALETTE.primary }} /> : <AutoAwesomeIcon />}
+                  onClick={onVirtualTryOn}
+                  disabled={isTryingOn}
+                  sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.5 }}
+                >
+                  {isTryingOn ? 'Generating...' : 'Virtual Try-On'}
+                </Button>
+              )}
 
               {addSuccess ? (
                 <Button
