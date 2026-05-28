@@ -4,8 +4,11 @@ puppeteerExtra.use(StealthPlugin());
 
 import { BadRequestException, BotProtectedException } from '../exceptions/httpExceptions';
 import { classifyClothingItem, ClothingClassification } from '../ai/classifyClothingItem';
+import { generateEmbedding } from '../ai/ai.provider';
 import { clothingItemRepository, smartBuyTestRepository } from '../repositories';
 import { imagesService } from './images.service';
+import { bufferToFloats, EMBEDDING_BYTES } from './clothingItem.service';
+import { cosineSimilarity } from './inspirationMatching.service';
 
 const BROWSER_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
@@ -123,14 +126,21 @@ const styleScore = (a: string, b: string): number => {
 
 const scoreItem = (
   uploaded: ClothingClassification,
-  item: { category: string | null; colorGroup: string | null; season: string | null; style: string | null },
+  uploadedEmbedding: number[] | null,
+  item: { category: string | null; colorGroup: string | null; season: string | null; style: string | null; imageEmbedding: Buffer | null },
 ): number => {
   let total = 0, weight = 0;
   if (item.category) { total += (CATEGORY_MATRIX[uploaded.category]?.[item.category] ?? 50) * 40; weight += 40; }
   if (item.colorGroup) { total += colorScore(uploaded.colorGroup, item.colorGroup) * 30; weight += 30; }
   if (item.season) { total += seasonScore(uploaded.season, item.season) * 15; weight += 15; }
   if (item.style) { total += styleScore(uploaded.style, item.style) * 15; weight += 15; }
-  return weight === 0 ? 65 : Math.round(total / weight);
+  const metadataScore = weight === 0 ? 65 : Math.round(total / weight);
+
+  if (uploadedEmbedding && item.imageEmbedding?.length === EMBEDDING_BYTES) {
+    const embeddingScore = Math.round(cosineSimilarity(uploadedEmbedding, bufferToFloats(item.imageEmbedding)) * 100);
+    return Math.round(0.6 * metadataScore + 0.4 * embeddingScore);
+  }
+  return metadataScore;
 };
 
 export interface SmartBuyMatch { itemId: string; compatibilityPct: number; }
@@ -197,14 +207,17 @@ export const smartBuyService = {
       clothingItemRepository.getFilteredByUserId(userId, {}, 1, 1000),
     ]);
 
+    const uploadedEmbedding = await generateEmbedding(uploadedClassification.description).catch(() => null);
+
     const scored = closetItems
       .map(item => ({
         itemId: item.id,
-        compatibilityPct: scoreItem(uploadedClassification, {
+        compatibilityPct: scoreItem(uploadedClassification, uploadedEmbedding, {
           category: item.category?.name ?? null,
           colorGroup: item.colorGroup?.name ?? null,
           season: item.season?.name ?? null,
           style: item.style ?? null,
+          imageEmbedding: item.imageEmbedding ?? null,
         }),
       }))
       .sort((a, b) => b.compatibilityPct - a.compatibilityPct);

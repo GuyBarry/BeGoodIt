@@ -6,7 +6,7 @@ import { bufferToFloats, EMBEDDING_BYTES } from './clothingItem.service';
 
 // ── Math ──────────────────────────────────────────────────────────────────────
 
-function cosineSimilarity(a: number[], b: number[]): number {
+export function cosineSimilarity(a: number[], b: number[]): number {
   let dot = 0, na = 0, nb = 0;
   for (let i = 0; i < a.length; i++) {
     dot += a[i] * b[i];
