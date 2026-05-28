@@ -138,7 +138,7 @@ const scoreItem = (
 
   if (uploadedEmbedding && item.imageEmbedding?.length === EMBEDDING_BYTES) {
     const embeddingScore = Math.round(cosineSimilarity(uploadedEmbedding, bufferToFloats(item.imageEmbedding)) * 100);
-    return Math.round(0.6 * metadataScore + 0.4 * embeddingScore);
+    return Math.round(0.7 * metadataScore + 0.3 * embeddingScore);
   }
   return metadataScore;
 };
