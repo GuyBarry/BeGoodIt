@@ -22,7 +22,9 @@ const addToCloset = async (
 ): Promise<ClothingItemDto> => {
   const processedFile = await backgroundRemovalService.removeBackground(file);
 
-  // Image save and classification run in parallel — both only need the processed file
+  // Image save and classification run in parallel — both only need the processed file.
+  // ONNX Runtime (CLIP) runs in an isolated child process so there is no shared-heap
+  // conflict with libvips (sharp) in the main process.
   const [imageDto, classification] = await Promise.all([
     imagesService.saveImage(processedFile),
     classifyClothingItem({ mimeType: processedFile.mimetype, data: processedFile.buffer }).catch(() => null),

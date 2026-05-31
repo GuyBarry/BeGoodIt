@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 import { AIImageInput } from './ai.provider';
-import { classifyWithClip, toRawImage } from './clipClassifier';
+import { classifyWithClip, detectClothingItems, RawDetection } from './clipClassifier';
 
 export interface InspirationItem {
   category: 'Top' | 'Bottom' | 'Dress' | 'Shoes' | 'Outerwear' | 'Accessories' | 'Undergarment' | 'Activewear';
@@ -10,37 +10,9 @@ export interface InspirationItem {
   description: string;
 }
 
-// OWL-ViT zero-shot object detector — finds where clothing items are in an outfit photo.
-// Loaded once and reused across requests.
-let _detector: any = null;
-
-async function getDetector() {
-  if (!_detector) {
-    const { pipeline } = await import('@xenova/transformers');
-    _detector = await pipeline('zero-shot-object-detection', 'Xenova/owlvit-base-patch32');
-  }
-  return _detector;
-}
-
-// One query per clothing category — OWL-ViT uses these to locate items in the photo.
-// Category is determined by CLIP after cropping (more accurate on isolated crops),
-// so these labels are only used for detection, not for the final classification.
-const DETECTION_QUERIES = [
-  'a shirt, blouse, sweater, hoodie, or t-shirt',
-  'pants, jeans, skirt, or shorts',
-  'a dress, jumpsuit, or romper',
-  'shoes, sneakers, boots, or sandals',
-  'a jacket, coat, blazer, or outerwear',
-  'a bag, hat, belt, scarf, or sunglasses',
-  'underwear or a bra',
-  'sportswear or gym clothes',
-];
-
-const DETECTION_THRESHOLD = 0.05;
 const IOU_THRESHOLD = 0.5;
 
-interface Box { xmin: number; ymin: number; xmax: number; ymax: number; }
-interface Detection { score: number; box: Box; }
+type Box = RawDetection['box'];
 
 function iou(a: Box, b: Box): number {
   const ix1 = Math.max(a.xmin, b.xmin), iy1 = Math.max(a.ymin, b.ymin);
@@ -50,9 +22,9 @@ function iou(a: Box, b: Box): number {
   return inter / ((a.xmax - a.xmin) * (a.ymax - a.ymin) + (b.xmax - b.xmin) * (b.ymax - b.ymin) - inter);
 }
 
-function suppressOverlapping(dets: Detection[]): Detection[] {
+function suppressOverlapping(dets: RawDetection[]): RawDetection[] {
   const sorted = [...dets].sort((a, b) => b.score - a.score);
-  const kept: Detection[] = [];
+  const kept: RawDetection[] = [];
   for (const d of sorted) {
     if (kept.every(k => iou(k.box, d.box) < IOU_THRESHOLD)) kept.push(d);
   }
@@ -72,21 +44,15 @@ async function cropToBox(buffer: Buffer, box: Box): Promise<Buffer> {
 }
 
 export async function classifyInspirationImage(image: AIImageInput): Promise<InspirationItem[]> {
-  const [detector, rawImage] = await Promise.all([
-    getDetector(),
-    toRawImage(image.data),
-  ]);
-
-  const raw: { label: string; score: number; box: Box }[] =
-    await detector(rawImage, DETECTION_QUERIES, { threshold: DETECTION_THRESHOLD });
-
-  const detections = suppressOverlapping(raw.map(r => ({ score: r.score, box: r.box })));
+  // OWL-ViT detection runs in the CLIP worker (ONNX — isolated process)
+  const rawDetections = await detectClothingItems(image.data);
+  const detections = suppressOverlapping(rawDetections);
   if (detections.length === 0) return [];
 
   return Promise.all(
     detections.map(async (det) => {
       const crop = await cropToBox(image.data, det.box);
-      // CLIP classifies all 4 fields on the isolated crop — same path as single-item upload
+      // CLIP classification on the crop — same path as single-item upload
       const { category, colorGroup, season, style } = await classifyWithClip(crop);
       const seasonLabel = season === 'All-Season' ? 'all seasons' : `the ${season.toLowerCase()} season`;
       const description = `A ${colorGroup.toLowerCase()} ${category.toLowerCase()} suited for ${seasonLabel} with a ${style.toLowerCase()} style.`;
