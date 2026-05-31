@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 import { AIImageInput } from './ai.provider';
-import { classifyWithClip } from './clipClassifier';
+import { classifyWithClip, toRawImage } from './clipClassifier';
 
 export interface InspirationItem {
   category: 'Top' | 'Bottom' | 'Dress' | 'Shoes' | 'Outerwear' | 'Accessories' | 'Undergarment' | 'Activewear';
@@ -72,11 +72,13 @@ async function cropToBox(buffer: Buffer, box: Box): Promise<Buffer> {
 }
 
 export async function classifyInspirationImage(image: AIImageInput): Promise<InspirationItem[]> {
-  const detector = await getDetector();
-  const dataUrl  = `data:${image.mimeType};base64,${image.data.toString('base64')}`;
+  const [detector, rawImage] = await Promise.all([
+    getDetector(),
+    toRawImage(image.data),
+  ]);
 
   const raw: { label: string; score: number; box: Box }[] =
-    await detector(dataUrl, DETECTION_QUERIES, { threshold: DETECTION_THRESHOLD });
+    await detector(rawImage, DETECTION_QUERIES, { threshold: DETECTION_THRESHOLD });
 
   const detections = suppressOverlapping(raw.map(r => ({ score: r.score, box: r.box })));
   if (detections.length === 0) return [];
@@ -85,7 +87,7 @@ export async function classifyInspirationImage(image: AIImageInput): Promise<Ins
     detections.map(async (det) => {
       const crop = await cropToBox(image.data, det.box);
       // CLIP classifies all 4 fields on the isolated crop — same path as single-item upload
-      const { category, colorGroup, season, style } = await classifyWithClip(crop, 'image/png');
+      const { category, colorGroup, season, style } = await classifyWithClip(crop);
       const seasonLabel = season === 'All-Season' ? 'all seasons' : `the ${season.toLowerCase()} season`;
       const description = `A ${colorGroup.toLowerCase()} ${category.toLowerCase()} suited for ${seasonLabel} with a ${style.toLowerCase()} style.`;
       return { category, colorGroup, season, style, description };

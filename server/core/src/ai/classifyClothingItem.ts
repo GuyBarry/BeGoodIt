@@ -30,7 +30,7 @@ const deriveCategory = (title: string): ClothingClassification['category'] | nul
 };
 
 export async function classifyClothingItem(image: AIImageInput, productTitle?: string): Promise<ClothingClassification> {
-  const clip = await classifyWithClip(image.data, image.mimeType);
+  const clip = await classifyWithClip(image.data);
 
   const category = productTitle
     ? (deriveCategory(productTitle) ?? clip.category)
