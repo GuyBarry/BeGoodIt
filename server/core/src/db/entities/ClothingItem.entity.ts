@@ -34,13 +34,8 @@ export class ClothingItem {
   @Column({ type: 'varchar', nullable: true })
   style: string | null;
 
-  /**
-   * AI visual embedding for similarity search.
-   * Maps to VECTOR(1536) in MySQL 9.0+.
-   * Stored as LONGBLOB at the TypeORM mapping level;
-   * set the actual column type to VECTOR(1536) via a raw migration.
-   */
-  @Column({ name: 'image_embedding', type: 'longblob', nullable: true })
+  // text-embedding-004 produces 768 float32 values = 3072 bytes, stored as VARBINARY(3072)
+  @Column({ name: 'image_embedding', type: 'varbinary', length: 3072, nullable: true })
   imageEmbedding: Buffer | null;
 
   @CreateDateColumn({ name: 'created_at' })

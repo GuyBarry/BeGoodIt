@@ -1,12 +1,10 @@
-import { Box, Button, Typography } from '@mui/material';
-import ImageIcon from '@mui/icons-material/Image';
-import { PRIMARY_ALPHA } from '../../../styles/tokens';
+import { Box, Typography } from '@mui/material';
 
 interface Props {
-  onGetInspired: () => void;
+  onGetInspired?: () => void;
 }
 
-export default function FittingRoomHeader({ onGetInspired }: Props) {
+export default function FittingRoomHeader({ onGetInspired: _ }: Props) {
   return (
     <Box
       component="header"
@@ -22,26 +20,11 @@ export default function FittingRoomHeader({ onGetInspired }: Props) {
         py: 3,
       }}
     >
-      <Box sx={{ maxWidth: 1280, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography variant="h4">Fitting Room</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-            Create your perfect look
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<ImageIcon />}
-          onClick={onGetInspired}
-          sx={{
-            background: PRIMARY_ALPHA[12],
-            color: 'primary.main',
-            boxShadow: 'none',
-            '&:hover': { background: PRIMARY_ALPHA[20], boxShadow: 'none' },
-          }}
-        >
-          Get Inspired
-        </Button>
+      <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
+        <Typography variant="h4">Fitting Room</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+          Create your perfect look
+        </Typography>
       </Box>
     </Box>
   );

@@ -3,6 +3,8 @@ import { ClothingFilters } from '../repositories';
 import { backgroundRemovalService } from './backgroundRemoval.service';
 import { imagesService } from './images.service';
 import { AddItemInput, clothingItemService } from './clothingItem.service';
+import { classifyClothingItem } from '../ai/classifyClothingItem';
+import { generateEmbedding } from '../ai/ai.provider';
 
 const getItemsByUserId = async (
   userId: string,
@@ -19,8 +21,22 @@ const addToCloset = async (
   tags: AddItemInput = {},
 ): Promise<ClothingItemDto> => {
   const processedFile = await backgroundRemovalService.removeBackground(file);
-  const imageDto = await imagesService.saveImage(processedFile);
-  return clothingItemService.addItem(userId, imageDto.id, tags);
+
+  // Image save and classification run in parallel — both only need the processed file
+  const [imageDto, classification] = await Promise.all([
+    imagesService.saveImage(processedFile),
+    classifyClothingItem({ mimeType: processedFile.mimetype, data: processedFile.buffer }).catch(() => null),
+  ]);
+
+  // Embed the description so similarity search is fast at query time (no AI call needed)
+  const embedding = classification?.description
+    ? await generateEmbedding(classification.description).catch(() => null)
+    : null;
+
+  return clothingItemService.addItem(userId, imageDto.id, {
+    ...tags,
+    embedding,
+  });
 };
 
 const removeFromCloset = async (userId: string, itemId: string): Promise<void> => {

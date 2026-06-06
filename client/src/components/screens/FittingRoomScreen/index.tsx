@@ -1,26 +1,35 @@
-import { useState } from 'react';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import CheckroomIcon from '@mui/icons-material/Checkroom';
 import { Box } from '@mui/material';
-import FittingRoomHeader from './FittingRoomHeader';
-import PreviewArea from './PreviewArea';
+import { useState } from 'react';
+import { useClothingItems, useFindMatches, useGenerateLook, useSaveOutfit } from '../../../api';
+import { PRIMARY_ALPHA } from '../../../styles/tokens';
 import ClosetItemGrid from './ClosetItemGrid';
-import SelectedSummary from './SelectedSummary';
+import FittingRoomHeader from './FittingRoomHeader';
 import GenerateButton from './GenerateButton';
-import GetInspiredDialog from './GetInspiredDialog';
-import { useClothingItems, useGenerateLook } from '../../../api';
-import { useCurrentUser } from '../../../auth/AuthContext';
 
-export default function FittingRoomScreen() {
+  import GetInspiredPanel from './GetInspiredPanel';
+  import PreviewArea from './PreviewArea';
+  import SelectedSummary from './SelectedSummary';
+  import { useCurrentUser } from '../../../auth/AuthContext';
+  
+  const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
+  
+  export default function FittingRoomScreen() {
   const currentUserId = useCurrentUser().id;
   const { data: clothingItems = [] } = useClothingItems(currentUserId);
-  const { mutate: generateLook, isPending: isGenerating } = useGenerateLook();
+  const { mutate: generateLook, isPending: isGenerating }             = useGenerateLook();
+  const { mutate: saveOutfit,   isPending: isSaving, isSuccess: isSaved } = useSaveOutfit();
+  const { mutate: findMatches,  isPending: isAnalyzingInspiration }   = useFindMatches();
 
-  const [selectedItems, setSelectedItems]                     = useState<string[]>([]);
-  const [generatedLookUrl, setGeneratedLookUrl]               = useState<string | null>(null);
-  const [activeCategory, setActiveCategory]                   = useState('all');
-  const [showInspireDialog, setShowInspireDialog]             = useState(false);
-  const [inspirationImage, setInspirationImage]               = useState<string | null>(null);
-  const [isAnalyzingInspiration, setIsAnalyzingInspiration]   = useState(false);
-  const [suggestedItems, setSuggestedItems]                   = useState<string[]>([]);
+  const [selectedItems, setSelectedItems]     = useState<string[]>([]);
+  const [generatedLookUrl, setGeneratedLookUrl] = useState<string | null>(null);
+  const [generatedImageId, setGeneratedImageId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory]   = useState('all');
+  const [activeTab, setActiveTab]             = useState<'closet' | 'inspired'>('closet');
+  const [inspirationImage, setInspirationImage]   = useState<string | null>(null);
+  const [inspirationFile, setInspirationFile]     = useState<File | null>(null);
+  const [suggestedItems, setSuggestedItems]   = useState<string[]>([]);
 
   const toggleItem = (id: string) =>
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -30,86 +39,138 @@ export default function FittingRoomScreen() {
     generateLook(
       { userId: currentUserId, clothingItemIds: selectedItems },
       {
-        onSuccess: (url) => {
+        onSuccess: ({ url, imageId }) => {
           if (generatedLookUrl) URL.revokeObjectURL(generatedLookUrl);
           setGeneratedLookUrl(url);
+          setGeneratedImageId(imageId);
         },
       },
     );
+  };
+
+  const handleSave = () => {
+    if (!generatedImageId) return;
+    saveOutfit({ userId: CURRENT_USER_ID, imageId: generatedImageId, clothingItemIds: selectedItems });
   };
 
   const handleReset = () => {
     if (generatedLookUrl) URL.revokeObjectURL(generatedLookUrl);
     setSelectedItems([]);
     setGeneratedLookUrl(null);
+    setGeneratedImageId(null);
     setSuggestedItems([]);
   };
 
   const handleFileSelect = (file: File) => {
     setInspirationImage(URL.createObjectURL(file));
+    setInspirationFile(file);
   };
 
   const handleFindMatches = () => {
-    if (!inspirationImage) return;
-    setIsAnalyzingInspiration(true);
-    setTimeout(() => {
-      const suggested = clothingItems.slice(0, 3).map(i => i.id);
-      setIsAnalyzingInspiration(false);
-      setSuggestedItems(suggested);
-      setSelectedItems(suggested);
-      setShowInspireDialog(false);
-    }, 2000);
+    if (!inspirationFile) return;
+    findMatches(
+      { userId: CURRENT_USER_ID, file: inspirationFile },
+      {
+        onSuccess: (matchedItemIds) => {
+          setSuggestedItems(matchedItemIds);
+          setSelectedItems(matchedItemIds);
+          setActiveTab('closet');
+        },
+      },
+    );
   };
 
-  const handleCloseInspireDialog = () => {
-    setShowInspireDialog(false);
+  const handleClearInspirationImage = () => {
+    if (inspirationImage) URL.revokeObjectURL(inspirationImage);
     setInspirationImage(null);
-    setIsAnalyzingInspiration(false);
+    setInspirationFile(null);
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <FittingRoomHeader onGetInspired={() => setShowInspireDialog(true)} />
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+      <FittingRoomHeader />
 
-      <Box component="main" sx={{ flex: 1, px: 4, py: 4 }}>
-        <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4 }}>
+      <Box component="main" sx={{ flex: 1, minHeight: 0, px: 4, py: 3, overflow: 'hidden' }}>
+        <Box sx={{ maxWidth: 1280, mx: 'auto', height: '100%' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4, height: '100%' }}>
             <PreviewArea
               isGenerating={isGenerating}
               generatedLookUrl={generatedLookUrl}
+              isSaving={isSaving}
+              isSaved={isSaved}
               suggestedItems={suggestedItems}
+              onSave={handleSave}
               onReset={handleReset}
             />
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <ClosetItemGrid
-                clothingItems={clothingItems}
-                selectedItems={selectedItems}
-                suggestedItems={suggestedItems}
-                activeCategory={activeCategory}
-                onCategoryChange={setActiveCategory}
-                onToggleItem={toggleItem}
-              />
-              <SelectedSummary selectedItems={selectedItems} clothingItems={clothingItems} />
-              <GenerateButton
-                selectedItems={selectedItems}
-                isGenerating={isGenerating}
-                onGenerate={handleGenerate}
-              />
+            {/* Right panel with tabs */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+
+              {/* Pill tab switcher */}
+              <Box sx={{ display: 'flex', gap: 1, mb: 2.5, p: 0.75, bgcolor: 'action.hover', borderRadius: 3 }}>
+                {([{ id: 'closet', label: 'My Closet' }, { id: 'inspired', label: 'Get Inspired' }] as const).map(tab => (
+                  <Box
+                    key={tab.id}
+                    component="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    sx={{
+                      flex: 1, py: 1, border: 'none', cursor: 'pointer', borderRadius: 2.5,
+                      fontWeight: 600, fontSize: 13, fontFamily: 'inherit',
+                      transition: 'all 0.2s',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75,
+                      ...(activeTab === tab.id
+                        ? { bgcolor: 'background.paper', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', color: 'text.primary' }
+                        : { bgcolor: 'transparent', color: 'text.secondary' }
+                      ),
+                    }}
+                  >
+                    {tab.id === 'closet'
+                      ? <><CheckroomIcon sx={{ fontSize: 16 }} /> {tab.label}{suggestedItems.length > 0 && <Box component="span" sx={{ ml: 0.5, px: 0.75, py: 0.1, bgcolor: PRIMARY_ALPHA[15], color: 'primary.main', borderRadius: 5, fontSize: 11 }}>{suggestedItems.length}</Box>}</>
+                      : <><AutoAwesomeIcon sx={{ fontSize: 16 }} /> {tab.label}</>}
+                  </Box>
+                ))}
+              </Box>
+
+              {/* Closet tab */}
+              {activeTab === 'closet' && (
+                <>
+                  <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3, pr: 1, pb: 2 }}>
+                    <ClosetItemGrid
+                      clothingItems={clothingItems}
+                      selectedItems={selectedItems}
+                      suggestedItems={suggestedItems}
+                      activeCategory={activeCategory}
+                      onCategoryChange={setActiveCategory}
+                      onToggleItem={toggleItem}
+                    />
+                    <SelectedSummary selectedItems={selectedItems} clothingItems={clothingItems} />
+                  </Box>
+                  <Box sx={{ pt: 2 }}>
+                    <GenerateButton
+                      selectedItems={selectedItems}
+                      isGenerating={isGenerating}
+                      onGenerate={handleGenerate}
+                    />
+                  </Box>
+                </>
+              )}
+
+              {/* Get Inspired tab */}
+              {activeTab === 'inspired' && (
+                <GetInspiredPanel
+                  inspirationImage={inspirationImage}
+                  isAnalyzing={isAnalyzingInspiration}
+                  onFileSelect={handleFileSelect}
+                  onFindMatches={handleFindMatches}
+                  onClearImage={handleClearInspirationImage}
+                />
+              )}
+
             </Box>
           </Box>
         </Box>
       </Box>
 
-      <GetInspiredDialog
-        open={showInspireDialog}
-        inspirationImage={inspirationImage}
-        isAnalyzing={isAnalyzingInspiration}
-        onClose={handleCloseInspireDialog}
-        onFileSelect={handleFileSelect}
-        onFindMatches={handleFindMatches}
-        onClearImage={() => setInspirationImage(null)}
-      />
     </Box>
   );
 }

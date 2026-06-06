@@ -24,7 +24,7 @@ export default function GenerateButton({ selectedItems, isGenerating, onGenerate
       sx={{
         background: GRADIENTS.primary,
         color: '#fff',
-        py: 1.75,
+        py: 1.25,
         borderRadius: 3,
         fontSize: 16,
         fontWeight: 500,

@@ -42,3 +42,10 @@ export class InternalServerException extends CustomException {
     super(message, StatusCodes.INTERNAL_SERVER_ERROR, details);
   }
 }
+
+// 451 = "Unavailable For Legal Reasons" — repurposed here for bot-protected pages
+export class BotProtectedException extends CustomException {
+  constructor() {
+    super('This site blocks automated access.', 451);
+  }
+}

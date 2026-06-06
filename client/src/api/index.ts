@@ -11,3 +11,6 @@ export { useGenders } from './hooks/useGenders';
 export { useSeasons } from './hooks/useSeasons';
 export { useUploadImage } from './hooks/useUploadImage';
 export { useUser, useUpdateUser } from './hooks/useUser';
+export { useGetOutfits } from './hooks/useGetOutfits';
+export { useSaveOutfit } from './hooks/useSaveOutfit';
+export { useFindMatches } from './hooks/useFindMatches';

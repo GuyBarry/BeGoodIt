@@ -1,7 +1,8 @@
-import { Box, Button, IconButton, Paper, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, IconButton, Typography } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import CheckIcon from '@mui/icons-material/Check';
 import ShareIcon from '@mui/icons-material/Share';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
@@ -9,17 +10,21 @@ import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 interface Props {
   isGenerating: boolean;
   generatedLookUrl: string | null;
+  isSaving: boolean;
+  isSaved: boolean;
   suggestedItems: string[];
+  onSave: () => void;
   onReset: () => void;
 }
 
-export default function PreviewArea({ isGenerating, generatedLookUrl, suggestedItems, onReset }: Props) {
+export default function PreviewArea({ isGenerating, generatedLookUrl, isSaving, isSaved, suggestedItems, onSave, onReset }: Props) {
   return (
     <Box
       sx={{
         position: 'relative',
-        aspectRatio: '3/4',
-        maxHeight: 600,
+        height: '100%',
+        aspectRatio: { xs: '3/4', lg: 'unset' },
+        maxHeight: { xs: 600, lg: 'unset' },
         borderRadius: 4,
         overflow: 'hidden',
         background: 'linear-gradient(180deg, #f5f0ea 0%, #ede5d8 100%)',
@@ -94,17 +99,20 @@ export default function PreviewArea({ isGenerating, generatedLookUrl, suggestedI
           <Box sx={{ position: 'absolute', bottom: 24, left: 24, right: 24, display: 'flex', gap: 1.5 }}>
             <Button
               variant="contained"
-              startIcon={<FavoriteIcon />}
+              startIcon={isSaved ? <CheckIcon /> : isSaving ? <CircularProgress size={16} color="inherit" /> : <FavoriteIcon />}
+              disabled={isSaving || isSaved}
+              onClick={onSave}
               sx={{
                 flex: 1,
-                bgcolor: 'rgba(255,255,255,0.85)',
-                color: 'text.primary',
+                bgcolor: isSaved ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.85)',
+                color: isSaved ? 'success.main' : 'text.primary',
                 backdropFilter: 'blur(12px)',
                 boxShadow: 'none',
                 '&:hover': { bgcolor: 'rgba(255,255,255,0.95)', boxShadow: 'none' },
+                '&.Mui-disabled': { bgcolor: 'rgba(255,255,255,0.95)', color: isSaved ? 'success.main' : 'text.disabled' },
               }}
             >
-              Save Look
+              {isSaved ? 'Saved!' : isSaving ? 'Saving...' : 'Save Look'}
             </Button>
             <IconButton sx={{ bgcolor: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', '&:hover': { bgcolor: 'rgba(255,255,255,0.95)' } }}>
               <ShareIcon />
