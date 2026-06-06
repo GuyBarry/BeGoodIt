@@ -7,9 +7,8 @@ import OutfitsGrid from './OutfitsGrid';
 import OutfitDialog from './OutfitDialog';
 import { mockOutfits, type MockOutfit } from './data';
 import { useClosetItems, useDeleteClothingItem } from '../../../api';
+import { useCurrentUser } from '../../../auth/AuthContext';
 import type { ClosetFilters } from '../../../api/api/closet.api';
-
-const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 
 const bounce = keyframes`
   0%, 100% { transform: translateY(0); opacity: 0.35; }
@@ -37,6 +36,7 @@ function LoadingDots() {
 }
 
 export default function ClosetScreen() {
+  const currentUserId = useCurrentUser().id;
   const [activeTab,        setActiveTab]        = useState<'clothes' | 'outfits'>('clothes');
   const [searchQuery,      setSearchQuery]      = useState('');
   const [debouncedSearch,  setDebouncedSearch]  = useState('');
@@ -63,8 +63,8 @@ export default function ClosetScreen() {
   };
 
   const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage, resetToFirstPage } =
-    useClosetItems(CURRENT_USER_ID, filters);
-  const { mutate: deleteItem } = useDeleteClothingItem(CURRENT_USER_ID);
+    useClosetItems(currentUserId, filters);
+  const { mutate: deleteItem } = useDeleteClothingItem(currentUserId);
 
   const items = data?.pages.flatMap(p => p.items) ?? [];
   const total = data?.pages[0]?.total ?? 0;

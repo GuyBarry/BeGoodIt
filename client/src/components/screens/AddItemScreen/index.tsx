@@ -2,20 +2,19 @@ import { useState, useCallback } from 'react';
 import { Box } from '@mui/material';
 import { useAddClothingItem, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
 import { clothingItemsApi } from '../../../api/api/closet.api';
+import { useCurrentUser } from '../../../auth/AuthContext';
 import AddItemHeader from './AddItemHeader';
 import UploadPanel from './UploadPanel';
 import TipsCard from './TipsCard';
 import TagEditor from './TagEditor';
 import { EMPTY_TAGS, type SelectedTags } from './types';
 
-// TODO: replace with real auth session user id
-const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
-
 export default function AddItemScreen() {
+  const currentUserId = useCurrentUser().id;
   const { data: categories = [] } = useGarmentCategories();
   const { data: colors = [] } = useColorGroups();
   const { data: seasons = [] } = useSeasons();
-  const { mutate: addClothingItem, isPending: isUploading } = useAddClothingItem(CURRENT_USER_ID);
+  const { mutate: addClothingItem, isPending: isUploading } = useAddClothingItem(currentUserId);
 
   const [file, setFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -69,7 +68,7 @@ export default function AddItemScreen() {
     addClothingItem(
       {
         file,
-        userId: CURRENT_USER_ID,
+        userId: currentUserId,
         colorGroupId: tags.color?.id ?? null,
         categoryId: tags.category?.id ?? null,
         seasonId: tags.season?.id ?? null,

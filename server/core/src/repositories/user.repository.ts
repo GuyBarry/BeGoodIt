@@ -10,6 +10,20 @@ export const userRepository = AppDataSource.getRepository(User).extend({
     });
   },
 
+  getByGoogleId(googleId: string): Promise<User | null> {
+    return this.findOne({
+      where: { googleId },
+      relations: ['gender'],
+    });
+  },
+
+  getByEmail(email: string): Promise<User | null> {
+    return this.findOne({
+      where: { email },
+      relations: ['gender'],
+    });
+  },
+
   async update(id: string, data: UpdateUserDto): Promise<User | null> {
     await this.createQueryBuilder()
       .update(User)
@@ -20,5 +34,23 @@ export const userRepository = AppDataSource.getRepository(User).extend({
       where: { id },
       relations: ['gender'],
     });
+  },
+
+  async createGoogleUser(input: {
+    googleId: string;
+    email: string;
+    username: string;
+    profilePictureUrl: string | null;
+  }): Promise<User> {
+    const user = this.create(input);
+    return this.save(user);
+  },
+
+  async linkGoogleId(id: string, googleId: string): Promise<void> {
+    await this.createQueryBuilder()
+      .update(User)
+      .set({ googleId })
+      .where('id = :id', { id })
+      .execute();
   },
 });

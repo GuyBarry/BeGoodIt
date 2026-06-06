@@ -11,9 +11,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutlineOutlined';
 import { GRADIENTS, PRIMARY_ALPHA, SERIF_FONT } from '../../../styles/tokens';
 import { useBodyImage, useUploadBodyImage } from '../../../api';
 import { imagesApi } from '../../../api/api/images.api';
-import type { User } from '../../../entities/user';
-
-const CURRENT_USER_ID: User['id'] = '00000000-0000-0000-0000-000000000001';
+import { useCurrentUser } from '../../../auth/AuthContext';
 
 const TIPS = [
   { num: 1, text: 'Stand in front of a plain, light-coloured wall' },
@@ -25,7 +23,8 @@ const TIPS = [
 export default function BodyImageScreen() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { data: bodyMapping } = useBodyImage(CURRENT_USER_ID);
+  const currentUserId = useCurrentUser().id;
+  const { data: bodyMapping } = useBodyImage(currentUserId);
   const { mutate: upload, isPending, error, reset } = useUploadBodyImage();
 
   const bodyImageId = bodyMapping?.imageId ?? null;
@@ -34,7 +33,7 @@ export default function BodyImageScreen() {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = '';
-    upload({ file, userId: CURRENT_USER_ID });
+    upload({ file, userId: currentUserId });
   };
 
   const triggerUpload = () => { reset(); fileInputRef.current?.click(); };

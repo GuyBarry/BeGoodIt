@@ -7,11 +7,11 @@ import SelectedSummary from './SelectedSummary';
 import GenerateButton from './GenerateButton';
 import GetInspiredDialog from './GetInspiredDialog';
 import { useClothingItems, useGenerateLook } from '../../../api';
-
-const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
+import { useCurrentUser } from '../../../auth/AuthContext';
 
 export default function FittingRoomScreen() {
-  const { data: clothingItems = [] } = useClothingItems(CURRENT_USER_ID);
+  const currentUserId = useCurrentUser().id;
+  const { data: clothingItems = [] } = useClothingItems(currentUserId);
   const { mutate: generateLook, isPending: isGenerating } = useGenerateLook();
 
   const [selectedItems, setSelectedItems]                     = useState<string[]>([]);
@@ -28,7 +28,7 @@ export default function FittingRoomScreen() {
   const handleGenerate = () => {
     if (selectedItems.length === 0) return;
     generateLook(
-      { userId: CURRENT_USER_ID, clothingItemIds: selectedItems },
+      { userId: currentUserId, clothingItemIds: selectedItems },
       {
         onSuccess: (url) => {
           if (generatedLookUrl) URL.revokeObjectURL(generatedLookUrl);
