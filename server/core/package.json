@@ -29,9 +29,11 @@
   "dependencies": {
     "@google/genai": "^1.51.0",
     "@imgly/background-removal-node": "^1.4.5",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "google-auth-library": "^9.15.1",
     "http-status-codes": "^2.3.0",
     "multer": "^2.1.1",
     "mysql2": "^3.22.0",
@@ -46,6 +48,7 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
     "@types/jest": "^30.0.0",

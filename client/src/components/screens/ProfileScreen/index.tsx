@@ -5,6 +5,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutlineOutlined';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import type { User } from '../../../entities/user';
 import { useUser, useUpdateUser, useClothingItems, useBodyImage } from '../../../api';
+import { useCurrentUser, useLogout } from '../../../auth/AuthContext';
 import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 import ProfileHeader from './ProfileHeader';
 import ProfileCard from './ProfileCard';
@@ -13,15 +14,15 @@ import StatsGrid from './StatsGrid';
 import StyleInsightsCard from './StyleInsightsCard';
 import EditProfileButton from './EditProfileButton';
 import EditProfileDialog from './EditProfileDialog';
-
-// TODO: replace with real auth session user id
-const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
+import LogoutButton from './LogoutButton';
 
 export default function ProfileScreen() {
-  const { data: user, isLoading, isError } = useUser(CURRENT_USER_ID);
-  const { mutate: updateUser } = useUpdateUser(CURRENT_USER_ID);
-  const { data: clothingItems = [] } = useClothingItems(CURRENT_USER_ID);
-  const { data: bodyImage } = useBodyImage(CURRENT_USER_ID);
+  const currentUserId = useCurrentUser().id;
+  const logout = useLogout();
+  const { data: user, isLoading, isError } = useUser(currentUserId);
+  const { mutate: updateUser } = useUpdateUser(currentUserId);
+  const { data: clothingItems = [] } = useClothingItems(currentUserId);
+  const { data: bodyImage } = useBodyImage(currentUserId);
 
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
@@ -126,6 +127,7 @@ export default function ProfileScreen() {
 
                 <StyleInsightsCard />
                 <EditProfileButton onClick={openEdit} />
+                <LogoutButton onClick={logout} />
               </Box>
             </Grid>
           </Grid>

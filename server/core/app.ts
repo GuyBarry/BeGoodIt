@@ -5,6 +5,7 @@ import swaggerUi from "swagger-ui-express";
 import { serverConfig } from "./src/config/server.config";
 import { swaggerSpec } from "./src/config/swagger.config";
 import {
+  authRouter,
   bodyRouter,
   clothingItemRouter,
   closetRouter,
@@ -32,6 +33,7 @@ export const initApp = async (): Promise<Express> => {
   app.use(express.urlencoded({ extended: true }));
 
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use("/auth", authRouter);
   app.use("/body", bodyRouter);
   app.use("/clothing-items", clothingItemRouter);
   app.use("/images", imagesRouter);

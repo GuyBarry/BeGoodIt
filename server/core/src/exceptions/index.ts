@@ -4,6 +4,7 @@ export {
   UnauthorizedException,
   ForbiddenException,
   NotFoundException,
+  ConflictException,
   UnsupportedMediaTypeException,
   PayloadTooLargeException,
   InternalServerException,
