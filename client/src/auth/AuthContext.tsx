@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { googleLogout } from '@react-oauth/google';
 import type { User } from '../entities';
 
 const STORAGE_KEY = 'begoodit.auth.user';
@@ -69,4 +71,14 @@ export function useCurrentUser(): User {
   const { user } = useAuth();
   if (!user) throw new Error('No authenticated user — render guards must protect this tree');
   return user;
+}
+
+export function useLogout(): () => void {
+  const { logout } = useAuth();
+  const queryClient = useQueryClient();
+  return useCallback(() => {
+    googleLogout();
+    logout();
+    queryClient.clear();
+  }, [logout, queryClient]);
 }

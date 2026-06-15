@@ -5,7 +5,6 @@ import ClosetHeader from './ClosetHeader';
 import ClothingGrid from './ClothingGrid';
 import OutfitsGrid from './OutfitsGrid';
 import OutfitDialog from './OutfitDialog';
-import { mockOutfits, type MockOutfit } from './data';
 import { useCurrentUser } from '../../../auth/AuthContext';
 import { useClosetItems, useDeleteClothingItem, useGetOutfits } from '../../../api';
 import type { ClosetFilters } from '../../../api/api/closet.api';
@@ -64,14 +63,9 @@ export default function ClosetScreen() {
   };
 
   const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage, resetToFirstPage } =
-<<<<<<< HEAD
     useClosetItems(currentUserId, filters);
   const { mutate: deleteItem } = useDeleteClothingItem(currentUserId);
-=======
-    useClosetItems(CURRENT_USER_ID, filters);
-  const { mutate: deleteItem } = useDeleteClothingItem(CURRENT_USER_ID);
-  const { data: outfits = [], isLoading: outfitsLoading } = useGetOutfits(CURRENT_USER_ID);
->>>>>>> 1d250deb5a5b8bfbf9fcabccd234e0a94a7a0d63
+  const { data: outfits = [], isLoading: outfitsLoading } = useGetOutfits(currentUserId);
 
   const items = data?.pages.flatMap(p => p.items) ?? [];
   const total = data?.pages[0]?.total ?? 0;

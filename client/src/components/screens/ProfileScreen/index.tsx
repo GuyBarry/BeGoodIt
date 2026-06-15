@@ -5,7 +5,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutlineOutlined';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import type { User } from '../../../entities/user';
 import { useUser, useUpdateUser, useClothingItems, useBodyImage } from '../../../api';
-import { useCurrentUser } from '../../../auth/AuthContext';
+import { useCurrentUser, useLogout } from '../../../auth/AuthContext';
 import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 import ProfileHeader from './ProfileHeader';
 import ProfileCard from './ProfileCard';
@@ -14,9 +14,11 @@ import StatsGrid from './StatsGrid';
 import StyleInsightsCard from './StyleInsightsCard';
 import EditProfileButton from './EditProfileButton';
 import EditProfileDialog from './EditProfileDialog';
+import LogoutButton from './LogoutButton';
 
 export default function ProfileScreen() {
   const currentUserId = useCurrentUser().id;
+  const logout = useLogout();
   const { data: user, isLoading, isError } = useUser(currentUserId);
   const { mutate: updateUser } = useUpdateUser(currentUserId);
   const { data: clothingItems = [] } = useClothingItems(currentUserId);
@@ -125,6 +127,7 @@ export default function ProfileScreen() {
 
                 <StyleInsightsCard />
                 <EditProfileButton onClick={openEdit} />
+                <LogoutButton onClick={logout} />
               </Box>
             </Grid>
           </Grid>
