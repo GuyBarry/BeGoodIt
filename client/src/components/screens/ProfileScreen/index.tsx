@@ -5,6 +5,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutlineOutlined';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import type { User } from '../../../entities/user';
 import { useUser, useUpdateUser, useClothingItems, useBodyImage } from '../../../api';
+import { imagesApi } from '../../../api/api/images.api';
 import { useCurrentUser, useLogout } from '../../../auth/AuthContext';
 import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 import ProfileHeader from './ProfileHeader';
@@ -90,17 +91,43 @@ export default function ProfileScreen() {
                 >
                   <Box sx={{ background: GRADIENTS.primarySubtle, px: 3, pt: 3, pb: 2.5 }}>
                     <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'flex-start' }}>
-                      <Box sx={{
-                        width: 52, height: 52, borderRadius: 3, flexShrink: 0,
-                        background: GRADIENTS.primary,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <PersonOutlineIcon sx={{ color: '#fff', fontSize: 26 }} />
-                      </Box>
+                      {bodyImage?.imageId ? (
+                        <Box
+                          onClick={() => navigate('/body')}
+                          sx={{
+                            width: 72, height: 96, borderRadius: 2.5, flexShrink: 0,
+                            overflow: 'hidden', cursor: 'pointer',
+                            border: '2px solid', borderColor: 'background.paper',
+                            boxShadow: `0 4px 12px ${PRIMARY_ALPHA[25]}`,
+                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                            '&:hover': {
+                              transform: 'scale(1.03)',
+                              boxShadow: `0 6px 16px ${PRIMARY_ALPHA[35]}`,
+                            },
+                          }}
+                        >
+                          <Box
+                            component="img"
+                            src={imagesApi.getImageUrl(bodyImage.imageId)}
+                            alt="Your virtual try-on model"
+                            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          />
+                        </Box>
+                      ) : (
+                        <Box sx={{
+                          width: 52, height: 52, borderRadius: 3, flexShrink: 0,
+                          background: GRADIENTS.primary,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <PersonOutlineIcon sx={{ color: '#fff', fontSize: 26 }} />
+                        </Box>
+                      )}
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="h6">Virtual Try-On Model</Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, lineHeight: 1.6 }}>
-                          Upload a full-body photo so the Fitting Room can show how outfits look on you.
+                          {bodyImage?.imageId
+                            ? 'Your photo is ready — the Fitting Room will use it for try-ons.'
+                            : 'Upload a full-body photo so the Fitting Room can show how outfits look on you.'}
                         </Typography>
                       </Box>
                     </Box>
@@ -120,7 +147,7 @@ export default function ProfileScreen() {
                       onClick={() => navigate('/body')}
                       sx={{ textTransform: 'none', fontWeight: 500 }}
                     >
-                      Set up
+                      {bodyImage ? 'Replace photo' : 'Set up'}
                     </Button>
                   </Box>
                 </Paper>
