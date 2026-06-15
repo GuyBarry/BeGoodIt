@@ -1,3 +1,4 @@
+export { authRouter } from './auth.controller';
 export { bodyRouter } from './body.controller';
 export { clothingItemRouter } from './clothingItem.controller';
 export { closetRouter } from './closet.controller';

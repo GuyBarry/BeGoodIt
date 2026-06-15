@@ -25,6 +25,12 @@ export class NotFoundException extends CustomException {
   }
 }
 
+export class ConflictException extends CustomException {
+  constructor(message: string, details?: unknown) {
+    super(message, StatusCodes.CONFLICT, details);
+  }
+}
+
 export class UnsupportedMediaTypeException extends CustomException {
   constructor(message: string, details?: unknown) {
     super(message, StatusCodes.UNSUPPORTED_MEDIA_TYPE, details);

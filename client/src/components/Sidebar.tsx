@@ -18,6 +18,8 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import PersonIcon from '@mui/icons-material/Person';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useLogout } from '../auth/AuthContext';
 
 const DRAWER_WIDTH = 272;
 const DRAWER_COLLAPSED_WIDTH = 80;
@@ -43,7 +45,37 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const logout = useLogout();
   const width = collapsed ? DRAWER_COLLAPSED_WIDTH : DRAWER_WIDTH;
+
+  const logoutButton = (
+    <ListItemButton
+      onClick={logout}
+      sx={{
+        borderRadius: 2.5,
+        px: 1.5,
+        py: 1.25,
+        color: 'text.secondary',
+        transition: 'background-color 0.2s ease, color 0.2s ease',
+        '&:hover': { bgcolor: 'action.hover', color: 'primary.main' },
+      }}
+    >
+      <ListItemIcon sx={{ minWidth: 40, color: 'inherit', justifyContent: 'center' }}>
+        <LogoutIcon sx={{ fontSize: 20 }} />
+      </ListItemIcon>
+      <Box
+        sx={{
+          overflow: 'hidden',
+          maxWidth: collapsed ? 0 : 180,
+          opacity: collapsed ? 0 : 1,
+          transition: `max-width ${DURATION} ${TRANSITION}, opacity 0.15s ease`,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <Typography sx={{ fontSize: 14, fontWeight: 500 }}>Log out</Typography>
+      </Box>
+    </ListItemButton>
+  );
 
   return (
     <Drawer
@@ -64,9 +96,20 @@ export default function Sidebar() {
         },
       }}
     >
-      {/* Logo */}
+      {/* Logo — click navigates to home */}
       <Box
+        component="button"
+        type="button"
+        onClick={() => navigate('/')}
+        aria-label="Go to home"
         sx={{
+          width: '100%',
+          bgcolor: 'transparent',
+          border: 'none',
+          borderRadius: 0,
+          textAlign: 'left',
+          cursor: 'pointer',
+          fontFamily: 'inherit',
           px: 2,
           py: 2.5,
           display: 'flex',
@@ -76,6 +119,9 @@ export default function Sidebar() {
           borderColor: 'divider',
           minHeight: 72,
           overflow: 'hidden',
+          transition: 'background-color 0.2s ease',
+          '&:hover': { bgcolor: 'action.hover' },
+          '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: -2 },
         }}
       >
         <Box
@@ -198,9 +244,16 @@ export default function Sidebar() {
         })}
       </List>
 
-      {/* Collapse Toggle */}
+      {/* Logout + Collapse */}
       <Divider />
-      <Box sx={{ p: 1 }}>
+      <Box sx={{ p: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        {collapsed ? (
+          <Tooltip title="Log out" placement="right">
+            {logoutButton}
+          </Tooltip>
+        ) : (
+          logoutButton
+        )}
         <ListItemButton
           onClick={() => setCollapsed((prev) => !prev)}
           sx={{

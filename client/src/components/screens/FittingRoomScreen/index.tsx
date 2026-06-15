@@ -7,14 +7,15 @@ import { PRIMARY_ALPHA } from '../../../styles/tokens';
 import ClosetItemGrid from './ClosetItemGrid';
 import FittingRoomHeader from './FittingRoomHeader';
 import GenerateButton from './GenerateButton';
+
 import GetInspiredPanel from './GetInspiredPanel';
 import PreviewArea from './PreviewArea';
 import SelectedSummary from './SelectedSummary';
-
-const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
+import { useCurrentUser } from '../../../auth/AuthContext';
 
 export default function FittingRoomScreen() {
-  const { data: clothingItems = [] } = useClothingItems(CURRENT_USER_ID);
+  const currentUserId = useCurrentUser().id;
+  const { data: clothingItems = [] } = useClothingItems(currentUserId);
   const { mutate: generateLook, isPending: isGenerating }             = useGenerateLook();
   const { mutate: saveOutfit,   isPending: isSaving, isSuccess: isSaved } = useSaveOutfit();
   const { mutate: findMatches,  isPending: isAnalyzingInspiration }   = useFindMatches();
@@ -34,7 +35,7 @@ export default function FittingRoomScreen() {
   const handleGenerate = () => {
     if (selectedItems.length === 0) return;
     generateLook(
-      { userId: CURRENT_USER_ID, clothingItemIds: selectedItems },
+      { userId: currentUserId, clothingItemIds: selectedItems },
       {
         onSuccess: ({ url, imageId }) => {
           if (generatedLookUrl) URL.revokeObjectURL(generatedLookUrl);
@@ -47,7 +48,7 @@ export default function FittingRoomScreen() {
 
   const handleSave = () => {
     if (!generatedImageId) return;
-    saveOutfit({ userId: CURRENT_USER_ID, imageId: generatedImageId, clothingItemIds: selectedItems });
+    saveOutfit({ userId: currentUserId, imageId: generatedImageId, clothingItemIds: selectedItems });
   };
 
   const handleReset = () => {
@@ -66,7 +67,7 @@ export default function FittingRoomScreen() {
   const handleFindMatches = () => {
     if (!inspirationFile) return;
     findMatches(
-      { userId: CURRENT_USER_ID, file: inspirationFile },
+      { userId: currentUserId, file: inspirationFile },
       {
         onSuccess: (matchedItemIds) => {
           setSuggestedItems(matchedItemIds);
@@ -131,7 +132,18 @@ export default function FittingRoomScreen() {
               {/* Closet tab */}
               {activeTab === 'closet' && (
                 <>
-                  <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3, pr: 1, pb: 2 }}>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      minHeight: 0,
+                      overflowY: 'auto',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 3,
+                      pr: 1,
+                      pb: 2,
+                    }}
+                  >
                     <ClosetItemGrid
                       clothingItems={clothingItems}
                       selectedItems={selectedItems}
@@ -140,9 +152,28 @@ export default function FittingRoomScreen() {
                       onCategoryChange={setActiveCategory}
                       onToggleItem={toggleItem}
                     />
-                    <SelectedSummary selectedItems={selectedItems} clothingItems={clothingItems} />
                   </Box>
-                  <Box sx={{ pt: 2 }}>
+                  <Box
+                    sx={{
+                      flexShrink: 0,
+                      pt: 2,
+                      mt: 1,
+                      bgcolor: 'background.default',
+                      borderTop: '1px solid',
+                      borderColor: 'divider',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.5,
+                    }}
+                  >
+                    {selectedItems.length > 0 && (
+                      <Box sx={{ maxHeight: 110, overflowY: 'auto' }}>
+                        <SelectedSummary
+                          selectedItems={selectedItems}
+                          clothingItems={clothingItems}
+                        />
+                      </Box>
+                    )}
                     <GenerateButton
                       selectedItems={selectedItems}
                       isGenerating={isGenerating}

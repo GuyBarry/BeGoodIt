@@ -5,11 +5,10 @@ import ClosetHeader from './ClosetHeader';
 import ClothingGrid from './ClothingGrid';
 import OutfitsGrid from './OutfitsGrid';
 import OutfitDialog from './OutfitDialog';
+import { useCurrentUser } from '../../../auth/AuthContext';
 import { useClosetItems, useDeleteClothingItem, useGetOutfits } from '../../../api';
 import type { ClosetFilters } from '../../../api/api/closet.api';
 import type { Outfit } from '../../../entities/outfit';
-
-const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 
 const bounce = keyframes`
   0%, 100% { transform: translateY(0); opacity: 0.35; }
@@ -37,6 +36,7 @@ function LoadingDots() {
 }
 
 export default function ClosetScreen() {
+  const currentUserId = useCurrentUser().id;
   const [activeTab,        setActiveTab]        = useState<'clothes' | 'outfits'>('clothes');
   const [searchQuery,      setSearchQuery]      = useState('');
   const [debouncedSearch,  setDebouncedSearch]  = useState('');
@@ -63,9 +63,9 @@ export default function ClosetScreen() {
   };
 
   const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage, resetToFirstPage } =
-    useClosetItems(CURRENT_USER_ID, filters);
-  const { mutate: deleteItem } = useDeleteClothingItem(CURRENT_USER_ID);
-  const { data: outfits = [], isLoading: outfitsLoading } = useGetOutfits(CURRENT_USER_ID);
+    useClosetItems(currentUserId, filters);
+  const { mutate: deleteItem } = useDeleteClothingItem(currentUserId);
+  const { data: outfits = [], isLoading: outfitsLoading } = useGetOutfits(currentUserId);
 
   const items = data?.pages.flatMap(p => p.items) ?? [];
   const total = data?.pages[0]?.total ?? 0;

@@ -4,7 +4,7 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState, useEffect } from 'react';
-import { GRADIENTS, SERIF_FONT } from '../../../styles/tokens';
+import { GRADIENTS, PALETTE, SERIF_FONT } from '../../../styles/tokens';
 import { imagesApi } from '../../../api/api/images.api';
 import type { AnalysisResult as AnalysisResultType } from './types';
 
@@ -13,18 +13,20 @@ interface Props {
   testName: string;
   isAnalyzing: boolean;
   result: AnalysisResultType | null;
-  isVirtualTryOn: boolean;
+  tryOnImage: string | null;
+  isTryingOn: boolean;
   isAdding: boolean;
   addSuccess: boolean;
-  onToggleVirtualTryOn: () => void;
+  onVirtualTryOn: () => void;
   onAddToCloset: (name: string) => void;
   onReset: () => void;
 }
 
 export default function AnalysisResult({
   testImage, testName, isAnalyzing, result,
+  tryOnImage, isTryingOn,
   isAdding, addSuccess,
-  onToggleVirtualTryOn, onAddToCloset, onReset,
+  onVirtualTryOn, onAddToCloset, onReset,
 }: Props) {
   const [namingStep, setNamingStep] = useState(false);
   const [customName, setCustomName] = useState(testName);
@@ -52,10 +54,27 @@ export default function AnalysisResult({
       >
         <Box
           component="img"
-          src={testImage}
+          src={tryOnImage ?? testImage}
           alt={testName}
           sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
+
+        {/* Virtual Try-On badge */}
+        {tryOnImage && (
+          <Box
+            sx={{
+              position: 'absolute', top: 16, left: 16,
+              background: GRADIENTS.primary,
+              borderRadius: 20, px: 1.5, py: 0.5,
+              display: 'flex', alignItems: 'center', gap: 0.5,
+            }}
+          >
+            <AutoAwesomeIcon sx={{ fontSize: 13, color: '#fff' }} />
+            <Typography variant="caption" sx={{ color: '#fff', fontWeight: 700, letterSpacing: 0.2 }}>
+              Virtual Try-On
+            </Typography>
+          </Box>
+        )}
 
         {/* X button */}
         <IconButton
@@ -69,6 +88,21 @@ export default function AnalysisResult({
         >
           <CloseIcon fontSize="small" />
         </IconButton>
+
+        {/* Try-on generating overlay */}
+        {isTryingOn && (
+          <Box
+            sx={{
+              position: 'absolute', inset: 0,
+              bgcolor: 'rgba(0,0,0,0.5)',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 2,
+            }}
+          >
+            <CircularProgress size={40} sx={{ color: '#fff' }} />
+            <Typography sx={{ color: '#fff', fontWeight: 500 }}>Generating your look...</Typography>
+          </Box>
+        )}
 
         {/* Analyzing overlay */}
         {isAnalyzing && (
@@ -179,15 +213,18 @@ export default function AnalysisResult({
 
             {/* Buttons */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 'auto' }}>
-              <Button
-                variant="outlined"
-                size="large"
-                startIcon={<AutoAwesomeIcon />}
-                onClick={onToggleVirtualTryOn}
-                sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.5 }}
-              >
-                Virtual Try-On
-              </Button>
+              {!tryOnImage && (
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={isTryingOn ? <CircularProgress size={18} sx={{ color: PALETTE.primary }} /> : <AutoAwesomeIcon />}
+                  onClick={onVirtualTryOn}
+                  disabled={isTryingOn}
+                  sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.5 }}
+                >
+                  {isTryingOn ? 'Generating...' : 'Virtual Try-On'}
+                </Button>
+              )}
 
               {addSuccess ? (
                 <Button
