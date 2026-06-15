@@ -29,4 +29,18 @@ export const fittingRoomApi = {
       imageId: response.headers['x-image-id'] as string,
     };
   },
+
+  tryOnProduct: async (userId: User['id'], file: File): Promise<GenerateLookResult> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post<Blob>(
+      `/fitting-room/${userId}/try-on-product`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' }, responseType: 'blob' },
+    );
+    return {
+      url: URL.createObjectURL(response.data),
+      imageId: response.headers['x-image-id'] as string,
+    };
+  },
 };

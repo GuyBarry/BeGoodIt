@@ -38,6 +38,28 @@ fittingRoomRouter.post(
 );
 
 fittingRoomRouter.post(
+  '/:userId/try-on-product',
+  upload.single('file'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userId } = req.params;
+      if (!userId?.trim()) return next(new BadRequestException('userId is required'));
+      if (!req.file) return next(new BadRequestException('file is required'));
+
+      const { imageBuffer, imageId } = await fittingRoomService.createProductTryOn(userId, req.file);
+
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Content-Length', imageBuffer.length);
+      res.setHeader('X-Image-Id', imageId);
+      res.setHeader('Access-Control-Expose-Headers', 'X-Image-Id');
+      res.status(StatusCodes.OK).send(imageBuffer);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+fittingRoomRouter.post(
   '/:userId/find-matches',
   upload.single('file'),
   async (req: Request, res: Response, next: NextFunction) => {

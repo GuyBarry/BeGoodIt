@@ -5,34 +5,7 @@ import {
   generateAIImage,
 } from "./ai.provider";
 
-export interface GenerateOutfitInput {
-  bodyImage: Express.Multer.File;
-  clothingItemsImages: Express.Multer.File[];
-  clothingItems: ClothingItem[];
-}
-
-export const generateOutfit = async (
-  input: GenerateOutfitInput,
-): Promise<Buffer> => {
-  const { bodyImage, clothingItemsImages, clothingItems } = input;
-
-  const clothingDescriptions = clothingItems
-    .map((item, index) => {
-      const parts: string[] = [`Item ${index + 1}:`];
-      if (item.style) parts.push(`Style: ${item.style}`);
-      return parts.join(", ");
-    })
-    .join("\n        ");
-
-  const prompt = `
-        Task: Please fit the provided clothing item onto the provided person based on
-        the description below. Ensure a highly realistic, artifact-free output.
-
-        Clothing items descriptions:
-        ${clothingDescriptions}
-    `;
-
-  const systemInstruction = `
+const VIRTUAL_TRY_ON_SYSTEM_INSTRUCTION = `
       You are an advanced, photorealistic virtual try-on assistant designed for a digital wardrobe application.
       Your objective is to take an image of a user's avatar or person and seamlessly composite a provided
       garment onto them.
@@ -60,9 +33,36 @@ export const generateOutfit = async (
       6. Output Format: The output must be a single, photorealistic image in PNG format.
     `;
 
+export interface GenerateOutfitInput {
+  bodyImage: Express.Multer.File;
+  clothingItemsImages: Express.Multer.File[];
+  clothingItems: ClothingItem[];
+}
+
+export const generateOutfit = async (
+  input: GenerateOutfitInput,
+): Promise<Buffer> => {
+  const { bodyImage, clothingItemsImages, clothingItems } = input;
+
+  const clothingDescriptions = clothingItems
+    .map((item, index) => {
+      const parts: string[] = [`Item ${index + 1}:`];
+      if (item.style) parts.push(`Style: ${item.style}`);
+      return parts.join(", ");
+    })
+    .join("\n        ");
+
+  const prompt = `
+        Task: Please fit the provided clothing item onto the provided person based on
+        the description below. Ensure a highly realistic, artifact-free output.
+
+        Clothing items descriptions:
+        ${clothingDescriptions}
+    `;
+
   const config = {
     responseModalities: ["IMAGE"],
-    systemInstruction,
+    systemInstruction: VIRTUAL_TRY_ON_SYSTEM_INSTRUCTION,
   };
 
   const images: AIImageInput[] = [
@@ -74,4 +74,22 @@ export const generateOutfit = async (
   ];
 
   return generateAIImage(AIModel.GEMINI_2_5_FLASH_IMAGE, prompt, config, images);
+};
+
+export const generateProductTryOn = async (
+  bodyImage: Express.Multer.File,
+  productImage: Express.Multer.File,
+): Promise<Buffer> => {
+  const prompt = `
+        Task: The first image is a person. The second image is a product clothing item.
+        Place the clothing item onto the person so it fits naturally and realistically.
+        Ensure a highly realistic, artifact-free output in PNG format.
+    `;
+
+  const images: AIImageInput[] = [
+    { mimeType: bodyImage.mimetype, data: bodyImage.buffer },
+    { mimeType: productImage.mimetype, data: productImage.buffer },
+  ];
+
+  return generateAIImage(AIModel.GEMINI_2_5_FLASH_IMAGE, prompt, { responseModalities: ['IMAGE'], systemInstruction: VIRTUAL_TRY_ON_SYSTEM_INSTRUCTION }, images);
 };

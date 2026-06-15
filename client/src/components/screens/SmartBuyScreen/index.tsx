@@ -8,6 +8,7 @@ import RecentTestDialog from './RecentTestDialog';
 import type { AnalysisResult as AnalysisResultType, RecentTest } from './types';
 import { smartBuyApi } from '../../../api/api/smartBuy.api';
 import { imagesApi } from '../../../api/api/images.api';
+import { fittingRoomApi } from '../../../api/api/fittingRoom.api';
 
 const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 const MAX_RECENT = 6;
@@ -25,7 +26,8 @@ export default function SmartBuyScreen() {
   const [testName, setTestName] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResultType | null>(null);
-  const [isVirtualTryOn, setIsVirtualTryOn] = useState(false);
+  const [tryOnImage, setTryOnImage] = useState<string | null>(null);
+  const [isTryingOn, setIsTryingOn] = useState(false);
   const [recentTests, setRecentTests] = useState<RecentTest[]>([]);
 
   useEffect(() => {
@@ -58,7 +60,8 @@ export default function SmartBuyScreen() {
     setTestFile(file ?? null);
     setTestName(name);
     setResult(null);
-    setIsVirtualTryOn(false);
+    setTryOnImage(null);
+    setIsTryingOn(false);
     setIsAdding(false);
     setAddSuccess(false);
     setIsAnalyzing(true);
@@ -159,13 +162,32 @@ export default function SmartBuyScreen() {
     });
   };
 
+  const handleVirtualTryOn = async () => {
+    let file = testFile;
+    if (!file && testImage) {
+      const blob = await fetch(testImage).then(r => r.blob());
+      file = new File([blob], 'product.jpg', { type: blob.type });
+    }
+    if (!file) return;
+    setIsTryingOn(true);
+    try {
+      const { url } = await fittingRoomApi.tryOnProduct(CURRENT_USER_ID, file);
+      setTryOnImage(url);
+    } catch {
+      // keep product image on failure
+    } finally {
+      setIsTryingOn(false);
+    }
+  };
+
   const handleReset = () => {
     setTestImage(null);
     setTestFile(null);
     setTestName('');
     setResult(null);
     setIsAnalyzing(false);
-    setIsVirtualTryOn(false);
+    setTryOnImage(null);
+    setIsTryingOn(false);
     setIsAdding(false);
     setAddSuccess(false);
     setTestClassification(null);
@@ -199,10 +221,11 @@ export default function SmartBuyScreen() {
               testName={testName}
               isAnalyzing={isAnalyzing}
               result={result}
-              isVirtualTryOn={isVirtualTryOn}
+              tryOnImage={tryOnImage}
+              isTryingOn={isTryingOn}
               isAdding={isAdding}
               addSuccess={addSuccess}
-              onToggleVirtualTryOn={() => setIsVirtualTryOn(v => !v)}
+              onVirtualTryOn={handleVirtualTryOn}
               onAddToCloset={handleAddToCloset}
               onReset={handleReset}
             />

@@ -1,7 +1,7 @@
 import { Image } from '../db/entities';
 import { bodyMappingRepository } from '../repositories';
 import { NotFoundException } from '../exceptions/httpExceptions';
-import { generateOutfit, GenerateOutfitInput } from '../ai/prompt.manager';
+import { generateOutfit, generateProductTryOn, GenerateOutfitInput } from '../ai/prompt.manager';
 import { imagesService } from './images.service';
 import { clothingItemService } from './clothingItem.service';
 import { outfitService } from './outfit.service';
@@ -74,6 +74,32 @@ const createFit = async (userId: string, clothingItemIds: string[]): Promise<Fit
   return { imageBuffer, imageId: imageDto.id };
 };
 
+const createProductTryOn = async (userId: string, productImage: Express.Multer.File): Promise<FitResult> => {
+  const bodyMapping = await bodyMappingRepository.findOne({ where: { userId } });
+  if (!bodyMapping) throw new NotFoundException(`No body image found for user '${userId}'`);
+
+  const bodyImageEntity = await imagesService.getImageById(bodyMapping.imageId);
+  const bodyImage = toMulterFile(bodyImageEntity);
+
+  const imageBuffer = await generateProductTryOn(bodyImage, productImage);
+
+  const imageDto = await imagesService.saveImage({
+    fieldname: 'file',
+    originalname: 'tryon.png',
+    encoding: '7bit',
+    mimetype: 'image/png',
+    size: imageBuffer.length,
+    buffer: imageBuffer,
+    stream: null as any,
+    destination: '',
+    filename: '',
+    path: '',
+  });
+
+  return { imageBuffer, imageId: imageDto.id };
+};
+
 export const fittingRoomService = {
   createFit,
+  createProductTryOn,
 };
