@@ -96,9 +96,20 @@ export default function Sidebar() {
         },
       }}
     >
-      {/* Logo */}
+      {/* Logo — click navigates to home */}
       <Box
+        component="button"
+        type="button"
+        onClick={() => navigate('/')}
+        aria-label="Go to home"
         sx={{
+          width: '100%',
+          bgcolor: 'transparent',
+          border: 'none',
+          borderRadius: 0,
+          textAlign: 'left',
+          cursor: 'pointer',
+          fontFamily: 'inherit',
           px: 2,
           py: 2.5,
           display: 'flex',
@@ -108,6 +119,9 @@ export default function Sidebar() {
           borderColor: 'divider',
           minHeight: 72,
           overflow: 'hidden',
+          transition: 'background-color 0.2s ease',
+          '&:hover': { bgcolor: 'action.hover' },
+          '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: -2 },
         }}
       >
         <Box
