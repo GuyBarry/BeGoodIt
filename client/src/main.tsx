@@ -9,7 +9,7 @@ import App from './App.tsx';
 import { AuthProvider } from './auth/AuthContext';
 
 const queryClient = new QueryClient();
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
+const googleClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '').trim();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -24,6 +24,13 @@ export const userRepository = AppDataSource.getRepository(User).extend({
     });
   },
 
+  getByUsername(username: string): Promise<User | null> {
+    return this.findOne({
+      where: { username },
+      relations: ['gender'],
+    });
+  },
+
   async update(id: string, data: UpdateUserDto): Promise<User | null> {
     await this.createQueryBuilder()
       .update(User)
@@ -41,6 +48,15 @@ export const userRepository = AppDataSource.getRepository(User).extend({
     email: string;
     username: string;
     profilePictureUrl: string | null;
+  }): Promise<User> {
+    const user = this.create(input);
+    return this.save(user);
+  },
+
+  async createPasswordUser(input: {
+    username: string;
+    email: string;
+    passwordHash: string;
   }): Promise<User> {
     const user = this.create(input);
     return this.save(user);
