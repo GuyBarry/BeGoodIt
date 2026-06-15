@@ -14,9 +14,10 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
-import { GRADIENTS, SERIF_FONT } from '../../../styles/tokens';
+import { GRADIENTS, PRIMARY_ALPHA, SERIF_FONT } from '../../../styles/tokens';
 import type { User } from '../../../entities/user';
 import { useGenders } from '../../../api';
+import { AVATAR_PALETTE, colorChoiceValue, parseColorChoice } from './avatarColor';
 
 const BODY_TYPES = ['Ectomorph', 'Mesomorph', 'Endomorph', 'Athletic', 'Average'];
 
@@ -47,26 +48,76 @@ export default function EditProfileDialog({ open, draft, onDraftChange, onSave, 
       </DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 80,
-                height: 80,
-                borderRadius: '50%',
-                background: GRADIENTS.primary,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Typography sx={{ color: '#fff', fontSize: 32, fontFamily: SERIF_FONT, fontWeight: 600 }}>
-                {draft.username.charAt(0)}
-              </Typography>
-            </Box>
-            <Button variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>
-              Change Avatar
-            </Button>
-          </Box>
+          {(() => {
+            const chosenColor = parseColorChoice(draft.profilePictureUrl);
+            return (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.75 }}>
+                <Box
+                  sx={{
+                    width: 88,
+                    height: 88,
+                    borderRadius: '50%',
+                    background: chosenColor ?? GRADIENTS.primary,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'background 0.2s ease',
+                  }}
+                >
+                  <Typography sx={{ color: '#fff', fontSize: 36, fontFamily: SERIF_FONT, fontWeight: 600 }}>
+                    {(draft.username || '?').charAt(0).toUpperCase()}
+                  </Typography>
+                </Box>
+
+                <Typography variant="caption" color="text.secondary">
+                  Pick an avatar color
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+                  {AVATAR_PALETTE.map((hex) => {
+                    const isSelected = chosenColor === hex;
+                    return (
+                      <Box
+                        key={hex}
+                        component="button"
+                        type="button"
+                        aria-label={`Avatar color ${hex}`}
+                        aria-pressed={isSelected}
+                        onClick={() => onDraftChange({ ...draft, profilePictureUrl: colorChoiceValue(hex) })}
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          p: 0,
+                          borderRadius: '50%',
+                          bgcolor: hex,
+                          border: '2px solid',
+                          borderColor: isSelected ? 'background.paper' : 'transparent',
+                          outline: isSelected ? `2px solid ${hex}` : 'none',
+                          cursor: 'pointer',
+                          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                          boxShadow: isSelected ? `0 4px 10px ${PRIMARY_ALPHA[35]}` : 'none',
+                          '&:hover': { transform: 'scale(1.12)' },
+                          '&:focus-visible': {
+                            outline: '2px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: 2,
+                          },
+                        }}
+                      />
+                    );
+                  })}
+                </Box>
+                {chosenColor && (
+                  <Button
+                    size="small"
+                    onClick={() => onDraftChange({ ...draft, profilePictureUrl: null })}
+                    sx={{ textTransform: 'none', mt: -0.5 }}
+                  >
+                    Reset to default
+                  </Button>
+                )}
+              </Box>
+            );
+          })()}
 
           <TextField
             label="Name"

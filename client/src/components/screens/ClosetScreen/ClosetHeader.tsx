@@ -4,7 +4,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import TuneIcon from '@mui/icons-material/Tune';
 import GridViewIcon from '@mui/icons-material/GridView';
 import AppsIcon from '@mui/icons-material/Apps';
-import { SERIF_FONT, GRADIENTS, PALETTE } from '../../../styles/tokens';
+import { SERIF_FONT, GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 import FilterPanel from './FilterPanel';
 
 interface Props {
@@ -128,7 +128,7 @@ export default function ClosetHeader({
                 borderRadius: 3,
                 bgcolor: 'action.hover',
                 '& fieldset': { border: 'none' },
-                '&.Mui-focused fieldset': { border: `2px solid ${alpha(PALETTE.primary, 0.3)}` },
+                '&.Mui-focused fieldset': { border: `2px solid ${PRIMARY_ALPHA[35]}` },
               },
             }}
           />

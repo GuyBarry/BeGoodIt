@@ -39,6 +39,7 @@ export default function ProfileScreen() {
     if (!draft) return;
     updateUser({
       username: draft.username,
+      profilePictureUrl: draft.profilePictureUrl,
       birthdate: draft.birthdate,
       heightCm: draft.heightCm,
       bodyType: draft.bodyType,

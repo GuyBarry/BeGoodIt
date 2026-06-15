@@ -2,12 +2,15 @@ import { Box, Typography } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { GRADIENTS, SERIF_FONT } from '../../../styles/tokens';
 import type { User } from '../../../entities/user';
+import { parseColorChoice } from './avatarColor';
 
 interface Props {
   user: User;
 }
 
 export default function ProfileCard({ user }: Props) {
+  const chosenColor = parseColorChoice(user.profilePictureUrl);
+
   return (
     <Box
       sx={{
@@ -24,16 +27,17 @@ export default function ProfileCard({ user }: Props) {
           width: 80,
           height: 80,
           borderRadius: '50%',
-          background: GRADIENTS.primary,
+          background: chosenColor ?? GRADIENTS.primary,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           mx: 'auto',
           mb: 2,
+          transition: 'background 0.2s ease',
         }}
       >
         <Typography sx={{ color: '#fff', fontSize: 32, fontFamily: SERIF_FONT, fontWeight: 600 }}>
-          {user.username.charAt(0)}
+          {(user.username || '?').charAt(0).toUpperCase()}
         </Typography>
       </Box>
       <Typography variant="h5">
