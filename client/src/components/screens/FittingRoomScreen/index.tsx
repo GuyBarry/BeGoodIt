@@ -132,7 +132,18 @@ export default function FittingRoomScreen() {
               {/* Closet tab */}
               {activeTab === 'closet' && (
                 <>
-                  <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3, pr: 1, pb: 2 }}>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      minHeight: 0,
+                      overflowY: 'auto',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 3,
+                      pr: 1,
+                      pb: 2,
+                    }}
+                  >
                     <ClosetItemGrid
                       clothingItems={clothingItems}
                       selectedItems={selectedItems}
@@ -141,9 +152,28 @@ export default function FittingRoomScreen() {
                       onCategoryChange={setActiveCategory}
                       onToggleItem={toggleItem}
                     />
-                    <SelectedSummary selectedItems={selectedItems} clothingItems={clothingItems} />
                   </Box>
-                  <Box sx={{ pt: 2 }}>
+                  <Box
+                    sx={{
+                      flexShrink: 0,
+                      pt: 2,
+                      mt: 1,
+                      bgcolor: 'background.default',
+                      borderTop: '1px solid',
+                      borderColor: 'divider',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.5,
+                    }}
+                  >
+                    {selectedItems.length > 0 && (
+                      <Box sx={{ maxHeight: 110, overflowY: 'auto' }}>
+                        <SelectedSummary
+                          selectedItems={selectedItems}
+                          clothingItems={clothingItems}
+                        />
+                      </Box>
+                    )}
                     <GenerateButton
                       selectedItems={selectedItems}
                       isGenerating={isGenerating}
