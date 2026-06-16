@@ -1,0 +1,190 @@
+{
+  "testCases": [
+    {
+      "id": "non-clothing-landscape",
+      "testSuite": "non-clothing",
+      "imagePath": "non-clothing/mountain-landscape.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedBehavior": "rejection",
+      "expectedHttpStatus": 400,
+      "expectedErrorSubstring": "No clothing detected"
+    },
+    {
+      "id": "non-clothing-object",
+      "testSuite": "non-clothing",
+      "imagePath": "non-clothing/coffee-mug.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedBehavior": "rejection",
+      "expectedHttpStatus": 400,
+      "expectedErrorSubstring": "No clothing detected"
+    },
+    {
+      "id": "type-shirt",
+      "testSuite": "type-classification",
+      "imagePath": "type-classification/plain-white-shirt.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedHttpStatus": 201,
+      "expectedClassification": {
+        "category": ["Top"],
+        "colorGroup": ["White", "Beige", "Gray"],
+        "season": ["Spring", "Summer", "All-Season"],
+        "style": ["Casual", "Smart Casual"]
+      }
+    },
+    {
+      "id": "type-pants",
+      "testSuite": "type-classification",
+      "imagePath": "type-classification/blue-jeans.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedHttpStatus": 201,
+      "expectedClassification": {
+        "category": ["Bottom"],
+        "colorGroup": ["Blue", "Black"],
+        "season": ["Spring", "Summer", "Fall", "All-Season"],
+        "style": ["Casual", "Smart Casual"]
+      }
+    },
+    {
+      "id": "type-shoes",
+      "testSuite": "type-classification",
+      "imagePath": "type-classification/white-sneakers.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedHttpStatus": 201,
+      "expectedClassification": {
+        "category": ["Shoes"],
+        "colorGroup": ["White", "Beige"],
+        "season": ["Spring", "Summer", "Fall", "All-Season"],
+        "style": ["Casual", "Sporty"]
+      }
+    },
+    {
+      "id": "type-outerwear",
+      "testSuite": "type-classification",
+      "imagePath": "type-classification/black-puffer-jacket.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedHttpStatus": 201,
+      "expectedClassification": {
+        "category": ["Outerwear"],
+        "colorGroup": ["Black", "Gray"],
+        "season": ["Fall", "Winter"],
+        "style": ["Casual", "Sporty", "Smart Casual"]
+      }
+    },
+    {
+      "id": "attr-short-sleeve",
+      "testSuite": "attribute-extraction",
+      "imagePath": "attribute-extraction/short-sleeve-red-shirt.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedHttpStatus": 201,
+      "expectedClassification": {
+        "category": ["Top"],
+        "colorGroup": ["Red", "Orange", "Pink"]
+      },
+      "expectedDescriptionKeywords": [
+        "short sleeve",
+        "short-sleeve",
+        "short sleeves",
+        "cap sleeve",
+        "sleeveless"
+      ]
+    },
+    {
+      "id": "attr-long-sleeve",
+      "testSuite": "attribute-extraction",
+      "imagePath": "attribute-extraction/long-sleeve-blue-shirt.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedHttpStatus": 201,
+      "expectedClassification": {
+        "category": ["Top"],
+        "colorGroup": ["Blue", "Purple", "Gray"]
+      },
+      "expectedDescriptionKeywords": [
+        "long sleeve",
+        "long-sleeve",
+        "long sleeves",
+        "full sleeve",
+        "full-length sleeve"
+      ]
+    },
+    {
+      "id": "attr-stripes",
+      "testSuite": "attribute-extraction",
+      "imagePath": "attribute-extraction/horizontal-stripe-tshirt.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedHttpStatus": 201,
+      "expectedClassification": {
+        "category": ["Top"]
+      },
+      "expectedDescriptionKeywords": [
+        "stripe",
+        "striped",
+        "stripes",
+        "horizontal line",
+        "horizontal band"
+      ]
+    },
+    {
+      "id": "bg-noise-shirt",
+      "testSuite": "background-noise",
+      "imagePath": "background-noise/shirt-cluttered-background.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedHttpStatus": 201,
+      "expectedClassification": {
+        "category": ["Top"],
+        "colorGroup": ["White", "Black", "Blue", "Red", "Gray", "Beige", "Green", "Yellow", "Orange", "Purple", "Pink", "Brown"]
+      }
+    },
+    {
+      "id": "crumpled-shirt",
+      "testSuite": "crumpled",
+      "imagePath": "crumpled/wrinkled-white-tshirt.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedHttpStatus": 201,
+      "expectedClassification": {
+        "category": ["Top"],
+        "colorGroup": ["White", "Beige", "Gray"]
+      }
+    },
+    {
+      "id": "search-red-dress",
+      "testSuite": "search",
+      "imagePath": "search/red-dress.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedHttpStatus": 201,
+      "expectedClassification": {
+        "category": ["Dress"],
+        "colorGroup": ["Red", "Orange", "Pink"]
+      }
+    },
+    {
+      "id": "search-blue-jeans",
+      "testSuite": "search",
+      "imagePath": "search/blue-jeans-search.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedHttpStatus": 201,
+      "expectedClassification": {
+        "category": ["Bottom"],
+        "colorGroup": ["Blue", "Black"]
+      }
+    },
+    {
+      "id": "search-white-sneakers",
+      "testSuite": "search",
+      "imagePath": "search/white-sneakers-search.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedHttpStatus": 201,
+      "expectedClassification": {
+        "category": ["Shoes"],
+        "colorGroup": ["White", "Beige"]
+      }
+    },
+    {
+      "id": "search-inspiration",
+      "testSuite": "search",
+      "imagePath": "search/inspiration-outfit.jpeg",
+      "mimeType": "image/jpeg",
+      "expectedBehavior": "semanticMatch",
+      "notes": "This image is the inspiration/query image for the find-matches endpoint. It should show a red dress (or an outfit containing one) so that the semantic search returns the uploaded red-dress item."
+    }
+  ]
+}
