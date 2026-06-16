@@ -71,7 +71,12 @@ const addItem = async (userId: string, imageId: string, tags: AddItemInput = {})
     imageEmbedding: tags.embedding ? floatsToBuffer(tags.embedding) : null,
   });
   const saved = await clothingItemRepository.save(item);
-  return toDto(saved);
+  // Reload with relations so toDto can populate category, colorGroup, season
+  const loaded = await clothingItemRepository.findOne({
+    where: { id: saved.id },
+    relations: ['category', 'colorGroup', 'season'],
+  });
+  return toDto(loaded!);
 };
 
 const classifyItem = async (file: Express.Multer.File): Promise<ClothingClassification> => {
