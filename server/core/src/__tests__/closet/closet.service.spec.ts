@@ -1,11 +1,12 @@
 import { closetService } from '../../services/closet.service';
 import { clothingItemService } from '../../services/clothingItem.service';
 import { imagesService } from '../../services/images.service';
-import { ClothingItemDto } from '../../dtos';
+import { ClothingItemDto, PaginatedClothingItemsDto } from '../../dtos';
+import { ClothingFilters } from '../../repositories';
 
 jest.mock('../../services/clothingItem.service', () => ({
   clothingItemService: {
-    getAllByUserId: jest.fn(),
+    getFilteredByUserId: jest.fn(),
     addItem: jest.fn(),
     deleteById: jest.fn(),
   },
@@ -61,28 +62,32 @@ describe('closetService', () => {
     jest.clearAllMocks();
   });
 
+  const defaultFilters: ClothingFilters = {};
+
   describe('getItemsByUserId', () => {
-    it('should delegate to clothingItemService.getAllByUserId and return the result', async () => {
-      (clothingItemService.getAllByUserId as jest.Mock).mockResolvedValue([mockDto]);
+    it('should delegate to clothingItemService.getFilteredByUserId and return the result', async () => {
+      const paginated: PaginatedClothingItemsDto = { items: [mockDto], total: 1 };
+      (clothingItemService.getFilteredByUserId as jest.Mock).mockResolvedValue(paginated);
 
-      const result = await closetService.getItemsByUserId('user-uuid-1');
+      const result = await closetService.getItemsByUserId('user-uuid-1', defaultFilters, 1, 20);
 
-      expect(clothingItemService.getAllByUserId).toHaveBeenCalledWith('user-uuid-1');
-      expect(result).toEqual([mockDto]);
+      expect(clothingItemService.getFilteredByUserId).toHaveBeenCalledWith('user-uuid-1', defaultFilters, 1, 20);
+      expect(result).toEqual(paginated);
     });
 
-    it('should return an empty array when clothingItemService returns none', async () => {
-      (clothingItemService.getAllByUserId as jest.Mock).mockResolvedValue([]);
+    it('should return empty paginated result when clothingItemService returns none', async () => {
+      const paginated: PaginatedClothingItemsDto = { items: [], total: 0 };
+      (clothingItemService.getFilteredByUserId as jest.Mock).mockResolvedValue(paginated);
 
-      const result = await closetService.getItemsByUserId('user-uuid-1');
+      const result = await closetService.getItemsByUserId('user-uuid-1', defaultFilters, 1, 20);
 
-      expect(result).toEqual([]);
+      expect(result).toEqual(paginated);
     });
 
     it('should propagate errors from clothingItemService', async () => {
-      (clothingItemService.getAllByUserId as jest.Mock).mockRejectedValue(new Error('DB error'));
+      (clothingItemService.getFilteredByUserId as jest.Mock).mockRejectedValue(new Error('DB error'));
 
-      await expect(closetService.getItemsByUserId('user-uuid-1')).rejects.toThrow('DB error');
+      await expect(closetService.getItemsByUserId('user-uuid-1', defaultFilters, 1, 20)).rejects.toThrow('DB error');
     });
   });
 
@@ -95,7 +100,13 @@ describe('closetService', () => {
       const result = await closetService.addToCloset('user-uuid-1', file);
 
       expect(imagesService.saveImage).toHaveBeenCalledWith(file);
-      expect(clothingItemService.addItem).toHaveBeenCalledWith('user-uuid-1', 'image-uuid-1', {});
+      expect(clothingItemService.addItem).toHaveBeenCalledWith('user-uuid-1', 'image-uuid-1', {
+        colorGroupId: null,
+        categoryId: null,
+        seasonId: null,
+        style: null,
+        embedding: null,
+      });
       expect(result).toEqual(mockDto);
     });
 
@@ -107,7 +118,10 @@ describe('closetService', () => {
       const tags = { colorGroupId: 2, categoryId: 3, seasonId: 1, style: 'casual' };
       const result = await closetService.addToCloset('user-uuid-1', file, tags);
 
-      expect(clothingItemService.addItem).toHaveBeenCalledWith('user-uuid-1', 'image-uuid-1', tags);
+      expect(clothingItemService.addItem).toHaveBeenCalledWith('user-uuid-1', 'image-uuid-1', {
+        ...tags,
+        embedding: null,
+      });
       expect(result).toEqual(mockDto);
     });
 

@@ -42,23 +42,28 @@ describe('closetRouter', () => {
 
   describe('GET /:userId', () => {
     it('should return 200 with a list of clothing items', async () => {
-      (closetService.getItemsByUserId as jest.Mock).mockResolvedValue([mockClothingItemDto]);
+      (closetService.getItemsByUserId as jest.Mock).mockResolvedValue({ items: [mockClothingItemDto], total: 1 });
 
       const response = await request(app).get('/user-uuid-1');
 
       expect(response.status).toBe(StatusCodes.OK);
-      expect(response.body).toHaveLength(1);
-      expect(response.body[0]).toMatchObject({ id: mockClothingItemDto.id, userId: mockClothingItemDto.userId });
-      expect(closetService.getItemsByUserId).toHaveBeenCalledWith('user-uuid-1');
+      expect(response.body.items).toHaveLength(1);
+      expect(response.body.items[0]).toMatchObject({ id: mockClothingItemDto.id, userId: mockClothingItemDto.userId });
+      expect(closetService.getItemsByUserId).toHaveBeenCalledWith(
+        'user-uuid-1',
+        { search: undefined, category: undefined, color: undefined, season: undefined },
+        1,
+        20,
+      );
     });
 
     it('should return 200 with an empty array when the user has no items', async () => {
-      (closetService.getItemsByUserId as jest.Mock).mockResolvedValue([]);
+      (closetService.getItemsByUserId as jest.Mock).mockResolvedValue({ items: [], total: 0 });
 
       const response = await request(app).get('/user-uuid-1');
 
       expect(response.status).toBe(StatusCodes.OK);
-      expect(response.body).toEqual([]);
+      expect(response.body.items).toEqual([]);
     });
 
     it('should return 500 when the service throws an unexpected error', async () => {

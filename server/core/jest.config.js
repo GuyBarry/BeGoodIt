@@ -4,6 +4,7 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src/__tests__'],
   testMatch: ['**/*.spec.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '/src/__tests__/e2e/'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   clearMocks: true,
   transformIgnorePatterns: ['/node_modules/(?!uuid)'],

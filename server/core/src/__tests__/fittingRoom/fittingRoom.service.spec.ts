@@ -2,6 +2,7 @@ import { fittingRoomService } from '../../services/fittingRoom.service';
 import { bodyMappingRepository } from '../../repositories/bodyMapping.repository';
 import { imagesService } from '../../services/images.service';
 import { clothingItemService } from '../../services/clothingItem.service';
+import { outfitService } from '../../services/outfit.service';
 import { generateOutfit } from '../../ai/prompt.manager';
 import { NotFoundException } from '../../exceptions/httpExceptions';
 import { BodyMapping } from '../../db/entities/BodyMapping.entity';
@@ -14,9 +15,16 @@ jest.mock('../../repositories/bodyMapping.repository', () => ({
   },
 }));
 
+jest.mock('../../services/outfit.service', () => ({
+  outfitService: {
+    findCachedOutfit: jest.fn(),
+  },
+}));
+
 jest.mock('../../services/images.service', () => ({
   imagesService: {
     getImageById: jest.fn(),
+    saveImage: jest.fn(),
   },
 }));
 
@@ -74,9 +82,12 @@ describe('fittingRoomService', () => {
   });
 
   const mockOutfitImageBuffer = Buffer.from('fake-outfit-png-data');
+  const mockSavedImageDto = { id: 'saved-image-uuid-1', mimeType: 'image/png', originalName: 'outfit.png', size: mockOutfitImageBuffer.length, createdAt: new Date() };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (outfitService.findCachedOutfit as jest.Mock).mockResolvedValue(null);
+    (imagesService.saveImage as jest.Mock).mockResolvedValue(mockSavedImageDto);
   });
 
   describe('createFit', () => {
@@ -99,7 +110,7 @@ describe('fittingRoomService', () => {
 
       const result = await fittingRoomService.createFit('user-uuid-1', ['item-uuid-1']);
 
-      expect(result).toBe(mockOutfitImageBuffer);
+      expect(result).toEqual({ imageBuffer: mockOutfitImageBuffer, imageId: mockSavedImageDto.id });
       expect(bodyMappingRepository.findOne).toHaveBeenCalledWith({ where: { userId: 'user-uuid-1' } });
       expect(imagesService.getImageById).toHaveBeenCalledWith('image-uuid-1');
       expect(clothingItemService.getMultipleByIds).toHaveBeenCalledWith(['item-uuid-1']);
@@ -194,7 +205,7 @@ describe('fittingRoomService', () => {
 
       const result = await fittingRoomService.createFit('user-uuid-1', ['item-uuid-1', 'item-uuid-2']);
 
-      expect(result).toBe(mockOutfitImageBuffer);
+      expect(result).toEqual({ imageBuffer: mockOutfitImageBuffer, imageId: mockSavedImageDto.id });
       expect(generateOutfit).toHaveBeenCalledWith(
         expect.objectContaining({
           clothingItemsImages: expect.arrayContaining([

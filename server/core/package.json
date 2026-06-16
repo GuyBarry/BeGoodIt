@@ -11,6 +11,7 @@
     "start:development": "dotenv -e .env.development -- ts-node app.ts",
     "build": "tsc -p tsconfig.build.json",
     "test": "jest --config jest.config.js",
+    "test:e2e": "dotenv -e .env.e2e -- jest --config jest.e2e.config.js --runInBand",
     "db:start": "dotenv -e .env.development -- docker compose -f src/db/localdb/docker-compose.yml up -d",
     "db:stop": "docker compose -f src/db/localdb/docker-compose.yml down",
     "db:drop": "docker compose -f src/db/localdb/docker-compose.yml down -v",
