@@ -31,7 +31,7 @@ describe('fittingRoomRouter', () => {
 
   describe('POST /:userId/outfit', () => {
     it('should return 200 with PNG image buffer on success', async () => {
-      (fittingRoomService.createFit as jest.Mock).mockResolvedValue(mockOutfitBuffer);
+      (fittingRoomService.createFit as jest.Mock).mockResolvedValue({ imageBuffer: mockOutfitBuffer, imageId: 'generated-image-uuid-1' });
 
       const response = await request(app)
         .post('/user-uuid-1/outfit')

@@ -5,6 +5,8 @@ import { imagesService } from './images.service';
 import { AddItemInput, clothingItemService } from './clothingItem.service';
 import { classifyClothingItem } from '../ai/classifyClothingItem';
 import { generateEmbedding } from '../ai/ai.provider';
+import { BadRequestException } from '../exceptions/httpExceptions';
+import { garmentCategoryRepository, colorGroupRepository, seasonRepository } from '../repositories';
 
 const getItemsByUserId = async (
   userId: string,
@@ -22,19 +24,46 @@ const addToCloset = async (
 ): Promise<ClothingItemDto> => {
   const processedFile = await backgroundRemovalService.removeBackground(file);
 
-  // Image save and classification run in parallel — both only need the processed file
-  const [imageDto, classification] = await Promise.all([
+  // Classify first so we can reject non-clothing images before committing any DB writes
+  const classification = await classifyClothingItem({
+    mimeType: processedFile.mimetype,
+    data: processedFile.buffer,
+  }).catch(() => null);
+
+  if (classification?.noClothingDetected === true) {
+    throw new BadRequestException('No clothing detected in image');
+  }
+
+  // Resolve classification names to DB IDs; caller-supplied tag IDs take priority.
+  let categoryId   = tags.categoryId   ?? null;
+  let colorGroupId = tags.colorGroupId ?? null;
+  let seasonId     = tags.seasonId     ?? null;
+  const style      = tags.style        ?? classification?.style ?? null;
+
+  if (classification && !classification.noClothingDetected) {
+    const [category, colorGroup, season] = await Promise.all([
+      categoryId   == null ? garmentCategoryRepository.findOne({ where: { name: classification.category   } }) : null,
+      colorGroupId == null ? colorGroupRepository.findOne({      where: { name: classification.colorGroup } }) : null,
+      seasonId     == null ? seasonRepository.findOne({          where: { name: classification.season      } }) : null,
+    ]);
+    if (category)   categoryId   = category.id;
+    if (colorGroup) colorGroupId = colorGroup.id;
+    if (season)     seasonId     = season.id;
+  }
+
+  // Image save and embedding generation can now proceed in parallel
+  const [imageDto, embedding] = await Promise.all([
     imagesService.saveImage(processedFile),
-    classifyClothingItem({ mimeType: processedFile.mimetype, data: processedFile.buffer }).catch(() => null),
+    classification?.description
+      ? generateEmbedding(classification.description).catch(() => null)
+      : Promise.resolve(null),
   ]);
 
-  // Embed the description so similarity search is fast at query time (no AI call needed)
-  const embedding = classification?.description
-    ? await generateEmbedding(classification.description).catch(() => null)
-    : null;
-
   return clothingItemService.addItem(userId, imageDto.id, {
-    ...tags,
+    categoryId,
+    colorGroupId,
+    seasonId,
+    style,
     embedding,
   });
 };
