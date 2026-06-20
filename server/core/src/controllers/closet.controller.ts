@@ -33,26 +33,26 @@ closetRouter.post(
   ImageValidationMiddleware.validate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const colorGroupId = req.body.colorGroupId
-        ? parseInt(req.body.colorGroupId, 10)
-        : null;
-      const categoryId = req.body.categoryId
-        ? parseInt(req.body.categoryId, 10)
-        : null;
-      const seasonId = req.body.seasonId
-        ? parseInt(req.body.seasonId, 10)
-        : null;
-      const style = req.body.style?.trim() || null;
+      const parseIds = (val: unknown): number[] => {
+        if (!val) return [];
+        const arr = Array.isArray(val) ? val : [val];
+        return arr.map(v => parseInt(v as string, 10)).filter(n => !isNaN(n));
+      };
+      const parseStrings = (val: unknown): string[] => {
+        if (!val) return [];
+        const arr = Array.isArray(val) ? val : [val];
+        return arr.map(v => String(v).trim()).filter(Boolean);
+      };
+
+      const colorGroupIds = parseIds(req.body.colorGroupIds);
+      const categoryId    = req.body.categoryId ? parseInt(req.body.categoryId, 10) : null;
+      const seasonIds     = parseIds(req.body.seasonIds);
+      const styles        = parseStrings(req.body.styles);
 
       const result = await closetService.addToCloset(
         req.params.userId,
         req.file!,
-        {
-          colorGroupId,
-          categoryId,
-          seasonId,
-          style,
-        },
+        { colorGroupIds, categoryId, seasonIds, styles },
       );
       res.status(StatusCodes.CREATED).json(result);
     } catch (error) {

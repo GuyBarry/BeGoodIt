@@ -47,7 +47,7 @@ export const generateOutfit = async (
   const clothingDescriptions = clothingItems
     .map((item, index) => {
       const parts: string[] = [`Item ${index + 1}:`];
-      if (item.style) parts.push(`Style: ${item.style}`);
+      if (item.styles?.length) parts.push(`Style: ${item.styles.map(s => s.name).join(', ')}`);
       return parts.join(", ");
     })
     .join("\n        ");
