@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { Box } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import { useAddClothingItem, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
 import { clothingItemsApi } from '../../../api/api/closet.api';
 import { useCurrentUser } from '../../../auth/AuthContext';
@@ -10,6 +11,7 @@ import TagEditor from './TagEditor';
 import { EMPTY_TAGS, type SelectedTags } from './types';
 
 export default function AddItemScreen() {
+  const navigate = useNavigate();
   const currentUserId = useCurrentUser().id;
   const { data: categories = [] } = useGarmentCategories();
   const { data: colors = [] } = useColorGroups();
@@ -20,6 +22,7 @@ export default function AddItemScreen() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [tags, setTags] = useState<SelectedTags>(EMPTY_TAGS);
 
   const handleFileSelect = useCallback(async (selected: File) => {
@@ -57,6 +60,7 @@ export default function AddItemScreen() {
     setImageUrl(null);
     setIsAnalyzing(false);
     setAnalysisComplete(false);
+    setSaveSuccess(false);
     setTags(EMPTY_TAGS);
   };
 
@@ -74,16 +78,51 @@ export default function AddItemScreen() {
         seasonId: tags.season?.id ?? null,
         style: tags.style,
       },
-      { onSuccess: handleReset },
+      { onSuccess: () => setSaveSuccess(true) },
     );
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      {isUploading && (
+        <Box sx={{
+          position: 'absolute', inset: 0, zIndex: 10,
+          bgcolor: 'rgba(255,255,255,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <CircularProgress size={56} />
+        </Box>
+      )}
       <AddItemHeader />
 
       <Box component="main" sx={{ flex: 1, minHeight: 0, px: 4, py: 4, overflowY: 'auto' }}>
-        <Box sx={{ maxWidth: 1280, mx: 'auto', height: '100%' }}>
+        {saveSuccess ? (
+          <Box
+            sx={{
+              maxWidth: 480,
+              mx: 'auto',
+              mt: 8,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 3,
+              textAlign: 'center',
+            }}
+          >
+            <Box sx={{ width: 72, height: 72, borderRadius: '50%', border: '3px solid', borderColor: 'success.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography sx={{ fontSize: 36, color: 'success.main', lineHeight: 1 }}>✓</Typography>
+            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 600 }}>Item added successfully!</Typography>
+            <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
+              <Button variant="outlined" size="large" onClick={() => navigate('/closet')}>
+                Go to Closet
+              </Button>
+              <Button variant="contained" size="large" onClick={handleReset}>
+                Add Another Item
+              </Button>
+            </Box>
+          </Box>
+        ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4, height: '100%' }}>
 
             <UploadPanel
@@ -112,7 +151,7 @@ export default function AddItemScreen() {
             </Box>
 
           </Box>
-        </Box>
+        )}
       </Box>
     </Box>
   );
