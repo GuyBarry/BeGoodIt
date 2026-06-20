@@ -82,7 +82,7 @@ export default function AddItemScreen() {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       <AddItemHeader />
 
-      <Box component="main" sx={{ flex: 1, minHeight: 0, px: 4, py: 4, overflow: 'hidden' }}>
+      <Box component="main" sx={{ flex: 1, minHeight: 0, px: 4, py: 4, overflowY: 'auto' }}>
         <Box sx={{ maxWidth: 1280, mx: 'auto', height: '100%' }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4, height: '100%' }}>
 
@@ -95,7 +95,7 @@ export default function AddItemScreen() {
               onClear={handleReset}
             />
 
-            <Box sx={{ height: '100%', overflowY: 'auto' }}>
+            <Box>
               {!analysisComplete ? (
                 <TipsCard />
               ) : (
