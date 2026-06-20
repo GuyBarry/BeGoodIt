@@ -118,12 +118,12 @@ export default function RecentTestDialog({ test, onClose, onAddToCloset }: Props
                     <Box
                       component="img"
                       src={imagesApi.getImageUrl(item.imageId)}
-                      alt={item.style ?? item.category?.name ?? 'Item'}
+                      alt={item.styles?.join(', ') ?? item.category?.name ?? 'Item'}
                       sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   </Box>
                   <Typography variant="body2" color="text.secondary" noWrap sx={{ px: 0.5 }}>
-                    {item.style ?? item.category?.name ?? 'Item'}
+                    {item.styles?.join(', ') ?? item.category?.name ?? 'Item'}
                   </Typography>
                 </Box>
               ))}

@@ -35,19 +35,21 @@ export default function AddItemScreen() {
     try {
       const classification = await clothingItemsApi.classify(selected);
       console.log('[classify] response:', classification);
+      const foundColor = colors.find(c => c.name === classification.colorGroup);
+      const foundSeason = seasons.find(s => s.name === classification.season);
       setTags({
         category: categories.find(c => c.name === classification.category) ?? null,
-        color: colors.find(c => c.name === classification.colorGroup) ?? null,
-        season: seasons.find(s => s.name === classification.season) ?? null,
-        style: classification.style,
+        colors: foundColor ? [foundColor] : [],
+        seasons: foundSeason ? [foundSeason] : [],
+        styles: classification.style ? [classification.style] : [],
       });
     } catch (err) {
       console.error('[classify] failed:', err);
       setTags({
         category: categories[0] ?? null,
-        color: colors[0] ?? null,
-        season: seasons[0] ?? null,
-        style: '',
+        colors: colors[0] ? [colors[0]] : [],
+        seasons: seasons[0] ? [seasons[0]] : [],
+        styles: [],
       });
     } finally {
       setIsAnalyzing(false);
@@ -73,10 +75,10 @@ export default function AddItemScreen() {
       {
         file,
         userId: currentUserId,
-        colorGroupId: tags.color?.id ?? null,
+        colorGroupIds: tags.colors.map(c => c.id),
         categoryId: tags.category?.id ?? null,
-        seasonId: tags.season?.id ?? null,
-        style: tags.style,
+        seasonIds: tags.seasons.map(s => s.id),
+        styles: tags.styles,
       },
       { onSuccess: () => setSaveSuccess(true) },
     );
