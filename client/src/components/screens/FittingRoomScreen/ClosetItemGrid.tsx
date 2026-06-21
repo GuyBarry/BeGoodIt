@@ -27,7 +27,7 @@ function ClosetItemCard({
   selectionIndex: number;
   onToggle: () => void;
 }) {
-  const displayName = item.style || item.category?.name || 'Item';
+  const displayName = item.styles?.join(', ') || item.category?.name || 'Item';
 
   return (
     <Box

@@ -1,6 +1,6 @@
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
-import { Box } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { useState } from 'react';
 import { useClothingItems, useFindMatches, useGenerateLook, useSaveOutfit } from '../../../api';
 import { PRIMARY_ALPHA } from '../../../styles/tokens';
@@ -85,7 +85,16 @@ export default function FittingRoomScreen() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      {isGenerating && (
+        <Box sx={{
+          position: 'absolute', inset: 0, zIndex: 10,
+          bgcolor: 'rgba(255,255,255,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <CircularProgress size={56} />
+        </Box>
+      )}
       <FittingRoomHeader />
 
       <Box component="main" sx={{ flex: 1, minHeight: 0, px: 4, py: 3, overflow: 'hidden' }}>

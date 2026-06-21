@@ -6,7 +6,7 @@ export const outfitRepository = AppDataSource.getRepository(Outfit).extend({
     // Uses idx_outfit_user_created composite index; loads relations in one round-trip via JOIN
     return this.find({
       where: { userId },
-      relations: ['items', 'items.colorGroup', 'items.category', 'items.season'],
+      relations: ['items', 'items.colorGroups', 'items.category', 'items.seasons', 'items.styles'],
       order: { createdAt: 'DESC' },
     });
   },

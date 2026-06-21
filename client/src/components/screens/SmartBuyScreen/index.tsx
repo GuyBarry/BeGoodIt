@@ -137,10 +137,14 @@ export default function SmartBuyScreen() {
       await addToCloset({
         file,
         userId: CURRENT_USER_ID,
-        style: name || undefined,
-        colorGroupId: colorGroups.find(c => c.name === testClassification?.colorGroup)?.id ?? null,
+        styles: name ? [name] : [],
+        colorGroupIds: colorGroups.find(c => c.name === testClassification?.colorGroup)?.id != null
+          ? [colorGroups.find(c => c.name === testClassification?.colorGroup)!.id]
+          : [],
         categoryId: garmentCategories.find(c => c.name === testClassification?.category)?.id ?? null,
-        seasonId: seasons.find(s => s.name === testClassification?.season)?.id ?? null,
+        seasonIds: seasons.find(s => s.name === testClassification?.season)?.id != null
+          ? [seasons.find(s => s.name === testClassification?.season)!.id]
+          : [],
       });
       setAddSuccess(true);
     } finally {
@@ -155,10 +159,14 @@ export default function SmartBuyScreen() {
     await addToCloset({
       file,
       userId: CURRENT_USER_ID,
-      style: name || undefined,
-      colorGroupId: colorGroups.find(c => c.name === test.classification?.colorGroup)?.id ?? null,
+      styles: name ? [name] : [],
+      colorGroupIds: colorGroups.find(c => c.name === test.classification?.colorGroup)?.id != null
+        ? [colorGroups.find(c => c.name === test.classification?.colorGroup)!.id]
+        : [],
       categoryId: garmentCategories.find(c => c.name === test.classification?.category)?.id ?? null,
-      seasonId: seasons.find(s => s.name === test.classification?.season)?.id ?? null,
+      seasonIds: seasons.find(s => s.name === test.classification?.season)?.id != null
+        ? [seasons.find(s => s.name === test.classification?.season)!.id]
+        : [],
     });
   };
 

@@ -173,7 +173,7 @@ export default function AnalysisResult({
                         <Box
                           component="img"
                           src={imagesApi.getImageUrl(item.imageId)}
-                          alt={item.style ?? item.category?.name ?? 'Item'}
+                          alt={item.styles?.join(', ') ?? item.category?.name ?? 'Item'}
                           sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                         {/* % badge */}
@@ -188,7 +188,7 @@ export default function AnalysisResult({
                         </Box>
                       </Box>
                       <Typography variant="caption" color="text.secondary" noWrap sx={{ px: 0.5 }}>
-                        {item.style ?? item.category?.name ?? 'Item'}
+                        {item.styles?.join(', ') ?? item.category?.name ?? 'Item'}
                       </Typography>
                     </Box>
                   ))}

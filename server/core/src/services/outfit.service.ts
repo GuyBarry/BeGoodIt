@@ -8,10 +8,10 @@ const toItemDto = (item: Outfit['items'][number]): ClothingItemDto => ({
   id: item.id,
   userId: item.userId,
   imageId: item.imageId,
-  style: item.style,
-  colorGroup: item.colorGroup ? { id: item.colorGroup.id, name: item.colorGroup.name } : null,
+  styles: (item.styles ?? []).map(s => s.name),
+  colorGroups: (item.colorGroups ?? []).map(cg => ({ id: cg.id, name: cg.name })),
   category: item.category ? { id: item.category.id, name: item.category.name } : null,
-  season: item.season ? { id: item.season.id, name: item.season.name } : null,
+  seasons: (item.seasons ?? []).map(s => ({ id: s.id, name: s.name })),
   createdAt: item.createdAt,
 });
 

@@ -19,9 +19,9 @@ export default function ClothingGrid({ items, gridSize, onDelete }: Props) {
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: gridCols[gridSize], gap: 3 }}>
       {items.map(item => {
-        const displayName = item.style || item.category?.name || 'Item';
+        const displayName  = item.styles?.join(', ') || item.category?.name || 'Item';
         const categoryName = item.category?.name ?? '';
-        const seasonName   = item.season?.name ?? '';
+        const seasonName   = item.seasons?.map(s => s.name).join(', ') ?? '';
 
         return (
           <Box

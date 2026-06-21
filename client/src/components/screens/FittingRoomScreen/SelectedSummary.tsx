@@ -17,7 +17,7 @@ export default function SelectedSummary({ selectedItems, clothingItems }: Props)
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
         {selectedItems.map(id => {
           const item = clothingItems.find(i => i.id === id);
-          const name = item ? (item.style || item.category?.name || 'Item') : 'Item';
+          const name = item ? (item.styles?.join(', ') || item.category?.name || 'Item') : 'Item';
           return (
             <Box key={id} sx={{ px: 1.5, py: 0.75, bgcolor: 'background.paper', borderRadius: 2, fontSize: 13, fontWeight: 500 }}>
               {name}

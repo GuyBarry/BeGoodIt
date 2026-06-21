@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { ClothingItem } from './index';
 
 @Entity('season')
@@ -9,6 +9,6 @@ export class Season {
   @Column({ type: 'varchar', unique: true })
   name: string;
 
-  @OneToMany(() => ClothingItem, (item) => item.season)
+  @ManyToMany(() => ClothingItem, (item) => item.seasons)
   clothingItems: ClothingItem[];
 }
