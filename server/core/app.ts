@@ -4,6 +4,7 @@ import express, { Express, Request, Response } from "express";
 import swaggerUi from "swagger-ui-express";
 import { serverConfig } from "./src/config/server.config";
 import { swaggerSpec } from "./src/config/swagger.config";
+import { requireEnv } from "./src/config/env";
 import {
   authRouter,
   bodyRouter,
@@ -28,7 +29,7 @@ const PORT = serverConfig.port;
 export const initApp = async (): Promise<Express> => {
   const app: Express = express();
 
-  app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+  app.use(cors({ origin: requireEnv('CLIENT_URL', 'http://localhost:5173') }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 

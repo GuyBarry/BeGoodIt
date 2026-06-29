@@ -1,3 +1,5 @@
+import { requireEnv } from './env';
+
 export const geminiConfig = {
-  apiKey: process.env.GEMINI_API_KEY ?? "",
+  apiKey: requireEnv('GEMINI_API_KEY', ''),
 };
