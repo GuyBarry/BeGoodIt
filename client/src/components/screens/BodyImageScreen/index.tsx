@@ -74,113 +74,106 @@ export default function BodyImageScreen() {
       />
 
       {/* Main content */}
-      <Box component="main" sx={{ flex: 1, px: 4, py: 5 }}>
+      <Box component="main" sx={{ flex: 1, px: 4, py: 3 }}>
         <Box
           sx={{
             maxWidth: 900, mx: 'auto',
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-            gap: 5,
+            gap: 4,
             alignItems: 'start',
           }}
         >
 
-          {/* Left — preview */}
-          <Box
-            sx={{
-              aspectRatio: '3/4',
-              borderRadius: 4,
-              overflow: 'hidden',
-              position: 'relative',
-              background: bodyImageId
-                ? 'transparent'
-                : `linear-gradient(180deg, #f5f0ea 0%, #ede5d8 100%)`,
-              boxShadow: '0 4px 24px -4px rgba(0,0,0,0.10)',
-            }}
-          >
-            {bodyImageId ? (
-              <>
+          {/* Left — preview column */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* Status chip above the image (only after upload) */}
+            {bodyImageId && (
+              <Box
+                sx={{
+                  alignSelf: 'flex-start',
+                  display: 'flex', alignItems: 'center', gap: 1,
+                  px: 1.5, py: 0.75,
+                  borderRadius: 10,
+                  bgcolor: 'success.light',
+                }}
+              >
+                <CheckCircleOutlineOutlinedIcon sx={{ color: 'success.dark', fontSize: 18 }} />
+                <Typography sx={{ fontWeight: 500, fontSize: 13, color: 'success.dark' }}>
+                  Model ready
+                </Typography>
+              </Box>
+            )}
+
+            <Box
+              sx={{
+                aspectRatio: '3/4',
+                width: '100%',
+                maxHeight: 'calc(100vh - 220px)',
+                mx: 'auto',
+                borderRadius: 4,
+                overflow: 'hidden',
+                position: 'relative',
+                background: `linear-gradient(180deg, #f5f0ea 0%, #ede5d8 100%)`,
+                boxShadow: '0 4px 24px -4px rgba(0,0,0,0.10)',
+              }}
+            >
+              {bodyImageId ? (
                 <Box
                   component="img"
                   src={imagesApi.getImageUrl(bodyImageId)}
                   alt="Your virtual model"
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                 />
-                {/* Success badge */}
-                <Box
-                  sx={{
-                    position: 'absolute', top: 16, left: 16, right: 16,
-                    bgcolor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(12px)',
-                    borderRadius: 3, px: 2, py: 1.5,
-                    display: 'flex', alignItems: 'center', gap: 1,
-                  }}
-                >
-                  <CheckCircleOutlineOutlinedIcon sx={{ color: 'success.main', fontSize: 20 }} />
-                  <Typography sx={{ fontWeight: 500, fontSize: 14 }}>Model ready</Typography>
-                </Box>
-                {/* Re-upload */}
-                <Box sx={{ position: 'absolute', bottom: 16, left: 16, right: 16 }}>
-                  <Button
-                    fullWidth variant="contained"
-                    startIcon={<FileUploadOutlinedIcon />}
-                    onClick={triggerUpload}
-                    sx={{
-                      bgcolor: 'rgba(255,255,255,0.88)', color: 'text.primary',
-                      backdropFilter: 'blur(12px)', boxShadow: 'none',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.98)', boxShadow: 'none' },
-                    }}
-                  >
-                    Replace photo
-                  </Button>
-                </Box>
-              </>
-            ) : isPending ? (
-              <Box sx={{
-                position: 'absolute', inset: 0,
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center', gap: 2,
-              }}>
-                <CircularProgress size={48} />
-                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', px: 4 }}>
-                  Removing background and processing your photo…
-                </Typography>
-                <Typography variant="caption" color="text.disabled">This may take a moment</Typography>
-              </Box>
-            ) : (
-              <Box
-                onClick={triggerUpload}
-                sx={{
+              ) : isPending ? (
+                <Box sx={{
                   position: 'absolute', inset: 0,
                   display: 'flex', flexDirection: 'column',
                   alignItems: 'center', justifyContent: 'center', gap: 2,
-                  cursor: 'pointer',
-                  '&:hover .upload-icon-wrap': { background: GRADIENTS.primaryMedium },
-                }}
-              >
+                }}>
+                  <CircularProgress size={48} />
+                  <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', px: 4 }}>
+                    Removing background and processing your photo…
+                  </Typography>
+                  <Typography variant="caption" color="text.disabled">This may take a moment</Typography>
+                </Box>
+              ) : (
                 <Box
-                  className="upload-icon-wrap"
+                  onClick={triggerUpload}
                   sx={{
-                    width: 80, height: 80, borderRadius: '50%',
-                    background: GRADIENTS.primarySubtle,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'background 0.2s ease',
+                    position: 'absolute', inset: 0,
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center', gap: 2,
+                    cursor: 'pointer',
+                    '&:hover .upload-icon-wrap': { background: GRADIENTS.primaryMedium },
                   }}
                 >
-                  <PersonOutlineIcon sx={{ fontSize: 44, color: 'primary.main' }} />
-                </Box>
-                <Typography
-                  variant="body2" color="text.secondary"
-                  sx={{ textAlign: 'center', px: 6, lineHeight: 1.6 }}
-                >
-                  Click to upload your full-body photo
-                </Typography>
-                {error && (
-                  <Typography variant="caption" color="error">
-                    Upload failed — please try again
+                  <Box
+                    className="upload-icon-wrap"
+                    sx={{
+                      width: 80, height: 80, borderRadius: '50%',
+                      background: GRADIENTS.primarySubtle,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background 0.2s ease',
+                    }}
+                  >
+                    <PersonOutlineIcon sx={{ fontSize: 44, color: 'primary.main' }} />
+                  </Box>
+                  <Typography
+                    variant="body2" color="text.secondary"
+                    sx={{ textAlign: 'center', px: 6, lineHeight: 1.6 }}
+                  >
+                    Click to upload your full-body photo
                   </Typography>
-                )}
-              </Box>
-            )}
+                  {error && (
+                    <Typography variant="caption" color="error">
+                      Upload failed — please try again
+                    </Typography>
+                  )}
+                </Box>
+              )}
+            </Box>
+
           </Box>
 
           {/* Right — info + upload */}
@@ -252,16 +245,37 @@ export default function BodyImageScreen() {
               </Box>
             </Paper>
 
-            {/* Go to fitting room */}
+            {/* Actions for ready state */}
             {bodyImageId && (
-              <Button
-                variant="outlined"
-                size="large"
-                onClick={() => navigate('/fitting')}
-                sx={{ borderRadius: 3, textTransform: 'none', py: 1.5 }}
-              >
-                Go to Fitting Room
-              </Button>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => navigate('/fitting')}
+                  sx={{
+                    background: GRADIENTS.primary,
+                    color: '#fff',
+                    borderRadius: 3,
+                    textTransform: 'none',
+                    py: 1.5,
+                    boxShadow: `0 4px 20px ${PRIMARY_ALPHA[35]}`,
+                    '&:hover': {
+                      filter: 'brightness(1.08)',
+                      boxShadow: `0 6px 24px ${PRIMARY_ALPHA[45]}`,
+                    },
+                  }}
+                >
+                  Go to Fitting Room
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<FileUploadOutlinedIcon />}
+                  onClick={triggerUpload}
+                  sx={{ borderRadius: 3, textTransform: 'none', py: 1.25 }}
+                >
+                  Replace photo
+                </Button>
+              </Box>
             )}
           </Box>
 
