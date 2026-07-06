@@ -7,6 +7,7 @@ export interface ClosetFilters {
   category?: string;
   color?: string;
   season?: string;
+  style?: string;
   page?: number;
   limit?: number;
 }
@@ -39,6 +40,7 @@ export const clothingItemsApi = {
     if (filters.category) params.set('category', filters.category);
     if (filters.color)    params.set('color',    filters.color);
     if (filters.season)   params.set('season',   filters.season);
+    if (filters.style)    params.set('style',    filters.style);
     params.set('page',  String(filters.page  ?? 1));
     params.set('limit', String(filters.limit ?? 20));
     const { data } = await apiClient.get<PaginatedClothingItems>(`/closet/${userId}?${params}`);

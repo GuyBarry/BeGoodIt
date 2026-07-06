@@ -7,6 +7,7 @@ export interface ClothingFilters {
   category?: string;
   color?: string;
   season?: string;
+  style?: string;
 }
 
 export const clothingItemRepository = AppDataSource.getRepository(ClothingItem).extend({
@@ -28,7 +29,14 @@ export const clothingItemRepository = AppDataSource.getRepository(ClothingItem).
       idQb
         .leftJoin('ci.category', 'searchCat')
         .leftJoin('ci.styles', 'searchStyle')
-        .andWhere('(searchStyle.name LIKE :search OR searchCat.name LIKE :search)', { search: `%${filters.search}%` });
+        .leftJoin('clothing_item_color_groups', 'search_ci_cg', 'search_ci_cg.clothing_item_id = ci.id')
+        .leftJoin('color_group', 'searchColor', 'searchColor.id = search_ci_cg.color_group_id')
+        .leftJoin('clothing_item_seasons', 'search_ci_s', 'search_ci_s.clothing_item_id = ci.id')
+        .leftJoin('season', 'searchSeason', 'searchSeason.id = search_ci_s.season_id')
+        .andWhere(
+          '(searchStyle.name LIKE :search OR searchCat.name LIKE :search OR searchColor.name LIKE :search OR searchSeason.name LIKE :search)',
+          { search: `%${filters.search}%` },
+        );
     }
     if (filters.category) {
       idQb
@@ -44,6 +52,11 @@ export const clothingItemRepository = AppDataSource.getRepository(ClothingItem).
       idQb
         .innerJoin('clothing_item_seasons', 'ci_s', 'ci_s.clothing_item_id = ci.id')
         .innerJoin('season', 'filterSeason', 'filterSeason.id = ci_s.season_id AND filterSeason.name = :season', { season: filters.season });
+    }
+    if (filters.style) {
+      idQb
+        .innerJoin('ci.styles', 'filterStyle')
+        .andWhere('filterStyle.name = :style', { style: filters.style });
     }
 
     const [idRows, total] = await idQb.getManyAndCount();

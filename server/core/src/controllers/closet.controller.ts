@@ -18,6 +18,7 @@ closetRouter.get(
         category: req.query.category as string | undefined,
         color:    req.query.color    as string | undefined,
         season:   req.query.season   as string | undefined,
+        style:    req.query.style    as string | undefined,
       };
       const result = await closetService.getItemsByUserId(req.params.userId, filters, page, limit);
       res.status(StatusCodes.OK).json(result);
