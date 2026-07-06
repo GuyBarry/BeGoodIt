@@ -24,6 +24,7 @@ interface Props {
   onSeasonChange: (v: string) => void;
   itemsCount: number;
   outfitsCount: number;
+  username: string;
 }
 
 export default function ClosetHeader({
@@ -35,6 +36,7 @@ export default function ClosetHeader({
   selectedColor, onColorChange,
   selectedSeason, onSeasonChange,
   itemsCount, outfitsCount,
+  username,
 }: Props) {
   return (
     <Box
@@ -99,7 +101,7 @@ export default function ClosetHeader({
               }}
             >
               <Typography sx={{ color: '#fff', fontFamily: SERIF_FONT, fontSize: 20, fontWeight: 600, lineHeight: 1 }}>
-                S
+                {username.charAt(0)}
               </Typography>
             </Box>
           </Box>

@@ -36,7 +36,8 @@ function LoadingDots() {
 }
 
 export default function ClosetScreen() {
-  const currentUserId = useCurrentUser().id;
+  const currentUser = useCurrentUser();
+  const currentUserId = currentUser.id;
   const [activeTab,        setActiveTab]        = useState<'clothes' | 'outfits'>('clothes');
   const [searchQuery,      setSearchQuery]      = useState('');
   const [debouncedSearch,  setDebouncedSearch]  = useState('');
@@ -85,6 +86,7 @@ export default function ClosetScreen() {
         selectedSeason={selectedSeason}     onSeasonChange={setSelectedSeason}
         itemsCount={total}
         outfitsCount={outfits.length}
+        username={currentUser.username}
       />
 
       <Box component="main" sx={{ flex: 1, px: { xs: 2, sm: 4 }, py: 4 }}>
