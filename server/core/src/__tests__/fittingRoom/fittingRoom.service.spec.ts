@@ -67,16 +67,14 @@ describe('fittingRoomService', () => {
     id: 'item-uuid-1',
     userId: 'user-uuid-1',
     imageId: 'clothing-image-uuid-1',
-    style: 'casual',
-    colorGroupId: null,
     categoryId: null,
-    seasonId: null,
     imageEmbedding: null,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     user: null as any,
-    colorGroup: null,
     category: null,
-    season: null,
+    colorGroups: [],
+    seasons: [],
+    styles: [],
     outfits: [],
     ...overrides,
   });
@@ -133,7 +131,7 @@ describe('fittingRoomService', () => {
         NotFoundException,
       );
       await expect(fittingRoomService.createFit('user-uuid-1', ['item-uuid-1'])).rejects.toThrow(
-        "No body image found for user 'user-uuid-1'",
+        'Please upload a body photo before generating a look.',
       );
       expect(imagesService.getImageById).not.toHaveBeenCalled();
     });

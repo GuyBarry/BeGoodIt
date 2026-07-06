@@ -112,7 +112,7 @@ describe('Suite 2 — Type Classification', () => {
     createdItemId = response.body.id;
 
     assertOneOf(response.body.category?.name, tc.expectedClassification!.category!, 'category');
-    assertOneOf(response.body.colorGroup?.name, tc.expectedClassification!.colorGroup!, 'colorGroup');
+    assertOneOf(response.body.colorGroups?.[0]?.name, tc.expectedClassification!.colorGroup!, 'colorGroup');
   });
 
   it('should classify blue jeans as Bottom', async () => {
@@ -123,7 +123,7 @@ describe('Suite 2 — Type Classification', () => {
     createdItemId = response.body.id;
 
     assertOneOf(response.body.category?.name, tc.expectedClassification!.category!, 'category');
-    assertOneOf(response.body.colorGroup?.name, tc.expectedClassification!.colorGroup!, 'colorGroup');
+    assertOneOf(response.body.colorGroups?.[0]?.name, tc.expectedClassification!.colorGroup!, 'colorGroup');
   });
 
   it('should classify white sneakers as Shoes', async () => {
@@ -134,7 +134,7 @@ describe('Suite 2 — Type Classification', () => {
     createdItemId = response.body.id;
 
     assertOneOf(response.body.category?.name, tc.expectedClassification!.category!, 'category');
-    assertOneOf(response.body.colorGroup?.name, tc.expectedClassification!.colorGroup!, 'colorGroup');
+    assertOneOf(response.body.colorGroups?.[0]?.name, tc.expectedClassification!.colorGroup!, 'colorGroup');
   });
 
   it('should classify a black puffer jacket as Outerwear', async () => {
@@ -145,7 +145,7 @@ describe('Suite 2 — Type Classification', () => {
     createdItemId = response.body.id;
 
     assertOneOf(response.body.category?.name, tc.expectedClassification!.category!, 'category');
-    assertOneOf(response.body.colorGroup?.name, tc.expectedClassification!.colorGroup!, 'colorGroup');
+    assertOneOf(response.body.colorGroups?.[0]?.name, tc.expectedClassification!.colorGroup!, 'colorGroup');
   });
 });
 
@@ -252,6 +252,6 @@ describe('Suite 5 — Crumpled / Wrinkled Clothing', () => {
     createdItemId = response.body.id;
 
     assertOneOf(response.body.category?.name, tc.expectedClassification!.category!, 'category');
-    assertOneOf(response.body.colorGroup?.name, tc.expectedClassification!.colorGroup!, 'colorGroup');
+    assertOneOf(response.body.colorGroups?.[0]?.name, tc.expectedClassification!.colorGroup!, 'colorGroup');
   });
 });

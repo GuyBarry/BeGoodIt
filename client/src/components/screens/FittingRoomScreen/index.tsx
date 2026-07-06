@@ -1,7 +1,8 @@
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useClothingItems, useFindMatches, useGenerateLook, useSaveOutfit } from '../../../api';
 import { PRIMARY_ALPHA } from '../../../styles/tokens';
 import ClosetItemGrid from './ClosetItemGrid';
@@ -14,6 +15,7 @@ import SelectedSummary from './SelectedSummary';
 import { useCurrentUser } from '../../../auth/AuthContext';
 
 export default function FittingRoomScreen() {
+  const navigate = useNavigate();
   const currentUserId = useCurrentUser().id;
   const { data: clothingItems = [] } = useClothingItems(currentUserId);
   const { mutate: generateLook, isPending: isGenerating }             = useGenerateLook();
@@ -28,6 +30,7 @@ export default function FittingRoomScreen() {
   const [inspirationImage, setInspirationImage]   = useState<string | null>(null);
   const [inspirationFile, setInspirationFile]     = useState<File | null>(null);
   const [suggestedItems, setSuggestedItems]   = useState<string[]>([]);
+  const [missingBodyImageOpen, setMissingBodyImageOpen] = useState(false);
 
   const toggleItem = (id: string) =>
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -41,6 +44,11 @@ export default function FittingRoomScreen() {
           if (generatedLookUrl) URL.revokeObjectURL(generatedLookUrl);
           setGeneratedLookUrl(url);
           setGeneratedImageId(imageId);
+        },
+        onError: (error: Error & { status?: number }) => {
+          if (error.status === 404 && error.message.toLowerCase().includes('body photo')) {
+            setMissingBodyImageOpen(true);
+          }
         },
       },
     );
@@ -207,6 +215,19 @@ export default function FittingRoomScreen() {
           </Box>
         </Box>
       </Box>
+
+      <Dialog open={missingBodyImageOpen} onClose={() => setMissingBodyImageOpen(false)}>
+        <DialogTitle>Body Photo Required</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            We couldn't generate your look because you haven't uploaded a body photo yet. Upload one to get started.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setMissingBodyImageOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={() => navigate('/body')}>Upload Body Photo</Button>
+        </DialogActions>
+      </Dialog>
 
     </Box>
   );
