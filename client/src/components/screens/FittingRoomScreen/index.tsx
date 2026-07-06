@@ -1,9 +1,9 @@
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useClothingItems, useFindMatches, useGenerateLook, useSaveOutfit } from '../../../api';
+import { useClothingItems, useFindMatches, useGenerateLook, useGetOutfits, useSaveOutfit } from '../../../api';
 import { PRIMARY_ALPHA } from '../../../styles/tokens';
 import ClosetItemGrid from './ClosetItemGrid';
 import FittingRoomHeader from './FittingRoomHeader';
@@ -18,8 +18,9 @@ export default function FittingRoomScreen() {
   const navigate = useNavigate();
   const currentUserId = useCurrentUser().id;
   const { data: clothingItems = [] } = useClothingItems(currentUserId);
+  const { data: outfits = [] }        = useGetOutfits(currentUserId);
   const { mutate: generateLook, isPending: isGenerating }             = useGenerateLook();
-  const { mutate: saveOutfit,   isPending: isSaving, isSuccess: isSaved } = useSaveOutfit();
+  const { mutate: saveOutfit,   isPending: isSaving, isSuccess: isSavedByMutation, reset: resetSaveOutfit } = useSaveOutfit();
   const { mutate: findMatches,  isPending: isAnalyzingInspiration }   = useFindMatches();
 
   const [selectedItems, setSelectedItems]     = useState<string[]>([]);
@@ -32,13 +33,37 @@ export default function FittingRoomScreen() {
   const [suggestedItems, setSuggestedItems]   = useState<string[]>([]);
   const [missingBodyImageOpen, setMissingBodyImageOpen] = useState(false);
 
-  const toggleItem = (id: string) =>
+  // If this exact set of clothing items was already saved as an outfit before, the freshly
+  // generated (possibly cached) look is already saved, regardless of local mutation state.
+  const isAlreadySavedOutfit = useMemo(() => {
+    if (selectedItems.length === 0) return false;
+    const selectedKey = [...selectedItems].sort().join(',');
+    return outfits.some((outfit) => {
+      if (!outfit.imageId) return false;
+      const itemsKey = (outfit.items ?? []).map((item) => item.id).sort().join(',');
+      return itemsKey === selectedKey;
+    });
+  }, [outfits, selectedItems]);
+
+  const isSaved = isSavedByMutation || isAlreadySavedOutfit;
+
+  const toggleItem = (id: string) => {
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
 
-  const handleGenerate = () => {
+    // Selection changed: any previously generated look no longer matches, so revert back
+    // to the initial "Generate Look" state and drop the recreate/save controls.
+    if (generatedLookUrl) {
+      URL.revokeObjectURL(generatedLookUrl);
+      setGeneratedLookUrl(null);
+      setGeneratedImageId(null);
+      resetSaveOutfit();
+    }
+  };
+
+  const handleGenerate = (recreate = false) => {
     if (selectedItems.length === 0) return;
     generateLook(
-      { userId: currentUserId, clothingItemIds: selectedItems },
+      { userId: currentUserId, clothingItemIds: selectedItems, recreate },
       {
         onSuccess: ({ url, imageId }) => {
           if (generatedLookUrl) URL.revokeObjectURL(generatedLookUrl);
@@ -54,6 +79,8 @@ export default function FittingRoomScreen() {
     );
   };
 
+  const handleRecreate = () => handleGenerate(true);
+
   const handleSave = () => {
     if (!generatedImageId) return;
     saveOutfit({ userId: currentUserId, imageId: generatedImageId, clothingItemIds: selectedItems });
@@ -65,6 +92,7 @@ export default function FittingRoomScreen() {
     setGeneratedLookUrl(null);
     setGeneratedImageId(null);
     setSuggestedItems([]);
+    resetSaveOutfit();
   };
 
   const handleFileSelect = (file: File) => {
@@ -113,6 +141,9 @@ export default function FittingRoomScreen() {
               generatedLookUrl={generatedLookUrl}
               suggestedItems={suggestedItems}
               onReset={handleReset}
+              isSaving={isSaving}
+              isSaved={isSaved}
+              onSave={handleSave}
             />
 
             {/* Right panel with tabs */}
@@ -196,6 +227,7 @@ export default function FittingRoomScreen() {
                       isSaving={isSaving}
                       isSaved={isSaved}
                       onSave={handleSave}
+                      onRecreate={handleRecreate}
                     />
                   </Box>
                 </>

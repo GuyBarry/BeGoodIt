@@ -2,6 +2,7 @@ import { Box, Button, CircularProgress } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CheckIcon from '@mui/icons-material/Check';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 
 interface Props {
@@ -12,10 +13,11 @@ interface Props {
   isSaving: boolean;
   isSaved: boolean;
   onSave: () => void;
+  onRecreate: () => void;
 }
 
 export default function GenerateButton({
-  selectedItems, isGenerating, onGenerate, hasGeneratedLook, isSaving, isSaved, onSave,
+  selectedItems, isGenerating, onGenerate, hasGeneratedLook, isSaving, isSaved, onSave, onRecreate,
 }: Props) {
   if (hasGeneratedLook) {
     return (
@@ -43,12 +45,12 @@ export default function GenerateButton({
         </Button>
         <Button
           size="large"
-          variant="contained"
-          disabled
+          variant="outlined"
+          startIcon={isGenerating ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />}
+          onClick={onRecreate}
+          disabled={selectedItems.length === 0 || isGenerating}
           sx={{
             flex: 1,
-            bgcolor: 'action.disabledBackground',
-            color: 'text.disabled',
             py: 1.25,
             borderRadius: 3,
             fontSize: 16,
@@ -57,11 +59,12 @@ export default function GenerateButton({
             '&.Mui-disabled': { bgcolor: 'action.disabledBackground', color: 'text.disabled' },
           }}
         >
-          Recreate
+          {isGenerating ? 'Generating...' : 'Recreate'}
         </Button>
       </Box>
     );
   }
+
 
   const label = isGenerating
     ? 'Generating...'
@@ -73,7 +76,7 @@ export default function GenerateButton({
       variant="contained"
       fullWidth
       startIcon={<AutoAwesomeIcon />}
-      onClick={onGenerate}
+      onClick={() => onGenerate()}
       disabled={selectedItems.length === 0 || isGenerating}
       sx={{
         background: GRADIENTS.primary,

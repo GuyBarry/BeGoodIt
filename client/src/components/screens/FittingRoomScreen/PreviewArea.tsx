@@ -2,6 +2,8 @@ import { Box, CircularProgress, IconButton, Tooltip, Typography } from '@mui/mat
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 
 interface Props {
@@ -9,9 +11,14 @@ interface Props {
   generatedLookUrl: string | null;
   suggestedItems: string[];
   onReset: () => void;
+  isSaving: boolean;
+  isSaved: boolean;
+  onSave: () => void;
 }
 
-export default function PreviewArea({ isGenerating, generatedLookUrl, suggestedItems, onReset }: Props) {
+export default function PreviewArea({
+  isGenerating, generatedLookUrl, suggestedItems, onReset, isSaving, isSaved, onSave,
+}: Props) {
   return (
     <Box
       sx={{
@@ -90,7 +97,29 @@ export default function PreviewArea({ isGenerating, generatedLookUrl, suggestedI
             alt="Generated look"
             sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
-          <Box sx={{ position: 'absolute', bottom: 24, right: 24, display: 'flex', gap: 1.5 }}>
+          <Box sx={{ position: 'absolute', bottom: 24, right: 24, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Tooltip title={isSaved ? 'Saved' : 'Save Outfit'} placement="top">
+              <span>
+                <IconButton
+                  onClick={onSave}
+                  disabled={isSaving || isSaved}
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.85)',
+                    backdropFilter: 'blur(12px)',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.95)' },
+                    '&.Mui-disabled': { bgcolor: 'rgba(255,255,255,0.85)' },
+                  }}
+                >
+                  {isSaving ? (
+                    <CircularProgress size={20} />
+                  ) : isSaved ? (
+                    <FavoriteIcon sx={{ color: '#e53950' }} />
+                  ) : (
+                    <FavoriteBorderIcon />
+                  )}
+                </IconButton>
+              </span>
+            </Tooltip>
             <Tooltip title="Reset" placement="top">
               <IconButton
                 onClick={onReset}
