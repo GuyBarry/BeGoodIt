@@ -1,6 +1,6 @@
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClothingItems, useFindMatches, useGenerateLook, useGetOutfits, useSaveOutfit } from '../../../api';
@@ -32,6 +32,7 @@ export default function FittingRoomScreen() {
   const [inspirationFile, setInspirationFile]     = useState<File | null>(null);
   const [suggestedItems, setSuggestedItems]   = useState<string[]>([]);
   const [missingBodyImageOpen, setMissingBodyImageOpen] = useState(false);
+  const [noMatchesSnackbarOpen, setNoMatchesSnackbarOpen] = useState(false);
 
   // If this exact set of clothing items was already saved as an outfit before, the freshly
   // generated (possibly cached) look is already saved, regardless of local mutation state.
@@ -108,6 +109,9 @@ export default function FittingRoomScreen() {
         onSuccess: (matchedItemIds) => {
           setSuggestedItems(matchedItemIds);
           setSelectedItems(matchedItemIds);
+          if (matchedItemIds.length === 0) {
+            setNoMatchesSnackbarOpen(true);
+          }
           setActiveTab('closet');
         },
       },
@@ -261,6 +265,22 @@ export default function FittingRoomScreen() {
           <Button variant="contained" onClick={() => navigate('/body')}>Upload Body Photo</Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={noMatchesSnackbarOpen}
+        autoHideDuration={5000}
+        onClose={() => setNoMatchesSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setNoMatchesSnackbarOpen(false)}
+          severity="info"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          No matching items found in your closet for this look. Browse your closet below to build your own outfit instead!
+        </Alert>
+      </Snackbar>
 
     </Box>
   );
