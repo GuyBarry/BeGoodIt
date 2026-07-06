@@ -10,8 +10,7 @@ const VIRTUAL_TRY_ON_SYSTEM_INSTRUCTION = `
       Your objective is to take an image of a user's avatar or person and seamlessly composite a provided
       garment onto them.
 
-      When generating the final image, you must strictly adhere to the following
-      constraints:
+      When generating the final image, you must strictly adhere to the following constraints:
 
       1. Preserve Identity: The person's face, skin tone, hair, and body proportions must
       remain exactly as they appear in the source image.
@@ -24,13 +23,9 @@ const VIRTUAL_TRY_ON_SYSTEM_INSTRUCTION = `
       specific body shape. Simulate realistic fabric draping, folds, and stretching
       based on the pose.
 
-      4. Lighting and Shadows: Match the lighting, shadows, and environment of the
-      original person/avatar image so the clothing looks like it naturally belongs in
-      the scene, not pasted on.
+      4. No Artifacts: The final image must be free of visual artifacts, distortions.
 
-      5. No Artifacts: The final image must be free of visual artifacts, distortions.
-
-      6. Output Format: The output must be a single, photorealistic image in PNG format.
+      5. Output Format: The output must be a single, photorealistic image in PNG format.
     `;
 
 export interface GenerateOutfitInput {
@@ -47,19 +42,24 @@ export const generateOutfit = async (
   const clothingDescriptions = clothingItems
     .map((item, index) => {
       const parts: string[] = [`Item ${index + 1}:`];
+      if (item.category) parts.push(`Category: ${item.category.name}`);
       if (item.styles?.length) parts.push(`Style: ${item.styles.map(s => s.name).join(', ')}`);
+      if (item.colorGroups?.length) parts.push(`Colors: ${item.colorGroups.map(c => c.name).join(', ')}`);
+      if (item.seasons?.length) parts.push(`Seasons: ${item.seasons.map(s => s.name).join(', ')}`);
       return parts.join(", ");
     })
     .join("\n        ");
 
   const prompt = `
-        Task: Please fit the provided clothing item onto the provided person based on
+        Task: fit the provided clothing items onto the provided person based on
         the description below. Ensure a highly realistic, artifact-free output.
 
         Clothing items descriptions:
         ${clothingDescriptions}
     `;
-
+  
+    console.log("Prompt for AI model:", prompt);
+    
   const config = {
     responseModalities: ["IMAGE"],
     systemInstruction: VIRTUAL_TRY_ON_SYSTEM_INSTRUCTION,
@@ -73,7 +73,7 @@ export const generateOutfit = async (
     })),
   ];
 
-  return generateAIImage(AIModel.GEMINI_2_5_FLASH_IMAGE, prompt, config, images);
+  return generateAIImage(AIModel.GEMINI_3_1_FLASH_IMAGE, prompt, config, images);
 };
 
 export const generateProductTryOn = async (

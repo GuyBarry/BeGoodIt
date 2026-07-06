@@ -1,8 +1,11 @@
-import { Box, Typography, Paper, Grid } from '@mui/material';
+import { Box, Typography, Grid } from '@mui/material';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import type { User } from '../../../entities/user';
+import { PRIMARY_ALPHA } from '../../../styles/tokens';
 
 interface Props {
   user: User;
+  onEdit: () => void;
 }
 
 function calculateAge(birthdate: string): number {
@@ -14,7 +17,7 @@ function calculateAge(birthdate: string): number {
   return age;
 }
 
-export default function PersonalInfoCard({ user }: Props) {
+export default function PersonalInfoCard({ user, onEdit }: Props) {
   const fields = [
     { label: 'Age', value: user.birthdate ? `${calculateAge(user.birthdate)} years` : '—' },
     { label: 'Gender', value: user.gender?.name ?? '—' },
@@ -23,10 +26,35 @@ export default function PersonalInfoCard({ user }: Props) {
   ];
 
   return (
-    <Paper elevation={0} sx={{ borderRadius: 3, p: 3, border: '1px solid', borderColor: 'divider' }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Personal Info
-      </Typography>
+    <Box
+      component="button"
+      onClick={onEdit}
+      sx={{
+        display: 'block',
+        width: '100%',
+        textAlign: 'left',
+        borderRadius: 3,
+        p: 3,
+        border: '1px solid',
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        transition: 'background-color 0.15s, border-color 0.15s',
+        '&:hover': {
+          bgcolor: PRIMARY_ALPHA[4],
+          borderColor: 'primary.light',
+        },
+        '&:hover .personal-info-edit-icon': { opacity: 1 },
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="h6">Personal Info</Typography>
+        <EditOutlinedIcon
+          className="personal-info-edit-icon"
+          sx={{ color: 'primary.main', fontSize: 20, opacity: 0, transition: 'opacity 0.15s' }}
+        />
+      </Box>
       <Grid container spacing={1.5}>
         {fields.map(({ label, value }) => (
           <Grid key={label} size={{ xs: 6 }}>
@@ -37,6 +65,6 @@ export default function PersonalInfoCard({ user }: Props) {
           </Grid>
         ))}
       </Grid>
-    </Paper>
+    </Box>
   );
 }

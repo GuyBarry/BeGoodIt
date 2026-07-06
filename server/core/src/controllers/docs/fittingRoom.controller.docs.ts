@@ -64,7 +64,7 @@
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "No body image found for user '3fa85f64-5717-4562-b3fc-2c963f66afa6'"
+ *                   example: "Please upload a body photo before generating a look."
  *       500:
  *         description: Internal server error (including AI service failures)
  *         content:

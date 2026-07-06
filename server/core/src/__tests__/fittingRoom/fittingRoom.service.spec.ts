@@ -133,7 +133,7 @@ describe('fittingRoomService', () => {
         NotFoundException,
       );
       await expect(fittingRoomService.createFit('user-uuid-1', ['item-uuid-1'])).rejects.toThrow(
-        "No body image found for user 'user-uuid-1'",
+        'Please upload a body photo before generating a look.',
       );
       expect(imagesService.getImageById).not.toHaveBeenCalled();
     });

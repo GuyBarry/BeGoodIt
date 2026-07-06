@@ -1,6 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { PRIMARY_ALPHA } from '../../../styles/tokens';
 
 interface Props {
   onClick: () => void;
@@ -21,8 +22,11 @@ export default function EditProfileButton({ onClick }: Props) {
         borderColor: 'divider',
         borderRadius: 3,
         cursor: 'pointer',
-        transition: 'background-color 0.15s',
-        '&:hover': { bgcolor: 'grey.50' },
+        transition: 'background-color 0.15s, border-color 0.15s',
+        '&:hover': {
+          bgcolor: PRIMARY_ALPHA[4],
+          borderColor: 'primary.light',
+        },
       }}
     >
       <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: 'grey.100', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

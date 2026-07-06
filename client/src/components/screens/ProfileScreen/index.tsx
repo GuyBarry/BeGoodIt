@@ -4,7 +4,7 @@ import { Box, Button, CircularProgress, Grid, Paper, Typography } from '@mui/mat
 import PersonOutlineIcon from '@mui/icons-material/PersonOutlineOutlined';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import type { User } from '../../../entities/user';
-import { useUser, useUpdateUser, useClothingItems, useBodyImage } from '../../../api';
+import { useUser, useUpdateUser, useClothingItems, useBodyImage, useGetOutfits } from '../../../api';
 import { imagesApi } from '../../../api/api/images.api';
 import { useCurrentUser, useLogout } from '../../../auth/AuthContext';
 import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
@@ -24,6 +24,7 @@ export default function ProfileScreen() {
   const { mutate: updateUser } = useUpdateUser(currentUserId);
   const { data: clothingItems = [] } = useClothingItems(currentUserId);
   const { data: bodyImage } = useBodyImage(currentUserId);
+  const { data: outfits = [] } = useGetOutfits(currentUserId);
 
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
@@ -74,8 +75,13 @@ export default function ProfileScreen() {
             <Grid size={{ xs: 12, lg: 6 }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <ProfileCard user={user} />
-                <PersonalInfoCard user={user} />
-                <StatsGrid itemsCount={clothingItems.length} />
+                <PersonalInfoCard user={user} onEdit={openEdit} />
+                <StatsGrid
+                  itemsCount={clothingItems.length}
+                  outfitsCount={outfits.length}
+                  onItemsClick={() => navigate('/closet')}
+                  onOutfitsClick={() => navigate('/closet', { state: { tab: 'outfits' } })}
+                />
               </Box>
             </Grid>
 
