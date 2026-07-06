@@ -42,7 +42,10 @@ export const generateOutfit = async (
   const clothingDescriptions = clothingItems
     .map((item, index) => {
       const parts: string[] = [`Item ${index + 1}:`];
+      if (item.category) parts.push(`Category: ${item.category.name}`);
       if (item.styles?.length) parts.push(`Style: ${item.styles.map(s => s.name).join(', ')}`);
+      if (item.colorGroups?.length) parts.push(`Colors: ${item.colorGroups.map(c => c.name).join(', ')}`);
+      if (item.seasons?.length) parts.push(`Seasons: ${item.seasons.map(s => s.name).join(', ')}`);
       return parts.join(", ");
     })
     .join("\n        ");
@@ -70,7 +73,7 @@ export const generateOutfit = async (
     })),
   ];
 
-  return generateAIImage(AIModel.GEMINI_2_5_FLASH_IMAGE, prompt, config, images);
+  return generateAIImage(AIModel.GEMINI_3_1_FLASH_IMAGE, prompt, config, images);
 };
 
 export const generateProductTryOn = async (
