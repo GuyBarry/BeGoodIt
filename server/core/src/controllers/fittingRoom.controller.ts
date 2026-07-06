@@ -46,7 +46,8 @@ fittingRoomRouter.post(
       if (!userId?.trim()) return next(new BadRequestException('userId is required'));
       if (!req.file) return next(new BadRequestException('file is required'));
 
-      const { imageBuffer, imageId } = await fittingRoomService.createProductTryOn(userId, req.file);
+      const itemDescription = typeof req.body?.itemDescription === 'string' ? req.body.itemDescription : undefined;
+      const { imageBuffer, imageId } = await fittingRoomService.createProductTryOn(userId, req.file, itemDescription);
 
       res.setHeader('Content-Type', 'image/png');
       res.setHeader('Content-Length', imageBuffer.length);

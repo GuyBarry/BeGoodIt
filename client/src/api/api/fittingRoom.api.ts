@@ -66,9 +66,10 @@ export const fittingRoomApi = {
     }
   },
 
-  tryOnProduct: async (userId: User['id'], file: File): Promise<GenerateLookResult> => {
+  tryOnProduct: async (userId: User['id'], file: File, itemDescription?: string): Promise<GenerateLookResult> => {
     const formData = new FormData();
     formData.append('file', file);
+    if (itemDescription) formData.append('itemDescription', itemDescription);
     const response = await apiClient.post<Blob>(
       `/fitting-room/${userId}/try-on-product`,
       formData,
