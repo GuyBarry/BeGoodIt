@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, CircularProgress, Grid, Paper, Typography } from '@mui/material';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutlineOutlined';
+import PersonIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
+import CheckroomIcon from '@mui/icons-material/Checkroom';
+import PaletteIcon from '@mui/icons-material/Palette';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import type { User } from '../../../entities/user';
 import { useUser, useUpdateUser, useClothingItems, useBodyImage, useGetOutfits } from '../../../api';
@@ -12,10 +16,7 @@ import ProfileHeader from './ProfileHeader';
 import ProfileCard from './ProfileCard';
 import PersonalInfoCard from './PersonalInfoCard';
 import StatsGrid from './StatsGrid';
-import StyleInsightsCard from './StyleInsightsCard';
-import EditProfileButton from './EditProfileButton';
 import EditProfileDialog from './EditProfileDialog';
-import LogoutButton from './LogoutButton';
 
 export default function ProfileScreen() {
   const currentUserId = useCurrentUser().id;
@@ -73,29 +74,26 @@ export default function ProfileScreen() {
         <Box sx={{ maxWidth: 900, mx: 'auto' }}>
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, lg: 6 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
                 <ProfileCard user={user} />
                 <PersonalInfoCard user={user} onEdit={openEdit} />
-                <StatsGrid
-                  itemsCount={clothingItems.length}
-                  outfitsCount={outfits.length}
-                  onItemsClick={() => navigate('/closet')}
-                  onOutfitsClick={() => navigate('/closet', { state: { tab: 'outfits' } })}
-                />
               </Box>
             </Grid>
 
             <Grid size={{ xs: 12, lg: 6 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
                 {/* Virtual Try-On Model card */}
                 <Paper
                   elevation={0}
                   sx={{
                     borderRadius: 4, overflow: 'hidden',
                     border: '1px solid', borderColor: 'divider',
+                    height: 220,
+                    display: 'flex',
+                    flexDirection: 'column',
                   }}
                 >
-                  <Box sx={{ background: GRADIENTS.primarySubtle, px: 3, pt: 3, pb: 2.5 }}>
+                  <Box sx={{ background: GRADIENTS.primarySubtle, px: 3, pt: 3, pb: 2.5, flex: 1 }}>
                     <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'flex-start' }}>
                       {bodyImage?.imageId ? (
                         <Box
@@ -158,9 +156,36 @@ export default function ProfileScreen() {
                   </Box>
                 </Paper>
 
-                <StyleInsightsCard />
-                <EditProfileButton onClick={openEdit} />
-                <LogoutButton onClick={logout} />
+                <Box sx={{ flex: 1 }}>
+                  <StatsGrid
+                    items={[
+                      {
+                        title: clothingItems.length,
+                        subtitle: 'Total Items',
+                        Icon: CheckroomIcon,
+                        onClick: () => navigate('/closet'),
+                      },
+                      {
+                        title: outfits.length,
+                        subtitle: 'Saved Outfits',
+                        Icon: PaletteIcon,
+                        onClick: () => navigate('/closet', { state: { tab: 'outfits' } }),
+                      },
+                      {
+                        title: 'Edit Profile',
+                        subtitle: 'Update your details',
+                        Icon: PersonIcon,
+                        onClick: openEdit,
+                      },
+                      {
+                        title: 'Log out',
+                        subtitle: 'Sign out of your account',
+                        Icon: LogoutIcon,
+                        onClick: logout,
+                      },
+                    ]}
+                  />
+                </Box>
               </Box>
             </Grid>
           </Grid>

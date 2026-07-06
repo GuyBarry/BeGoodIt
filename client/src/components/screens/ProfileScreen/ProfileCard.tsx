@@ -16,6 +16,11 @@ export default function ProfileCard({ user }: Props) {
         p: 4,
         overflow: 'hidden',
         textAlign: 'center',
+        height: 220,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
     >
       <Box
