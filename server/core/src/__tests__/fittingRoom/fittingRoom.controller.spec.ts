@@ -87,7 +87,7 @@ describe('fittingRoomRouter', () => {
     it('should return 404 when service throws NotFoundException for missing body image', async () => {
       const { NotFoundException } = jest.requireActual('../../exceptions/httpExceptions');
       (fittingRoomService.createFit as jest.Mock).mockRejectedValue(
-        new NotFoundException("No body image found for user 'user-uuid-1'"),
+        new NotFoundException('Please upload a body photo before generating a look.'),
       );
 
       const response = await request(app)
@@ -95,7 +95,7 @@ describe('fittingRoomRouter', () => {
         .send({ clothingItemIds: ['item-uuid-1'] });
 
       expect(response.status).toBe(StatusCodes.NOT_FOUND);
-      expect(response.body.message).toContain('No body image found');
+      expect(response.body.message).toContain('Please upload a body photo');
     });
 
     it('should return 404 when service throws NotFoundException for missing clothing items', async () => {

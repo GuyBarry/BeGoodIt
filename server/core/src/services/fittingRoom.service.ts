@@ -34,7 +34,7 @@ const createFit = async (userId: string, clothingItemIds: string[]): Promise<Fit
 
   const bodyMapping = await bodyMappingRepository.findOne({ where: { userId } });
   if (!bodyMapping) {
-    throw new NotFoundException(`No body image found for user '${userId}'`);
+    throw new NotFoundException("Please upload a body photo before generating a look.");
   }
 
   const bodyImageEntity = await imagesService.getImageById(bodyMapping.imageId);
@@ -76,7 +76,7 @@ const createFit = async (userId: string, clothingItemIds: string[]): Promise<Fit
 
 const createProductTryOn = async (userId: string, productImage: Express.Multer.File): Promise<FitResult> => {
   const bodyMapping = await bodyMappingRepository.findOne({ where: { userId } });
-  if (!bodyMapping) throw new NotFoundException(`No body image found for user '${userId}'`);
+  if (!bodyMapping) throw new NotFoundException("Please upload a body photo before trying on this product.");
 
   const bodyImageEntity = await imagesService.getImageById(bodyMapping.imageId);
   const bodyImage = toMulterFile(bodyImageEntity);
