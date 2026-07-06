@@ -7,7 +7,7 @@ import ClothingGrid from './ClothingGrid';
 import OutfitsGrid from './OutfitsGrid';
 import OutfitDialog from './OutfitDialog';
 import { useCurrentUser } from '../../../auth/AuthContext';
-import { useClosetItems, useDeleteClothingItem, useGetOutfits } from '../../../api';
+import { useClosetItems, useDeleteClothingItem, useDeleteOutfit, useGetOutfits } from '../../../api';
 import type { ClosetFilters } from '../../../api/api/closet.api';
 import type { Outfit } from '../../../entities/outfit';
 
@@ -47,6 +47,7 @@ export default function ClosetScreen() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedColor,    setSelectedColor]    = useState('All');
   const [selectedSeason,   setSelectedSeason]   = useState('All');
+  const [selectedStyle,    setSelectedStyle]    = useState('All');
   const [gridSize,         setGridSize]         = useState<'normal' | 'compact'>('normal');
   const [selectedOutfit,   setSelectedOutfit]   = useState<Outfit | null>(null);
 
@@ -69,6 +70,7 @@ export default function ClosetScreen() {
     ...(selectedCategory !== 'All' && { category: selectedCategory }),
     ...(selectedColor    !== 'All' && { color:    selectedColor }),
     ...(selectedSeason   !== 'All' && { season:   selectedSeason }),
+    ...(selectedStyle    !== 'All' && { style:    selectedStyle }),
     limit,
   };
 
@@ -76,12 +78,34 @@ export default function ClosetScreen() {
     useClosetItems(currentUserId, filters);
   const { mutate: deleteItem } = useDeleteClothingItem(currentUserId);
   const { data: outfits = [], isLoading: outfitsLoading } = useGetOutfits(currentUserId);
+  const { mutate: deleteOutfit } = useDeleteOutfit(currentUserId);
 
   const items = data?.pages.flatMap(p => p.items) ?? [];
   const total = data?.pages[0]?.total ?? 0;
 
   const allLoaded = !hasNextPage && items.length > 0;
   const showLess  = allLoaded && items.length > limit;
+
+  const outfitMatchesSearch = (outfit: Outfit, query: string) => {
+    const q = query.toLowerCase();
+    if (outfit.name?.toLowerCase().includes(q)) return true;
+    return (outfit.items ?? []).some(item =>
+      item.category?.name.toLowerCase().includes(q) ||
+      item.colorGroups?.some(c => c.name.toLowerCase().includes(q)) ||
+      item.seasons?.some(s => s.name.toLowerCase().includes(q)) ||
+      item.styles?.some(s => s.toLowerCase().includes(q)),
+    );
+  };
+
+  const filteredOutfits = outfits.filter(outfit => {
+    if (debouncedSearch && !outfitMatchesSearch(outfit, debouncedSearch)) return false;
+    const outfitItems = outfit.items ?? [];
+    if (selectedCategory !== 'All' && !outfitItems.some(i => i.category?.name === selectedCategory)) return false;
+    if (selectedColor    !== 'All' && !outfitItems.some(i => i.colorGroups?.some(c => c.name === selectedColor))) return false;
+    if (selectedSeason   !== 'All' && !outfitItems.some(i => i.seasons?.some(s => s.name === selectedSeason))) return false;
+    if (selectedStyle    !== 'All' && !outfitItems.some(i => i.styles?.includes(selectedStyle))) return false;
+    return true;
+  });
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -93,6 +117,7 @@ export default function ClosetScreen() {
         selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory}
         selectedColor={selectedColor}       onColorChange={setSelectedColor}
         selectedSeason={selectedSeason}     onSeasonChange={setSelectedSeason}
+        selectedStyle={selectedStyle}       onStyleChange={setSelectedStyle}
         itemsCount={total}
         outfitsCount={outfits.length}
         username={currentUser.username}
@@ -143,7 +168,7 @@ export default function ClosetScreen() {
               <CircularProgress />
             </Box>
           ) : (
-            <OutfitsGrid outfits={outfits} gridSize={gridSize} onSelect={setSelectedOutfit} />
+            <OutfitsGrid outfits={filteredOutfits} gridSize={gridSize} onSelect={setSelectedOutfit} onDelete={deleteOutfit} />
           )}
         </Box>
       </Box>

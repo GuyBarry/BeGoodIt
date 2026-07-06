@@ -50,11 +50,15 @@ export const fittingRoomApi = {
     return data.matchedItemIds;
   },
 
-  generateLook: async (userId: User['id'], clothingItemIds: string[]): Promise<GenerateLookResult> => {
+  generateLook: async (
+    userId: User['id'],
+    clothingItemIds: string[],
+    recreate?: boolean,
+  ): Promise<GenerateLookResult> => {
     try {
       const response = await apiClient.post<Blob>(
         `/fitting-room/${userId}/outfit`,
-        { clothingItemIds },
+        { clothingItemIds, recreate },
         { responseType: 'blob' },
       );
       return {

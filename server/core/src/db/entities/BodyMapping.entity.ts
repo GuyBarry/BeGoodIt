@@ -1,11 +1,11 @@
 import {
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   Unique,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Image, User } from './index';
 
@@ -47,7 +47,9 @@ export class BodyMapping {
   @Column({ name: 'body_type', type: 'varchar', length: 100, nullable: true, default: null })
   bodyType: string | null;
 
-  @CreateDateColumn({ name: 'created_at' })
+  // Set on insert and refreshed on every save (including body image or body data updates).
+  // Used to detect stale cached outfit images that were generated from a previous body photo.
+  @UpdateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })

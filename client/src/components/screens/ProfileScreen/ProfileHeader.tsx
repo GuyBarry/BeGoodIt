@@ -1,6 +1,4 @@
-import { Box, Typography, IconButton } from '@mui/material';
-import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import { Box, Typography } from '@mui/material';
 
 export default function ProfileHeader() {
   return (
@@ -21,10 +19,6 @@ export default function ProfileHeader() {
         <Typography variant="h4">
           Profile
         </Typography>
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <IconButton size="small"><NotificationsOutlinedIcon /></IconButton>
-          <IconButton size="small"><SettingsOutlinedIcon /></IconButton>
-        </Box>
       </Box>
     </Box>
   );

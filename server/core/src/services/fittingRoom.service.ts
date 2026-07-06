@@ -25,15 +25,34 @@ export type FitResult = {
   imageId: string;
 };
 
-const createFit = async (userId: string, clothingItemIds: string[]): Promise<FitResult> => {
+export type CreateFitOptions = {
+  // When true, skip the cache lookup entirely and generate a fresh image, replacing any
+  // previously cached outfit image for this exact set of clothing items.
+  recreate?: boolean;
+};
+
+const createFit = async (
+  userId: string,
+  clothingItemIds: string[],
+  options: CreateFitOptions = {},
+): Promise<FitResult> => {
+  const { recreate = false } = options;
+
   // Cache hit: an outfit with exactly these items was already saved by the user before
   const cached = await outfitService.findCachedOutfit(userId, clothingItemIds);
-  if (cached?.imageId) {
-    const imageEntity = await imagesService.getImageById(cached.imageId);
-    return { imageBuffer: imageEntity.data, imageId: cached.imageId };
+  const bodyMapping = await bodyMappingRepository.findOne({ where: { userId } });
+
+  if (cached?.imageId && !recreate) {
+    const cachedImageEntity = await imagesService.getImageById(cached.imageId);
+
+    // If the body photo was replaced after this cached image was generated, it no longer
+    // reflects the user's current body and must be regenerated instead of reused.
+    const isStale = !!bodyMapping && bodyMapping.createdAt > cachedImageEntity.createdAt;
+    if (!isStale) {
+      return { imageBuffer: cachedImageEntity.data, imageId: cached.imageId };
+    }
   }
 
-  const bodyMapping = await bodyMappingRepository.findOne({ where: { userId } });
   if (!bodyMapping) {
     throw new NotFoundException("Please upload a body photo before generating a look.");
   }
@@ -72,8 +91,15 @@ const createFit = async (userId: string, clothingItemIds: string[]): Promise<Fit
     path: '',
   });
 
+  // A cached outfit existed but was stale, or a recreate was explicitly requested:
+  // point the existing saved outfit at the freshly generated image instead of leaving it orphaned.
+  if (cached?.id) {
+    await outfitService.replaceOutfitImage(cached.id, imageDto.id);
+  }
+
   return { imageBuffer, imageId: imageDto.id };
 };
+
 
 const centerSubject = async (imageBuffer: Buffer): Promise<Buffer> => {
   const { width: origW = 1024, height: origH = 1024 } = await sharp(imageBuffer).metadata();

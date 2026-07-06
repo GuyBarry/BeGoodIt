@@ -1,6 +1,7 @@
 import { Outfit } from '../db/entities';
 import { OutfitDto } from '../db/entities/Outfit.dto';
 import { ClothingItemDto } from '../dtos';
+import { NotFoundException } from '../exceptions/httpExceptions';
 import { outfitRepository } from '../repositories';
 import { clothingItemService } from './clothingItem.service';
 
@@ -43,8 +44,20 @@ const getUserOutfits = async (userId: string): Promise<OutfitDto[]> => {
 const findCachedOutfit = (userId: string, clothingItemIds: string[]) =>
   outfitRepository.findExactMatch(userId, clothingItemIds);
 
+const replaceOutfitImage = (outfitId: string, imageId: string): Promise<void> =>
+  outfitRepository.replaceImage(outfitId, imageId);
+
+const deleteOutfit = async (userId: string, outfitId: string): Promise<void> => {
+  const deleted = await outfitRepository.deleteByIdAndUserId(outfitId, userId);
+  if (!deleted) {
+    throw new NotFoundException('Outfit not found');
+  }
+};
+
 export const outfitService = {
   saveOutfit,
   getUserOutfits,
   findCachedOutfit,
+  replaceOutfitImage,
+  deleteOutfit,
 };

@@ -43,7 +43,30 @@ describe('fittingRoomRouter', () => {
       expect(fittingRoomService.createFit).toHaveBeenCalledWith('user-uuid-1', [
         'item-uuid-1',
         'item-uuid-2',
-      ]);
+      ], { recreate: undefined });
+    });
+
+    it('should forward recreate:true to the service when provided', async () => {
+      (fittingRoomService.createFit as jest.Mock).mockResolvedValue({ imageBuffer: mockOutfitBuffer, imageId: 'generated-image-uuid-1' });
+
+      const response = await request(app)
+        .post('/user-uuid-1/outfit')
+        .send({ clothingItemIds: ['item-uuid-1'], recreate: true });
+
+      expect(response.status).toBe(StatusCodes.OK);
+      expect(fittingRoomService.createFit).toHaveBeenCalledWith('user-uuid-1', ['item-uuid-1'], {
+        recreate: true,
+      });
+    });
+
+    it('should return 400 when recreate is not a boolean', async () => {
+      const response = await request(app)
+        .post('/user-uuid-1/outfit')
+        .send({ clothingItemIds: ['item-uuid-1'], recreate: 'yes' });
+
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+      expect(response.body.message).toBe('recreate must be a boolean');
+      expect(fittingRoomService.createFit).not.toHaveBeenCalled();
     });
 
     it('should return 400 when userId is blank whitespace', async () => {
