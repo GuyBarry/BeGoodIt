@@ -7,7 +7,7 @@ import ClothingGrid from './ClothingGrid';
 import OutfitsGrid from './OutfitsGrid';
 import OutfitDialog from './OutfitDialog';
 import { useCurrentUser } from '../../../auth/AuthContext';
-import { useClosetItems, useDeleteClothingItem, useGetOutfits } from '../../../api';
+import { useClosetItems, useDeleteClothingItem, useDeleteOutfit, useGetOutfits } from '../../../api';
 import type { ClosetFilters } from '../../../api/api/closet.api';
 import type { Outfit } from '../../../entities/outfit';
 
@@ -78,6 +78,7 @@ export default function ClosetScreen() {
     useClosetItems(currentUserId, filters);
   const { mutate: deleteItem } = useDeleteClothingItem(currentUserId);
   const { data: outfits = [], isLoading: outfitsLoading } = useGetOutfits(currentUserId);
+  const { mutate: deleteOutfit } = useDeleteOutfit(currentUserId);
 
   const items = data?.pages.flatMap(p => p.items) ?? [];
   const total = data?.pages[0]?.total ?? 0;
@@ -167,7 +168,7 @@ export default function ClosetScreen() {
               <CircularProgress />
             </Box>
           ) : (
-            <OutfitsGrid outfits={filteredOutfits} gridSize={gridSize} onSelect={setSelectedOutfit} />
+            <OutfitsGrid outfits={filteredOutfits} gridSize={gridSize} onSelect={setSelectedOutfit} onDelete={deleteOutfit} />
           )}
         </Box>
       </Box>
