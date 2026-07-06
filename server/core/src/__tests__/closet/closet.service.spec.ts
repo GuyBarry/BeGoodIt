@@ -29,10 +29,10 @@ describe('closetService', () => {
     id: 'item-uuid-1',
     userId: 'user-uuid-1',
     imageId: 'image-uuid-1',
-    style: null,
-    colorGroup: null,
+    styles: [],
+    colorGroups: [],
     category: null,
-    season: null,
+    seasons: [],
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
   };
 
@@ -101,10 +101,10 @@ describe('closetService', () => {
 
       expect(imagesService.saveImage).toHaveBeenCalledWith(file);
       expect(clothingItemService.addItem).toHaveBeenCalledWith('user-uuid-1', 'image-uuid-1', {
-        colorGroupId: null,
         categoryId: null,
-        seasonId: null,
-        style: null,
+        colorGroupIds: [],
+        seasonIds: [],
+        styles: [],
         embedding: null,
       });
       expect(result).toEqual(mockDto);
@@ -115,7 +115,7 @@ describe('closetService', () => {
       (imagesService.saveImage as jest.Mock).mockResolvedValue(mockImageDto);
       (clothingItemService.addItem as jest.Mock).mockResolvedValue(mockDto);
 
-      const tags = { colorGroupId: 2, categoryId: 3, seasonId: 1, style: 'casual' };
+      const tags = { colorGroupIds: [2], categoryId: 3, seasonIds: [1], styles: ['casual'] };
       const result = await closetService.addToCloset('user-uuid-1', file, tags);
 
       expect(clothingItemService.addItem).toHaveBeenCalledWith('user-uuid-1', 'image-uuid-1', {
