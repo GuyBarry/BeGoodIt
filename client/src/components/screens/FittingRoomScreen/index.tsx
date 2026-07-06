@@ -111,10 +111,7 @@ export default function FittingRoomScreen() {
             <PreviewArea
               isGenerating={isGenerating}
               generatedLookUrl={generatedLookUrl}
-              isSaving={isSaving}
-              isSaved={isSaved}
               suggestedItems={suggestedItems}
-              onSave={handleSave}
               onReset={handleReset}
             />
 
@@ -195,6 +192,10 @@ export default function FittingRoomScreen() {
                       selectedItems={selectedItems}
                       isGenerating={isGenerating}
                       onGenerate={handleGenerate}
+                      hasGeneratedLook={!!generatedLookUrl}
+                      isSaving={isSaving}
+                      isSaved={isSaved}
+                      onSave={handleSave}
                     />
                   </Box>
                 </>
