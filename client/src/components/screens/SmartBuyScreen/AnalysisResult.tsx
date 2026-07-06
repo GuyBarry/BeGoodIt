@@ -42,93 +42,98 @@ export default function AnalysisResult({
         gap: 3,
       }}
     >
-      {/* ── Left: product image ── */}
+      {/* ── Left: product image + compatibility card ── */}
       <Box
         sx={{
-          position: 'relative',
           borderRadius: 4,
           overflow: 'hidden',
-          height: { xs: 400, lg: 560 },
           boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <Box
-          component="img"
-          src={tryOnImage ?? testImage}
-          alt={testName}
-          sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
-
-        {/* Virtual Try-On badge */}
-        {tryOnImage && (
-          <Box
-            sx={{
-              position: 'absolute', top: 16, left: 16,
-              background: GRADIENTS.primary,
-              borderRadius: 20, px: 1.5, py: 0.5,
-              display: 'flex', alignItems: 'center', gap: 0.5,
-            }}
-          >
-            <AutoAwesomeIcon sx={{ fontSize: 13, color: '#fff' }} />
-            <Typography variant="caption" sx={{ color: '#fff', fontWeight: 700, letterSpacing: 0.2 }}>
-              Virtual Try-On
-            </Typography>
-          </Box>
-        )}
-
-        {/* X button */}
-        <IconButton
-          onClick={onReset}
-          size="small"
           sx={{
-            position: 'absolute', top: 16, right: 16,
-            bgcolor: 'rgba(255,255,255,0.92)',
-            '&:hover': { bgcolor: '#fff' },
+            position: 'relative',
           }}
         >
-          <CloseIcon fontSize="small" />
-        </IconButton>
-
-        {/* Try-on generating overlay */}
-        {isTryingOn && (
           <Box
+            component="img"
+            src={tryOnImage ?? testImage}
+            alt={testName}
+            sx={{ width: '100%', height: 'auto', display: 'block' }}
+          />
+
+          {/* Virtual Try-On badge */}
+          {tryOnImage && (
+            <Box
+              sx={{
+                position: 'absolute', top: 16, left: 16,
+                background: GRADIENTS.primary,
+                borderRadius: 20, px: 1.5, py: 0.5,
+                display: 'flex', alignItems: 'center', gap: 0.5,
+              }}
+            >
+              <AutoAwesomeIcon sx={{ fontSize: 13, color: '#fff' }} />
+              <Typography variant="caption" sx={{ color: '#fff', fontWeight: 700, letterSpacing: 0.2 }}>
+                Virtual Try-On
+              </Typography>
+            </Box>
+          )}
+
+          {/* X button */}
+          <IconButton
+            onClick={onReset}
+            size="small"
             sx={{
-              position: 'absolute', inset: 0,
-              bgcolor: 'rgba(0,0,0,0.5)',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', gap: 2,
+              position: 'absolute', top: 16, right: 16,
+              bgcolor: 'rgba(255,255,255,0.92)',
+              '&:hover': { bgcolor: '#fff' },
             }}
           >
-            <CircularProgress size={40} sx={{ color: '#fff' }} />
-            <Typography sx={{ color: '#fff', fontWeight: 500 }}>Generating your look...</Typography>
-          </Box>
-        )}
+            <CloseIcon fontSize="small" />
+          </IconButton>
 
-        {/* Analyzing overlay */}
-        {isAnalyzing && (
-          <Box
-            sx={{
-              position: 'absolute', inset: 0,
-              bgcolor: 'rgba(0,0,0,0.45)',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', gap: 2,
-            }}
-          >
-            <CircularProgress size={40} sx={{ color: '#fff' }} />
-            <Typography sx={{ color: '#fff', fontWeight: 500 }}>Analyzing compatibility...</Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)' }}>Matching with your closet</Typography>
-          </Box>
-        )}
+          {/* Try-on generating overlay */}
+          {isTryingOn && (
+            <Box
+              sx={{
+                position: 'absolute', inset: 0,
+                bgcolor: 'rgba(0,0,0,0.5)',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 2,
+              }}
+            >
+              <CircularProgress size={40} sx={{ color: '#fff' }} />
+              <Typography sx={{ color: '#fff', fontWeight: 500 }}>Generating your look...</Typography>
+            </Box>
+          )}
 
-        {/* Compatibility overlay card */}
+          {/* Analyzing overlay */}
+          {isAnalyzing && (
+            <Box
+              sx={{
+                position: 'absolute', inset: 0,
+                bgcolor: 'rgba(0,0,0,0.45)',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 2,
+              }}
+            >
+              <CircularProgress size={40} sx={{ color: '#fff' }} />
+              <Typography sx={{ color: '#fff', fontWeight: 500 }}>Analyzing compatibility...</Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)' }}>Matching with your closet</Typography>
+            </Box>
+          )}
+        </Box>
+
+        {/* Compatibility card below image */}
         {result && (
           <Box
             sx={{
-              position: 'absolute', bottom: 16, left: 16, right: 16,
               bgcolor: 'background.paper',
-              borderRadius: 3,
               p: 2.5,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+              borderTop: '1px solid',
+              borderColor: 'divider',
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
@@ -150,7 +155,6 @@ export default function AnalysisResult({
             </Typography>
           </Box>
         )}
-
       </Box>
 
       {/* ── Right: analysis content ── */}
