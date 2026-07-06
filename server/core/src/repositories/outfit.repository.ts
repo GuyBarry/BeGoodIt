@@ -45,4 +45,8 @@ export const outfitRepository = AppDataSource.getRepository(Outfit).extend({
     });
     return this.manager.save(Outfit, outfit);
   },
+
+  async replaceImage(outfitId: string, imageId: string): Promise<void> {
+    await this.update({ id: outfitId }, { imageId });
+  },
 });

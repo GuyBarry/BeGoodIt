@@ -43,8 +43,12 @@ const getUserOutfits = async (userId: string): Promise<OutfitDto[]> => {
 const findCachedOutfit = (userId: string, clothingItemIds: string[]) =>
   outfitRepository.findExactMatch(userId, clothingItemIds);
 
+const replaceOutfitImage = (outfitId: string, imageId: string): Promise<void> =>
+  outfitRepository.replaceImage(outfitId, imageId);
+
 export const outfitService = {
   saveOutfit,
   getUserOutfits,
   findCachedOutfit,
+  replaceOutfitImage,
 };

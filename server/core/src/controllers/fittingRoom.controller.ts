@@ -14,7 +14,7 @@ fittingRoomRouter.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { userId } = req.params;
-      const { clothingItemIds } = req.body ?? {};
+      const { clothingItemIds, recreate } = req.body ?? {};
 
       if (!userId || !userId.trim()) {
         return next(new BadRequestException('userId is required'));
@@ -24,7 +24,13 @@ fittingRoomRouter.post(
         return next(new BadRequestException('clothingItemIds must be a non-empty array'));
       }
 
-      const { imageBuffer, imageId } = await fittingRoomService.createFit(userId, clothingItemIds);
+      if (recreate !== undefined && typeof recreate !== 'boolean') {
+        return next(new BadRequestException('recreate must be a boolean'));
+      }
+
+      const { imageBuffer, imageId } = await fittingRoomService.createFit(userId, clothingItemIds, {
+        recreate,
+      });
 
       res.setHeader('Content-Type', 'image/png');
       res.setHeader('Content-Length', imageBuffer.length);
