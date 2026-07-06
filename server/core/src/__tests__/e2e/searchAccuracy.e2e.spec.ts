@@ -137,9 +137,9 @@ describe('Suite 6A — Precise Filter Search', () => {
     expect(jeans).toBeDefined();
 
     const tc = getTestCase('search-blue-jeans');
-    assertOneOf(jeans.colorGroup?.name, tc.expectedClassification!.colorGroup!, 'jeans colorGroup');
+    assertOneOf(jeans.colorGroups?.[0]?.name, tc.expectedClassification!.colorGroup!, 'jeans colorGroup');
 
-    const colorName: string = jeans.colorGroup.name;
+    const colorName: string = jeans.colorGroups[0].name;
     const filtered = await request(app).get(
       `/closet/${TEST_USER_ID}?color=${encodeURIComponent(colorName)}&limit=100`,
     );
@@ -158,10 +158,10 @@ describe('Suite 6A — Precise Filter Search', () => {
 
     const tc = getTestCase('search-white-sneakers');
     assertOneOf(sneakers.category?.name, tc.expectedClassification!.category!, 'sneakers category');
-    assertOneOf(sneakers.colorGroup?.name, tc.expectedClassification!.colorGroup!, 'sneakers colorGroup');
+    assertOneOf(sneakers.colorGroups?.[0]?.name, tc.expectedClassification!.colorGroup!, 'sneakers colorGroup');
 
     const categoryName: string = sneakers.category.name;
-    const colorName: string = sneakers.colorGroup.name;
+    const colorName: string = sneakers.colorGroups[0].name;
     const filtered = await request(app).get(
       `/closet/${TEST_USER_ID}?category=${encodeURIComponent(categoryName)}&color=${encodeURIComponent(colorName)}&limit=100`,
     );

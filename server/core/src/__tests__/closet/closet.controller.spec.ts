@@ -22,10 +22,10 @@ const mockClothingItemDto = {
   id: 'item-uuid-1',
   userId: 'user-uuid-1',
   imageId: 'image-uuid-1',
-  style: null,
-  colorGroup: null,
+  styles: [],
+  colorGroups: [],
   category: null,
-  season: null,
+  seasons: [],
   createdAt: new Date('2026-01-01T00:00:00.000Z'),
 };
 
@@ -89,7 +89,7 @@ describe('closetRouter', () => {
       expect(closetService.addToCloset).toHaveBeenCalledWith(
         'user-uuid-1',
         expect.objectContaining({ originalname: 'shirt.png', mimetype: 'image/png' }),
-        { colorGroupId: null, categoryId: null, seasonId: null, style: null },
+        { colorGroupIds: [], categoryId: null, seasonIds: [], styles: [] },
       );
     });
 
@@ -99,16 +99,16 @@ describe('closetRouter', () => {
       const response = await request(app)
         .post('/user-uuid-1/items')
         .attach('file', PNG_HEADER, { filename: 'shirt.png', contentType: 'image/png' })
-        .field('colorGroupId', '2')
+        .field('colorGroupIds', '2')
         .field('categoryId', '3')
-        .field('seasonId', '1')
-        .field('style', 'casual');
+        .field('seasonIds', '1')
+        .field('styles', 'casual');
 
       expect(response.status).toBe(StatusCodes.CREATED);
       expect(closetService.addToCloset).toHaveBeenCalledWith(
         'user-uuid-1',
         expect.objectContaining({ originalname: 'shirt.png' }),
-        { colorGroupId: 2, categoryId: 3, seasonId: 1, style: 'casual' },
+        { colorGroupIds: [2], categoryId: 3, seasonIds: [1], styles: ['casual'] },
       );
     });
 
