@@ -13,6 +13,10 @@ module.exports = {
   testMatch: ['<rootDir>/src/__tests__/e2e/**/*.e2e.spec.ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   clearMocks: true,
+  moduleNameMapper: {
+    '^../middlewares/rateLimiter.middleware$': '<rootDir>/src/__tests__/__mocks__/rateLimiter.middleware.ts',
+    '^../../middlewares/rateLimiter.middleware$': '<rootDir>/src/__tests__/__mocks__/rateLimiter.middleware.ts',
+  },
   // Exclude .js wrapper files so ts-jest does not double-compile them;
   // they use ts-node/register internally to handle their own TypeScript.
   transformIgnorePatterns: ['/node_modules/(?!uuid)', 'e2e/setup/.*\\.js'],
