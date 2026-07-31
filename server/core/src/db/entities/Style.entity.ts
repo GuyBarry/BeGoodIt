@@ -1,14 +1,14 @@
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { ClothingItem } from './index';
 
-@Entity('color_group')
-export class ColorGroup {
+@Entity('style')
+export class Style {
   @PrimaryGeneratedColumn({ name: 'id' })
   id: number;
 
   @Column({ type: 'varchar', unique: true })
   name: string;
 
-  @ManyToMany(() => ClothingItem, (item) => item.colorGroups)
+  @ManyToMany(() => ClothingItem, (item) => item.styles)
   clothingItems: ClothingItem[];
 }

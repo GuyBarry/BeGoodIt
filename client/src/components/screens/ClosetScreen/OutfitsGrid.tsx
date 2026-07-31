@@ -1,6 +1,7 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, IconButton } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import type { Outfit } from '../../../entities/outfit';
 import { imagesApi } from '../../../api/api/images.api';
 
@@ -8,6 +9,7 @@ interface Props {
   outfits: Outfit[];
   gridSize: 'normal' | 'compact';
   onSelect: (outfit: Outfit) => void;
+  onDelete: (id: Outfit['id']) => void;
 }
 
 const gridCols = {
@@ -15,7 +17,7 @@ const gridCols = {
   compact: { xs: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(6, 1fr)' },
 };
 
-export default function OutfitsGrid({ outfits, gridSize, onSelect }: Props) {
+export default function OutfitsGrid({ outfits, gridSize, onSelect, onDelete }: Props) {
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: gridCols[gridSize], gap: 3 }}>
       {outfits.map(outfit => (
@@ -35,10 +37,12 @@ export default function OutfitsGrid({ outfits, gridSize, onSelect }: Props) {
             boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
             transition: 'transform 0.2s, box-shadow 0.2s',
             '& img': { transition: 'transform 0.5s' },
+            '& .delete-btn': { opacity: 0, transition: 'opacity 0.3s' },
             '&:hover': {
               transform: 'translateY(-4px)',
               boxShadow: '0 8px 24px rgba(0,0,0,0.14)',
               '& img': { transform: 'scale(1.05)' },
+              '& .delete-btn': { opacity: 1 },
             },
           }}
         >
@@ -73,12 +77,32 @@ export default function OutfitsGrid({ outfits, gridSize, onSelect }: Props) {
             </Typography>
           </Box>
 
+          <IconButton
+            className="delete-btn"
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(outfit.id);
+            }}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              bgcolor: alpha('#fff', 0.85),
+              backdropFilter: 'blur(4px)',
+              color: 'error.main',
+              '&:hover': { bgcolor: 'error.main', color: '#fff' },
+            }}
+          >
+            <DeleteOutlinedIcon fontSize="small" />
+          </IconButton>
+
           {outfit.isFavorite && (
             <Box
               sx={{
                 position: 'absolute',
                 top: 8,
-                right: 8,
+                left: 8,
                 width: 36,
                 height: 36,
                 borderRadius: '50%',

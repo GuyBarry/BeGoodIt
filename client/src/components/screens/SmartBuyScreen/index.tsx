@@ -10,6 +10,7 @@ import type { AnalysisResult as AnalysisResultType, RecentTest } from './types';
 import { smartBuyApi } from '../../../api/api/smartBuy.api';
 import { imagesApi } from '../../../api/api/images.api';
 import { fittingRoomApi } from '../../../api/api/fittingRoom.api';
+import { useCurrentUser } from '../../../auth/AuthContext';
 
 const MAX_RECENT = 6;
 
@@ -138,10 +139,14 @@ export default function SmartBuyScreen() {
       await addToCloset({
         file,
         userId: currentUserId,
-        style: name || undefined,
-        colorGroupId: colorGroups.find(c => c.name === testClassification?.colorGroup)?.id ?? null,
+        styles: name ? [name] : [],
+        colorGroupIds: colorGroups.find(c => c.name === testClassification?.colorGroup)?.id != null
+          ? [colorGroups.find(c => c.name === testClassification?.colorGroup)!.id]
+          : [],
         categoryId: garmentCategories.find(c => c.name === testClassification?.category)?.id ?? null,
-        seasonId: seasons.find(s => s.name === testClassification?.season)?.id ?? null,
+        seasonIds: seasons.find(s => s.name === testClassification?.season)?.id != null
+          ? [seasons.find(s => s.name === testClassification?.season)!.id]
+          : [],
       });
       setAddSuccess(true);
     } finally {
@@ -156,10 +161,14 @@ export default function SmartBuyScreen() {
     await addToCloset({
       file,
       userId: currentUserId,
-      style: name || undefined,
-      colorGroupId: colorGroups.find(c => c.name === test.classification?.colorGroup)?.id ?? null,
+      styles: name ? [name] : [],
+      colorGroupIds: colorGroups.find(c => c.name === test.classification?.colorGroup)?.id != null
+        ? [colorGroups.find(c => c.name === test.classification?.colorGroup)!.id]
+        : [],
       categoryId: garmentCategories.find(c => c.name === test.classification?.category)?.id ?? null,
-      seasonId: seasons.find(s => s.name === test.classification?.season)?.id ?? null,
+      seasonIds: seasons.find(s => s.name === test.classification?.season)?.id != null
+        ? [seasons.find(s => s.name === test.classification?.season)!.id]
+        : [],
     });
   };
 
@@ -172,7 +181,14 @@ export default function SmartBuyScreen() {
     if (!file) return;
     setIsTryingOn(true);
     try {
-      const { url } = await fittingRoomApi.tryOnProduct(currentUserId, file);
+      const parts = [
+        testName,
+        testClassification?.category,
+        testClassification?.colorGroup,
+        testClassification?.style,
+      ].filter(Boolean);
+      const itemDescription = parts.length > 0 ? parts.join(', ') : undefined;
+      const { url } = await fittingRoomApi.tryOnProduct(currentUserId, file, itemDescription);
       setTryOnImage(url);
     } catch {
       // keep product image on failure

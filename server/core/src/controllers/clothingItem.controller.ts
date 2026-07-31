@@ -3,12 +3,14 @@ import multer from 'multer';
 import { StatusCodes } from 'http-status-codes';
 import { clothingItemService } from '../services';
 import { ImageValidationMiddleware } from '../middlewares/images.middleware';
+import { ONE_MINUTE_MS, setUpRateLimiter } from '../middlewares/rateLimiter.middleware';
 
 export const clothingItemRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 clothingItemRouter.post(
   '/classify',
+  setUpRateLimiter({ limit: 5, windowMs: ONE_MINUTE_MS }),
   upload.single('file'),
   ImageValidationMiddleware.validate,
   async (req: Request, res: Response, next: NextFunction) => {

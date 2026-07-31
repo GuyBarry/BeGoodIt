@@ -45,3 +45,22 @@ outfitRouter.post(
     }
   },
 );
+
+outfitRouter.delete(
+  '/:userId/:outfitId',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userId, outfitId } = req.params;
+      if (!userId || !userId.trim()) {
+        return next(new BadRequestException('userId is required'));
+      }
+      if (!outfitId || !outfitId.trim()) {
+        return next(new BadRequestException('outfitId is required'));
+      }
+      await outfitService.deleteOutfit(userId, outfitId);
+      res.status(StatusCodes.NO_CONTENT).send();
+    } catch (error) {
+      next(error);
+    }
+  },
+);

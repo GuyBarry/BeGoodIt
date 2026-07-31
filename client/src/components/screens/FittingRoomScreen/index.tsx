@@ -1,8 +1,9 @@
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
-import { Box } from '@mui/material';
-import { useState } from 'react';
-import { useClothingItems, useFindMatches, useGenerateLook, useSaveOutfit } from '../../../api';
+import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar } from '@mui/material';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useClothingItems, useFindMatches, useGenerateLook, useGetOutfits, useSaveOutfit } from '../../../api';
 import { PRIMARY_ALPHA } from '../../../styles/tokens';
 import ClosetItemGrid from './ClosetItemGrid';
 import FittingRoomHeader from './FittingRoomHeader';
@@ -14,10 +15,12 @@ import SelectedSummary from './SelectedSummary';
 import { useCurrentUser } from '../../../auth/AuthContext';
 
 export default function FittingRoomScreen() {
+  const navigate = useNavigate();
   const currentUserId = useCurrentUser().id;
   const { data: clothingItems = [] } = useClothingItems(currentUserId);
+  const { data: outfits = [] }        = useGetOutfits(currentUserId);
   const { mutate: generateLook, isPending: isGenerating }             = useGenerateLook();
-  const { mutate: saveOutfit,   isPending: isSaving, isSuccess: isSaved } = useSaveOutfit();
+  const { mutate: saveOutfit,   isPending: isSaving, isSuccess: isSavedByMutation, reset: resetSaveOutfit } = useSaveOutfit();
   const { mutate: findMatches,  isPending: isAnalyzingInspiration }   = useFindMatches();
 
   const [selectedItems, setSelectedItems]     = useState<string[]>([]);
@@ -28,23 +31,56 @@ export default function FittingRoomScreen() {
   const [inspirationImage, setInspirationImage]   = useState<string | null>(null);
   const [inspirationFile, setInspirationFile]     = useState<File | null>(null);
   const [suggestedItems, setSuggestedItems]   = useState<string[]>([]);
+  const [missingBodyImageOpen, setMissingBodyImageOpen] = useState(false);
+  const [noMatchesSnackbarOpen, setNoMatchesSnackbarOpen] = useState(false);
 
-  const toggleItem = (id: string) =>
+  // If this exact set of clothing items was already saved as an outfit before, the freshly
+  // generated (possibly cached) look is already saved, regardless of local mutation state.
+  const isAlreadySavedOutfit = useMemo(() => {
+    if (selectedItems.length === 0) return false;
+    const selectedKey = [...selectedItems].sort().join(',');
+    return outfits.some((outfit) => {
+      if (!outfit.imageId) return false;
+      const itemsKey = (outfit.items ?? []).map((item) => item.id).sort().join(',');
+      return itemsKey === selectedKey;
+    });
+  }, [outfits, selectedItems]);
+
+  const isSaved = isSavedByMutation || isAlreadySavedOutfit;
+
+  const toggleItem = (id: string) => {
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
 
-  const handleGenerate = () => {
+    // Selection changed: any previously generated look no longer matches, so revert back
+    // to the initial "Generate Look" state and drop the recreate/save controls.
+    if (generatedLookUrl) {
+      URL.revokeObjectURL(generatedLookUrl);
+      setGeneratedLookUrl(null);
+      setGeneratedImageId(null);
+      resetSaveOutfit();
+    }
+  };
+
+  const handleGenerate = (recreate = false) => {
     if (selectedItems.length === 0) return;
     generateLook(
-      { userId: currentUserId, clothingItemIds: selectedItems },
+      { userId: currentUserId, clothingItemIds: selectedItems, recreate },
       {
         onSuccess: ({ url, imageId }) => {
           if (generatedLookUrl) URL.revokeObjectURL(generatedLookUrl);
           setGeneratedLookUrl(url);
           setGeneratedImageId(imageId);
         },
+        onError: (error: Error & { status?: number }) => {
+          if (error.status === 404 && error.message.toLowerCase().includes('body photo')) {
+            setMissingBodyImageOpen(true);
+          }
+        },
       },
     );
   };
+
+  const handleRecreate = () => handleGenerate(true);
 
   const handleSave = () => {
     if (!generatedImageId) return;
@@ -57,6 +93,7 @@ export default function FittingRoomScreen() {
     setGeneratedLookUrl(null);
     setGeneratedImageId(null);
     setSuggestedItems([]);
+    resetSaveOutfit();
   };
 
   const handleFileSelect = (file: File) => {
@@ -72,6 +109,9 @@ export default function FittingRoomScreen() {
         onSuccess: (matchedItemIds) => {
           setSuggestedItems(matchedItemIds);
           setSelectedItems(matchedItemIds);
+          if (matchedItemIds.length === 0) {
+            setNoMatchesSnackbarOpen(true);
+          }
           setActiveTab('closet');
         },
       },
@@ -85,7 +125,16 @@ export default function FittingRoomScreen() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      {isGenerating && (
+        <Box sx={{
+          position: 'absolute', inset: 0, zIndex: 10,
+          bgcolor: 'rgba(255,255,255,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <CircularProgress size={56} />
+        </Box>
+      )}
       <FittingRoomHeader />
 
       <Box component="main" sx={{ flex: 1, minHeight: 0, px: 4, py: 3, overflow: 'hidden' }}>
@@ -94,11 +143,11 @@ export default function FittingRoomScreen() {
             <PreviewArea
               isGenerating={isGenerating}
               generatedLookUrl={generatedLookUrl}
+              suggestedItems={suggestedItems}
+              onReset={handleReset}
               isSaving={isSaving}
               isSaved={isSaved}
-              suggestedItems={suggestedItems}
               onSave={handleSave}
-              onReset={handleReset}
             />
 
             {/* Right panel with tabs */}
@@ -178,6 +227,11 @@ export default function FittingRoomScreen() {
                       selectedItems={selectedItems}
                       isGenerating={isGenerating}
                       onGenerate={handleGenerate}
+                      hasGeneratedLook={!!generatedLookUrl}
+                      isSaving={isSaving}
+                      isSaved={isSaved}
+                      onSave={handleSave}
+                      onRecreate={handleRecreate}
                     />
                   </Box>
                 </>
@@ -198,6 +252,35 @@ export default function FittingRoomScreen() {
           </Box>
         </Box>
       </Box>
+
+      <Dialog open={missingBodyImageOpen} onClose={() => setMissingBodyImageOpen(false)}>
+        <DialogTitle>Body Photo Required</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            We couldn't generate your look because you haven't uploaded a body photo yet. Upload one to get started.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setMissingBodyImageOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={() => navigate('/body')}>Upload Body Photo</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={noMatchesSnackbarOpen}
+        autoHideDuration={5000}
+        onClose={() => setNoMatchesSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setNoMatchesSnackbarOpen(false)}
+          severity="info"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          No matching items found in your closet for this look. Browse your closet below to build your own outfit instead!
+        </Alert>
+      </Snackbar>
 
     </Box>
   );

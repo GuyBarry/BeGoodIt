@@ -6,10 +6,10 @@ export type ClothingItemDto = {
   id: string;
   userId: string;
   imageId: string | null;
-  style: string | null;
-  colorGroup: ColorGroupDto | null;
+  styles: string[];
+  colorGroups: ColorGroupDto[];
   category: GarmentCategoryDto | null;
-  season: SeasonDto | null;
+  seasons: SeasonDto[];
   createdAt: Date;
 };
 

@@ -6,5 +6,6 @@ export { garmentCategoryRepository } from './garmentCategory.repository';
 export { genderRepository } from './gender.repository';
 export { imageRepository } from './image.repository';
 export { seasonRepository } from './season.repository';
+export { styleRepository } from './style.repository';
 export { userRepository } from './user.repository';
 export { smartBuyTestRepository } from './smartBuyTest.repository';

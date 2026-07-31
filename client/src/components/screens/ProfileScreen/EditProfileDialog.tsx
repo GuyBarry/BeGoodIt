@@ -63,9 +63,6 @@ export default function EditProfileDialog({ open, draft, onDraftChange, onSave, 
                 {draft.username.charAt(0)}
               </Typography>
             </Box>
-            <Button variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>
-              Change Avatar
-            </Button>
           </Box>
 
           <TextField

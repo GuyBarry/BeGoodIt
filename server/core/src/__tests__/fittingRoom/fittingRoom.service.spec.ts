@@ -18,6 +18,7 @@ jest.mock('../../repositories/bodyMapping.repository', () => ({
 jest.mock('../../services/outfit.service', () => ({
   outfitService: {
     findCachedOutfit: jest.fn(),
+    replaceOutfitImage: jest.fn(),
   },
 }));
 
@@ -67,16 +68,14 @@ describe('fittingRoomService', () => {
     id: 'item-uuid-1',
     userId: 'user-uuid-1',
     imageId: 'clothing-image-uuid-1',
-    style: 'casual',
-    colorGroupId: null,
     categoryId: null,
-    seasonId: null,
     imageEmbedding: null,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     user: null as any,
-    colorGroup: null,
     category: null,
-    season: null,
+    colorGroups: [],
+    seasons: [],
+    styles: [],
     outfits: [],
     ...overrides,
   });
@@ -133,7 +132,7 @@ describe('fittingRoomService', () => {
         NotFoundException,
       );
       await expect(fittingRoomService.createFit('user-uuid-1', ['item-uuid-1'])).rejects.toThrow(
-        "No body image found for user 'user-uuid-1'",
+        'Please upload a body photo before generating a look.',
       );
       expect(imagesService.getImageById).not.toHaveBeenCalled();
     });
@@ -217,4 +216,99 @@ describe('fittingRoomService', () => {
       );
     });
   });
+
+  describe('createFit caching and staleness', () => {
+    const cachedOutfit = {
+      id: 'outfit-uuid-1',
+      imageId: 'cached-image-uuid-1',
+    };
+
+    it('should return the cached image without regenerating when body image has not changed since', async () => {
+      const bodyMapping = createMockBodyMapping({ createdAt: new Date('2026-01-01T00:00:00.000Z') });
+      const cachedImageEntity = createMockImage({
+        id: 'cached-image-uuid-1',
+        createdAt: new Date('2026-01-02T00:00:00.000Z'),
+      });
+
+      (outfitService.findCachedOutfit as jest.Mock).mockResolvedValue(cachedOutfit);
+      (bodyMappingRepository.findOne as jest.Mock).mockResolvedValue(bodyMapping);
+      (imagesService.getImageById as jest.Mock).mockResolvedValue(cachedImageEntity);
+
+      const result = await fittingRoomService.createFit('user-uuid-1', ['item-uuid-1']);
+
+      expect(result).toEqual({ imageBuffer: cachedImageEntity.data, imageId: 'cached-image-uuid-1' });
+      expect(generateOutfit).not.toHaveBeenCalled();
+      expect(outfitService.replaceOutfitImage).not.toHaveBeenCalled();
+    });
+
+    it('should regenerate and replace the cached image when the body image was updated since it was generated', async () => {
+      const bodyMapping = createMockBodyMapping({ createdAt: new Date('2026-02-01T00:00:00.000Z') });
+      const cachedImageEntity = createMockImage({
+        id: 'cached-image-uuid-1',
+        createdAt: new Date('2026-01-02T00:00:00.000Z'),
+      });
+      const clothingItem = createMockClothingItem();
+      const clothingImageEntity = createMockImage({ id: 'clothing-image-uuid-1', originalName: 'shirt.png' });
+
+      (outfitService.findCachedOutfit as jest.Mock).mockResolvedValue(cachedOutfit);
+      (bodyMappingRepository.findOne as jest.Mock).mockResolvedValue(bodyMapping);
+      (imagesService.getImageById as jest.Mock).mockImplementation((id: string) => {
+        if (id === 'cached-image-uuid-1') return Promise.resolve(cachedImageEntity);
+        if (id === bodyMapping.imageId) return Promise.resolve(createMockImage({ id: bodyMapping.imageId }));
+        if (id === 'clothing-image-uuid-1') return Promise.resolve(clothingImageEntity);
+      });
+      (clothingItemService.getMultipleByIds as jest.Mock).mockResolvedValue([clothingItem]);
+      (generateOutfit as jest.Mock).mockResolvedValue(mockOutfitImageBuffer);
+
+      const result = await fittingRoomService.createFit('user-uuid-1', ['item-uuid-1']);
+
+      expect(result).toEqual({ imageBuffer: mockOutfitImageBuffer, imageId: mockSavedImageDto.id });
+      expect(generateOutfit).toHaveBeenCalled();
+      expect(outfitService.replaceOutfitImage).toHaveBeenCalledWith('outfit-uuid-1', mockSavedImageDto.id);
+    });
+
+    it('should skip the cache and regenerate when recreate is true, replacing the existing cached outfit image', async () => {
+      const bodyMapping = createMockBodyMapping();
+      const cachedImageEntity = createMockImage({ id: 'cached-image-uuid-1' });
+      const clothingItem = createMockClothingItem();
+      const clothingImageEntity = createMockImage({ id: 'clothing-image-uuid-1', originalName: 'shirt.png' });
+
+      (outfitService.findCachedOutfit as jest.Mock).mockResolvedValue(cachedOutfit);
+      (bodyMappingRepository.findOne as jest.Mock).mockResolvedValue(bodyMapping);
+      (imagesService.getImageById as jest.Mock).mockImplementation((id: string) => {
+        if (id === 'cached-image-uuid-1') return Promise.resolve(cachedImageEntity);
+        if (id === bodyMapping.imageId) return Promise.resolve(createMockImage({ id: bodyMapping.imageId }));
+        if (id === 'clothing-image-uuid-1') return Promise.resolve(clothingImageEntity);
+      });
+      (clothingItemService.getMultipleByIds as jest.Mock).mockResolvedValue([clothingItem]);
+      (generateOutfit as jest.Mock).mockResolvedValue(mockOutfitImageBuffer);
+
+      const result = await fittingRoomService.createFit('user-uuid-1', ['item-uuid-1'], { recreate: true });
+
+      expect(result).toEqual({ imageBuffer: mockOutfitImageBuffer, imageId: mockSavedImageDto.id });
+      expect(generateOutfit).toHaveBeenCalled();
+      expect(outfitService.replaceOutfitImage).toHaveBeenCalledWith('outfit-uuid-1', mockSavedImageDto.id);
+    });
+
+    it('should generate normally without replacing anything when recreate is true and there is no cached outfit', async () => {
+      const bodyMapping = createMockBodyMapping();
+      const clothingItem = createMockClothingItem();
+      const clothingImageEntity = createMockImage({ id: 'clothing-image-uuid-1', originalName: 'shirt.png' });
+
+      (outfitService.findCachedOutfit as jest.Mock).mockResolvedValue(null);
+      (bodyMappingRepository.findOne as jest.Mock).mockResolvedValue(bodyMapping);
+      (imagesService.getImageById as jest.Mock).mockImplementation((id: string) => {
+        if (id === bodyMapping.imageId) return Promise.resolve(createMockImage({ id: bodyMapping.imageId }));
+        if (id === 'clothing-image-uuid-1') return Promise.resolve(clothingImageEntity);
+      });
+      (clothingItemService.getMultipleByIds as jest.Mock).mockResolvedValue([clothingItem]);
+      (generateOutfit as jest.Mock).mockResolvedValue(mockOutfitImageBuffer);
+
+      const result = await fittingRoomService.createFit('user-uuid-1', ['item-uuid-1'], { recreate: true });
+
+      expect(result).toEqual({ imageBuffer: mockOutfitImageBuffer, imageId: mockSavedImageDto.id });
+      expect(outfitService.replaceOutfitImage).not.toHaveBeenCalled();
+    });
+  });
 });
+
