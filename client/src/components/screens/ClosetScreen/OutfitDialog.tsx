@@ -42,7 +42,7 @@ export default function OutfitDialog({ outfit, onClose }: Props) {
                 </Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
                   {(outfit.items ?? []).map(item => {
-                    const label = item.style || item.category?.name || 'Item';
+                    const label = item.styles?.join(', ') || item.category?.name || 'Item';
                     return (
                       <Box key={item.id}>
                         <Box sx={{ aspectRatio: '3/4', borderRadius: 2, overflow: 'hidden', bgcolor: '#fff', mb: 1 }}>

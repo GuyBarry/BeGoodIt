@@ -9,14 +9,15 @@ import type { AnalysisResult as AnalysisResultType, RecentTest } from './types';
 import { smartBuyApi } from '../../../api/api/smartBuy.api';
 import { imagesApi } from '../../../api/api/images.api';
 import { fittingRoomApi } from '../../../api/api/fittingRoom.api';
+import { useCurrentUser } from '../../../auth/AuthContext';
 
-const CURRENT_USER_ID = '00000000-0000-0000-0000-000000000001';
 const MAX_RECENT = 6;
 
 
 export default function SmartBuyScreen() {
-  const { data: clothingItems = [] } = useClothingItems(CURRENT_USER_ID);
-  const { mutateAsync: addToCloset } = useAddClothingItem(CURRENT_USER_ID);
+  const currentUserId = useCurrentUser().id;
+  const { data: clothingItems = [] } = useClothingItems(currentUserId);
+  const { mutateAsync: addToCloset } = useAddClothingItem(currentUserId);
   const { data: colorGroups = [] } = useColorGroups();
   const { data: garmentCategories = [] } = useGarmentCategories();
   const { data: seasons = [] } = useSeasons();
@@ -31,7 +32,7 @@ export default function SmartBuyScreen() {
   const [recentTests, setRecentTests] = useState<RecentTest[]>([]);
 
   useEffect(() => {
-    smartBuyApi.getTests(CURRENT_USER_ID).then(records => {
+    smartBuyApi.getTests(currentUserId).then(records => {
       setRecentTests(records.map(r => ({
         id: r.id,
         imageUrl: r.imageId ? imagesApi.getImageUrl(r.imageId) : '',
@@ -68,7 +69,7 @@ export default function SmartBuyScreen() {
 
     try {
       const imageFile = file ?? await fetch(imageUrl).then(r => r.blob()).then(b => new File([b], 'item.jpg', { type: b.type }));
-      const response = await smartBuyApi.analyze(imageFile as File, CURRENT_USER_ID, name || undefined);
+      const response = await smartBuyApi.analyze(imageFile as File, currentUserId, name || undefined);
 
       const matchedItems = response.matches
         .map(m => {
@@ -89,7 +90,7 @@ export default function SmartBuyScreen() {
       const displayName = response.suggestedName || name;
       setTestName(displayName);
 
-      const saved = await smartBuyApi.saveTest(CURRENT_USER_ID, file ?? null, {
+      const saved = await smartBuyApi.saveTest(currentUserId, file ?? null, {
         name: displayName,
         compatibilityPct: analysis.compatibilityPct,
         matchCount: analysis.matchedItems.length,
@@ -136,11 +137,15 @@ export default function SmartBuyScreen() {
     try {
       await addToCloset({
         file,
-        userId: CURRENT_USER_ID,
-        style: name || undefined,
-        colorGroupId: colorGroups.find(c => c.name === testClassification?.colorGroup)?.id ?? null,
+        userId: currentUserId,
+        styles: name ? [name] : [],
+        colorGroupIds: colorGroups.find(c => c.name === testClassification?.colorGroup)?.id != null
+          ? [colorGroups.find(c => c.name === testClassification?.colorGroup)!.id]
+          : [],
         categoryId: garmentCategories.find(c => c.name === testClassification?.category)?.id ?? null,
-        seasonId: seasons.find(s => s.name === testClassification?.season)?.id ?? null,
+        seasonIds: seasons.find(s => s.name === testClassification?.season)?.id != null
+          ? [seasons.find(s => s.name === testClassification?.season)!.id]
+          : [],
       });
       setAddSuccess(true);
     } finally {
@@ -154,11 +159,15 @@ export default function SmartBuyScreen() {
     const file = new File([blob], `${name || 'item'}.jpg`, { type: blob.type || 'image/jpeg' });
     await addToCloset({
       file,
-      userId: CURRENT_USER_ID,
-      style: name || undefined,
-      colorGroupId: colorGroups.find(c => c.name === test.classification?.colorGroup)?.id ?? null,
+      userId: currentUserId,
+      styles: name ? [name] : [],
+      colorGroupIds: colorGroups.find(c => c.name === test.classification?.colorGroup)?.id != null
+        ? [colorGroups.find(c => c.name === test.classification?.colorGroup)!.id]
+        : [],
       categoryId: garmentCategories.find(c => c.name === test.classification?.category)?.id ?? null,
-      seasonId: seasons.find(s => s.name === test.classification?.season)?.id ?? null,
+      seasonIds: seasons.find(s => s.name === test.classification?.season)?.id != null
+        ? [seasons.find(s => s.name === test.classification?.season)!.id]
+        : [],
     });
   };
 
@@ -171,7 +180,14 @@ export default function SmartBuyScreen() {
     if (!file) return;
     setIsTryingOn(true);
     try {
-      const { url } = await fittingRoomApi.tryOnProduct(CURRENT_USER_ID, file);
+      const parts = [
+        testName,
+        testClassification?.category,
+        testClassification?.colorGroup,
+        testClassification?.style,
+      ].filter(Boolean);
+      const itemDescription = parts.length > 0 ? parts.join(', ') : undefined;
+      const { url } = await fittingRoomApi.tryOnProduct(currentUserId, file, itemDescription);
       setTryOnImage(url);
     } catch {
       // keep product image on failure

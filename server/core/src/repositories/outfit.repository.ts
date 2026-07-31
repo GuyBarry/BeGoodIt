@@ -6,7 +6,7 @@ export const outfitRepository = AppDataSource.getRepository(Outfit).extend({
     // Uses idx_outfit_user_created composite index; loads relations in one round-trip via JOIN
     return this.find({
       where: { userId },
-      relations: ['items', 'items.colorGroup', 'items.category', 'items.season'],
+      relations: ['items', 'items.colorGroups', 'items.category', 'items.seasons', 'items.styles'],
       order: { createdAt: 'DESC' },
     });
   },
@@ -44,5 +44,13 @@ export const outfitRepository = AppDataSource.getRepository(Outfit).extend({
       items,
     });
     return this.manager.save(Outfit, outfit);
+  },
+
+  async replaceImage(outfitId: string, imageId: string): Promise<void> {
+    await this.update({ id: outfitId }, { imageId });
+  },
+
+  deleteByIdAndUserId(id: string, userId: string): Promise<boolean> {
+    return this.delete({ id, userId }).then((result) => (result.affected ?? 0) > 0);
   },
 });

@@ -16,6 +16,7 @@ export enum AIModel {
   GEMINI_2_5_FLASH_IMAGE = "gemini-2.5-flash-image",
   GEMINI_2_5_FLASH = "gemini-2.5-flash",
   GEMINI_EMBEDDING_001 = "gemini-embedding-001",
+  GEMINI_3_1_FLASH_IMAGE = "gemini-3.1-flash-image",
 }
 
 export interface AIImageInput {

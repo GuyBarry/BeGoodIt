@@ -23,6 +23,8 @@ interface Props {
   onColorChange: (v: string) => void;
   selectedSeason: string;
   onSeasonChange: (v: string) => void;
+  selectedStyle: string;
+  onStyleChange: (v: string) => void;
   itemsCount: number;
   outfitsCount: number;
   username: string;
@@ -36,6 +38,7 @@ export default function ClosetHeader({
   selectedCategory, onCategoryChange,
   selectedColor, onColorChange,
   selectedSeason, onSeasonChange,
+  selectedStyle, onStyleChange,
   itemsCount, outfitsCount,
   username,
 }: Props) {
@@ -178,6 +181,7 @@ export default function ClosetHeader({
           selectedCategory={selectedCategory} onCategoryChange={onCategoryChange}
           selectedColor={selectedColor}       onColorChange={onColorChange}
           selectedSeason={selectedSeason}     onSeasonChange={onSeasonChange}
+          selectedStyle={selectedStyle}       onStyleChange={onStyleChange}
         />
 
       </Box>

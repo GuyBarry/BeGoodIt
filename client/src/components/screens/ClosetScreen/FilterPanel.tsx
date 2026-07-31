@@ -1,5 +1,7 @@
 import { Box, Typography, Chip, Collapse } from '@mui/material';
-import { CATEGORIES, COLORS, SEASONS } from './data';
+import { CATEGORIES, SEASONS } from './data';
+import { useColorGroups } from '../../../api';
+import { STYLE_OPTIONS } from '../AddItemScreen/types';
 
 interface Props {
   show: boolean;
@@ -9,6 +11,8 @@ interface Props {
   onColorChange: (v: string) => void;
   selectedSeason: string;
   onSeasonChange: (v: string) => void;
+  selectedStyle: string;
+  onStyleChange: (v: string) => void;
 }
 
 const filterChipSx = (active: boolean) => ({
@@ -25,7 +29,11 @@ export default function FilterPanel({
   selectedCategory, onCategoryChange,
   selectedColor,    onColorChange,
   selectedSeason,   onSeasonChange,
+  selectedStyle,    onStyleChange,
 }: Props) {
+  const { data: colorGroups = [] } = useColorGroups();
+  const COLORS = ['All', ...colorGroups.map(c => c.name)];
+
   return (
     <Collapse in={show}>
       <Box
@@ -38,12 +46,14 @@ export default function FilterPanel({
           borderColor: 'divider',
         }}
       >
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 3 }}>
           {([
-            { label: 'Category', options: CATEGORIES, value: selectedCategory, onChange: onCategoryChange },
-            { label: 'Color',    options: COLORS,      value: selectedColor,    onChange: onColorChange    },
-            { label: 'Season',   options: SEASONS,     value: selectedSeason,   onChange: onSeasonChange   },
+            { label: 'Category', options: CATEGORIES,           value: selectedCategory, onChange: onCategoryChange },
+            { label: 'Color',    options: COLORS,                value: selectedColor,    onChange: onColorChange    },
+            { label: 'Season',   options: SEASONS,               value: selectedSeason,   onChange: onSeasonChange   },
+            { label: 'Style',    options: ['All', ...STYLE_OPTIONS], value: selectedStyle,    onChange: onStyleChange    },
           ] as const).map(({ label, options, value, onChange }) => (
+
             <Box key={label}>
               <Typography
                 variant="caption"

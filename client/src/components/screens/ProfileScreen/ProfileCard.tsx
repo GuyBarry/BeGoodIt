@@ -1,5 +1,4 @@
 import { Box, Typography } from '@mui/material';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { GRADIENTS, SERIF_FONT } from '../../../styles/tokens';
 import { getInitials } from '../../../lib/initials';
 import type { User } from '../../../entities/user';
@@ -18,6 +17,11 @@ export default function ProfileCard({ user }: Props) {
         p: 4,
         overflow: 'hidden',
         textAlign: 'center',
+        height: 220,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
     >
       <Box
@@ -43,10 +47,6 @@ export default function ProfileCard({ user }: Props) {
       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
         Member since {new Date(user.createdAt).getFullYear()}
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mt: 1.5, color: 'primary.main' }}>
-        <EmojiEventsIcon fontSize="small" />
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>Pro Member</Typography>
-      </Box>
     </Box>
   );
 }

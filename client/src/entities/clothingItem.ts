@@ -5,13 +5,11 @@ import type { Season } from './season';
 export interface ClothingItem {
   id: string;
   userId: string;
-  colorGroupId: number | null;
   categoryId: number | null;
-  seasonId: number | null;
   imageId: string;
-  style: string | null;
+  styles: string[];
   createdAt: string;
-  colorGroup?: ColorGroup;
+  colorGroups?: ColorGroup[];
   category?: GarmentCategory;
-  season?: Season;
+  seasons?: Season[];
 }

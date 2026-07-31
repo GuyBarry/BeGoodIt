@@ -7,6 +7,7 @@ export interface ClothingFilters {
   category?: string;
   color?: string;
   season?: string;
+  style?: string;
 }
 
 export const clothingItemRepository = AppDataSource.getRepository(ClothingItem).extend({
@@ -16,36 +17,67 @@ export const clothingItemRepository = AppDataSource.getRepository(ClothingItem).
     page: number,
     limit: number,
   ): Promise<{ items: ClothingItem[]; total: number }> {
-    const queryBuilder = this.createQueryBuilder('ci')
-      .leftJoinAndSelect('ci.colorGroup', 'colorGroup')
-      .leftJoinAndSelect('ci.category', 'category')
-      .leftJoinAndSelect('ci.season', 'season')
+    // First pass: get ordered+paginated IDs only (avoids pagination issues with ManyToMany joins)
+    const idQb = this.createQueryBuilder('ci')
+      .select(['ci.id', 'ci.createdAt'])
       .where('ci.userId = :userId', { userId })
       .orderBy('ci.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
 
     if (filters.search) {
-      queryBuilder.andWhere('(ci.style LIKE :search OR category.name LIKE :search)', { search: `%${filters.search}%` });
+      idQb
+        .leftJoin('ci.category', 'searchCat')
+        .leftJoin('ci.styles', 'searchStyle')
+        .leftJoin('clothing_item_color_groups', 'search_ci_cg', 'search_ci_cg.clothing_item_id = ci.id')
+        .leftJoin('color_group', 'searchColor', 'searchColor.id = search_ci_cg.color_group_id')
+        .leftJoin('clothing_item_seasons', 'search_ci_s', 'search_ci_s.clothing_item_id = ci.id')
+        .leftJoin('season', 'searchSeason', 'searchSeason.id = search_ci_s.season_id')
+        .andWhere(
+          '(searchStyle.name LIKE :search OR searchCat.name LIKE :search OR searchColor.name LIKE :search OR searchSeason.name LIKE :search)',
+          { search: `%${filters.search}%` },
+        );
     }
     if (filters.category) {
-      queryBuilder.andWhere('category.name = :category', { category: filters.category });
+      idQb
+        .leftJoin('ci.category', 'filterCat')
+        .andWhere('filterCat.name = :category', { category: filters.category });
     }
     if (filters.color) {
-      queryBuilder.andWhere('colorGroup.name = :color', { color: filters.color });
+      idQb
+        .innerJoin('clothing_item_color_groups', 'ci_cg', 'ci_cg.clothing_item_id = ci.id')
+        .innerJoin('color_group', 'filterColor', 'filterColor.id = ci_cg.color_group_id AND filterColor.name = :color', { color: filters.color });
     }
     if (filters.season) {
-      queryBuilder.andWhere('season.name = :season', { season: filters.season });
+      idQb
+        .innerJoin('clothing_item_seasons', 'ci_s', 'ci_s.clothing_item_id = ci.id')
+        .innerJoin('season', 'filterSeason', 'filterSeason.id = ci_s.season_id AND filterSeason.name = :season', { season: filters.season });
+    }
+    if (filters.style) {
+      idQb
+        .innerJoin('ci.styles', 'filterStyle')
+        .andWhere('filterStyle.name = :style', { style: filters.style });
     }
 
-    const [items, total] = await queryBuilder.getManyAndCount();
+    const [idRows, total] = await idQb.getManyAndCount();
+    if (idRows.length === 0) return { items: [], total };
+
+    // Second pass: load full entities with relations, preserving order
+    const ids = idRows.map(r => r.id);
+    const items = await this.find({
+      where: { id: In(ids) },
+      relations: ['colorGroups', 'category', 'seasons', 'styles'],
+    });
+    const order = new Map(ids.map((id, i) => [id, i]));
+    items.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+
     return { items, total };
   },
 
   getMultipleByIds(ids: string[]): Promise<ClothingItem[]> {
     return this.find({
       where: { id: In(ids) },
-      relations: ['colorGroup', 'category', 'season'],
+      relations: ['colorGroups', 'category', 'seasons', 'styles'],
     });
   },
 
@@ -61,13 +93,13 @@ export const clothingItemRepository = AppDataSource.getRepository(ClothingItem).
     style: string,
     limit = 10,
   ): Promise<ClothingItem[]> {
-    // Base builder — uses idx_clothing_item_user_lookups (user_id, category_id, color_group_id)
+    // Base builder — uses idx_clothing_item_user_category (user_id, category_id)
     const base = () =>
       this.createQueryBuilder('ci')
-        .select(['ci.id', 'ci.imageEmbedding', 'ci.style'])
+        .select(['ci.id', 'ci.imageEmbedding'])
         .innerJoin('ci.category', 'cat')
-        .innerJoin('ci.colorGroup', 'cg')
-        .leftJoin('ci.season', 'season')
+        .innerJoin('ci.colorGroups', 'cg')
+        .leftJoin('ci.seasons', 'season')
         .where('ci.userId = :userId', { userId })
         .andWhere('cat.name = :category', { category })
         .andWhere('cg.name = :colorGroup', { colorGroup })
@@ -77,7 +109,8 @@ export const clothingItemRepository = AppDataSource.getRepository(ClothingItem).
     // All-Season items always count as a season match
     const perfect = await base()
       .andWhere('(season.name = :season OR season.name = :allSeason)', { season, allSeason: 'All-Season' })
-      .andWhere('ci.style = :style', { style })
+      .innerJoin('ci.styles', 'styleMatch')
+      .andWhere('styleMatch.name = :style', { style })
       .getMany();
 
     if (perfect.length > 0) return perfect;

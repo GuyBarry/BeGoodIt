@@ -1,49 +1,76 @@
-import { Box, Typography, Paper, Grid } from '@mui/material';
-import CheckroomIcon from '@mui/icons-material/Checkroom';
-import PaletteIcon from '@mui/icons-material/Palette';
+import { Box, Typography } from '@mui/material';
 import { PRIMARY_ALPHA } from '../../../styles/tokens';
 import type { SvgIconComponent } from '@mui/icons-material';
 
-interface Stat {
-  label: string;
-  value: string | number;
+export interface StatItem {
+  title: string | number;
+  subtitle: string;
   Icon: SvgIconComponent;
+  onClick: () => void;
 }
 
 interface Props {
-  itemsCount: number;
+  items: StatItem[];
 }
 
-export default function StatsGrid({ itemsCount }: Props) {
-  const STATS: Stat[] = [
-    { label: 'Total Items', value: itemsCount, Icon: CheckroomIcon },
-    { label: 'Outfits Created', value: 23, Icon: PaletteIcon },
-  ];
-
+export default function StatsGrid({ items }: Props) {
   return (
-    <Grid container spacing={1.5}>
-      {STATS.map(({ label, value, Icon }) => (
-        <Grid key={label} size={{ xs: 6 }}>
-          <Paper elevation={0} sx={{ borderRadius: 3, p: 2.5, border: '1px solid', borderColor: 'divider' }}>
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gridTemplateRows: '1fr 1fr',
+        gap: 1.5,
+        height: '100%',
+      }}
+    >
+      {items.map(({ title, subtitle, Icon, onClick }) => (
+        <Box
+          key={subtitle}
+          component="button"
+          onClick={onClick}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+            height: '100%',
+            textAlign: 'left',
+            borderRadius: 3,
+            p: 2.5,
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            transition: 'background-color 0.15s, border-color 0.15s',
+            '&:hover': {
+              bgcolor: PRIMARY_ALPHA[4],
+              borderColor: 'primary.light',
+            },
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 1 }}>
+            <Typography sx={{ fontWeight: 600, fontSize: 20 }}>{title}</Typography>
             <Box
               sx={{
-                width: 40,
-                height: 40,
-                borderRadius: 2,
+                width: 28,
+                height: 28,
+                borderRadius: 1.5,
                 bgcolor: PRIMARY_ALPHA[10],
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                mb: 1.5,
+                flexShrink: 0,
               }}
             >
-              <Icon sx={{ color: 'primary.main', fontSize: 20 }} />
+              <Icon sx={{ color: 'primary.main', fontSize: 16 }} />
             </Box>
-            <Typography variant="h5">{value}</Typography>
-            <Typography variant="caption" color="text.secondary">{label}</Typography>
-          </Paper>
-        </Grid>
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1.5, fontSize: 14 }}>
+            {subtitle}
+          </Typography>
+        </Box>
       ))}
-    </Grid>
+    </Box>
   );
 }

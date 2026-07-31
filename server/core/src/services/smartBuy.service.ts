@@ -127,13 +127,13 @@ const styleScore = (a: string, b: string): number => {
 const scoreItem = (
   uploaded: ClothingClassification,
   uploadedEmbedding: number[] | null,
-  item: { category: string | null; colorGroup: string | null; season: string | null; style: string | null; imageEmbedding: Buffer | null },
+  item: { category: string | null; colorGroups: string[]; seasons: string[]; styles: string[]; imageEmbedding: Buffer | null },
 ): number => {
   let total = 0, weight = 0;
   if (item.category) { total += (CATEGORY_MATRIX[uploaded.category]?.[item.category] ?? 50) * 40; weight += 40; }
-  if (item.colorGroup) { total += colorScore(uploaded.colorGroup, item.colorGroup) * 30; weight += 30; }
-  if (item.season) { total += seasonScore(uploaded.season, item.season) * 15; weight += 15; }
-  if (item.style) { total += styleScore(uploaded.style, item.style) * 15; weight += 15; }
+  if (item.colorGroups.length) { total += Math.max(...item.colorGroups.map(c => colorScore(uploaded.colorGroup, c))) * 30; weight += 30; }
+  if (item.seasons.length)     { total += Math.max(...item.seasons.map(s => seasonScore(uploaded.season, s))) * 15; weight += 15; }
+  if (item.styles.length)      { total += Math.max(...item.styles.map(s => styleScore(uploaded.style, s))) * 15; weight += 15; }
   const metadataScore = weight === 0 ? 65 : Math.round(total / weight);
 
   if (uploadedEmbedding && item.imageEmbedding?.length === EMBEDDING_BYTES) {
@@ -214,9 +214,9 @@ export const smartBuyService = {
         itemId: item.id,
         compatibilityPct: scoreItem(uploadedClassification, uploadedEmbedding, {
           category: item.category?.name ?? null,
-          colorGroup: item.colorGroup?.name ?? null,
-          season: item.season?.name ?? null,
-          style: item.style ?? null,
+          colorGroups: (item.colorGroups ?? []).map(cg => cg.name),
+          seasons: (item.seasons ?? []).map(s => s.name),
+          styles: (item.styles ?? []).map(s => s.name),
           imageEmbedding: item.imageEmbedding ?? null,
         }),
       }))
