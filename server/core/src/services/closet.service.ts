@@ -35,20 +35,20 @@ const addToCloset = async (
   }
 
   // Resolve classification names to DB IDs; caller-supplied tag IDs take priority.
-  let categoryId   = tags.categoryId   ?? null;
-  let colorGroupId = tags.colorGroupId ?? null;
-  let seasonId     = tags.seasonId     ?? null;
-  const style      = tags.style        ?? classification?.style ?? null;
+  let categoryId     = tags.categoryId     ?? null;
+  let colorGroupIds  = tags.colorGroupIds?.length ? tags.colorGroupIds : null;
+  let seasonIds      = tags.seasonIds?.length     ? tags.seasonIds     : null;
+  const styles       = tags.styles?.length        ? tags.styles        : (classification?.style ? [classification.style] : []);
 
   if (classification && !classification.noClothingDetected) {
     const [category, colorGroup, season] = await Promise.all([
-      categoryId   == null ? garmentCategoryRepository.findOne({ where: { name: classification.category   } }) : null,
-      colorGroupId == null ? colorGroupRepository.findOne({      where: { name: classification.colorGroup } }) : null,
-      seasonId     == null ? seasonRepository.findOne({          where: { name: classification.season      } }) : null,
+      categoryId        == null ? garmentCategoryRepository.findOne({ where: { name: classification.category   } }) : null,
+      colorGroupIds == null ? colorGroupRepository.findOne({      where: { name: classification.colorGroup } }) : null,
+      seasonIds     == null ? seasonRepository.findOne({          where: { name: classification.season      } }) : null,
     ]);
-    if (category)   categoryId   = category.id;
-    if (colorGroup) colorGroupId = colorGroup.id;
-    if (season)     seasonId     = season.id;
+    if (category)   categoryId    = category.id;
+    if (colorGroup) colorGroupIds = [colorGroup.id];
+    if (season)     seasonIds     = [season.id];
   }
 
   // Image save and embedding generation can now proceed in parallel
@@ -61,9 +61,9 @@ const addToCloset = async (
 
   return clothingItemService.addItem(userId, imageDto.id, {
     categoryId,
-    colorGroupId,
-    seasonId,
-    style,
+    colorGroupIds: colorGroupIds ?? [],
+    seasonIds: seasonIds ?? [],
+    styles,
     embedding,
   });
 };

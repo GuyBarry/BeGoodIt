@@ -1,35 +1,49 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import multer from 'multer';
-import { StatusCodes } from 'http-status-codes';
-import { fittingRoomService } from '../services';
-import { inspirationMatchingService } from '../services/inspirationMatching.service';
-import { BadRequestException } from '../exceptions/httpExceptions';
+import { Router, Request, Response, NextFunction } from "express";
+import multer from "multer";
+import { StatusCodes } from "http-status-codes";
+import { fittingRoomService } from "../services";
+import { inspirationMatchingService } from "../services/inspirationMatching.service";
+import { BadRequestException } from "../exceptions/httpExceptions";
+import { setUpRateLimiter , ONE_MINUTE_MS} from "../middlewares/rateLimiter.middleware";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
 export const fittingRoomRouter = Router();
 
 fittingRoomRouter.post(
-  '/:userId/outfit',
+  "/:userId/outfit",
+  setUpRateLimiter({ limit: 5, windowMs: ONE_MINUTE_MS }),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { userId } = req.params;
-      const { clothingItemIds } = req.body ?? {};
+      const { clothingItemIds, recreate } = req.body ?? {};
 
       if (!userId || !userId.trim()) {
-        return next(new BadRequestException('userId is required'));
+        return next(new BadRequestException("userId is required"));
       }
 
       if (!Array.isArray(clothingItemIds) || clothingItemIds.length === 0) {
-        return next(new BadRequestException('clothingItemIds must be a non-empty array'));
+        return next(
+          new BadRequestException("clothingItemIds must be a non-empty array"),
+        );
       }
 
-      const { imageBuffer, imageId } = await fittingRoomService.createFit(userId, clothingItemIds);
+      if (recreate !== undefined && typeof recreate !== "boolean") {
+        return next(new BadRequestException("recreate must be a boolean"));
+      }
 
-      res.setHeader('Content-Type', 'image/png');
-      res.setHeader('Content-Length', imageBuffer.length);
-      res.setHeader('X-Image-Id', imageId);
-      res.setHeader('Access-Control-Expose-Headers', 'X-Image-Id');
+      const { imageBuffer, imageId } = await fittingRoomService.createFit(
+        userId,
+        clothingItemIds,
+        {
+          recreate,
+        },
+      );
+
+      res.setHeader("Content-Type", "image/png");
+      res.setHeader("Content-Length", imageBuffer.length);
+      res.setHeader("X-Image-Id", imageId);
+      res.setHeader("Access-Control-Expose-Headers", "X-Image-Id");
       res.status(StatusCodes.OK).send(imageBuffer);
     } catch (error) {
       next(error);
@@ -38,20 +52,31 @@ fittingRoomRouter.post(
 );
 
 fittingRoomRouter.post(
-  '/:userId/try-on-product',
-  upload.single('file'),
+  "/:userId/try-on-product",
+  setUpRateLimiter({ limit: 5, windowMs: ONE_MINUTE_MS }),
+  upload.single("file"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { userId } = req.params;
-      if (!userId?.trim()) return next(new BadRequestException('userId is required'));
-      if (!req.file) return next(new BadRequestException('file is required'));
+      if (!userId?.trim())
+        return next(new BadRequestException("userId is required"));
+      if (!req.file) return next(new BadRequestException("file is required"));
 
-      const { imageBuffer, imageId } = await fittingRoomService.createProductTryOn(userId, req.file);
+      const itemDescription =
+        typeof req.body?.itemDescription === "string"
+          ? req.body.itemDescription
+          : undefined;
+      const { imageBuffer, imageId } =
+        await fittingRoomService.createProductTryOn(
+          userId,
+          req.file,
+          itemDescription,
+        );
 
-      res.setHeader('Content-Type', 'image/png');
-      res.setHeader('Content-Length', imageBuffer.length);
-      res.setHeader('X-Image-Id', imageId);
-      res.setHeader('Access-Control-Expose-Headers', 'X-Image-Id');
+      res.setHeader("Content-Type", "image/png");
+      res.setHeader("Content-Length", imageBuffer.length);
+      res.setHeader("X-Image-Id", imageId);
+      res.setHeader("Access-Control-Expose-Headers", "X-Image-Id");
       res.status(StatusCodes.OK).send(imageBuffer);
     } catch (error) {
       next(error);
@@ -60,22 +85,26 @@ fittingRoomRouter.post(
 );
 
 fittingRoomRouter.post(
-  '/:userId/find-matches',
-  upload.single('file'),
+  "/:userId/find-matches",
+  setUpRateLimiter({ limit: 5, windowMs: ONE_MINUTE_MS }),
+  upload.single("file"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { userId } = req.params;
       if (!userId || !userId.trim()) {
-        return next(new BadRequestException('userId is required'));
+        return next(new BadRequestException("userId is required"));
       }
       if (!req.file) {
-        return next(new BadRequestException('file is required'));
+        return next(new BadRequestException("file is required"));
       }
 
-      const matchedItemIds = await inspirationMatchingService.findMatches(userId, {
-        mimeType: req.file.mimetype,
-        data: req.file.buffer,
-      });
+      const matchedItemIds = await inspirationMatchingService.findMatches(
+        userId,
+        {
+          mimeType: req.file.mimetype,
+          data: req.file.buffer,
+        },
+      );
 
       res.status(StatusCodes.OK).json({ matchedItemIds });
     } catch (error) {

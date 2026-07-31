@@ -7,6 +7,7 @@ export interface ClosetFilters {
   category?: string;
   color?: string;
   season?: string;
+  style?: string;
   page?: number;
   limit?: number;
 }
@@ -26,10 +27,10 @@ export interface ClothingClassification {
 export interface UploadClothingItemPayload {
   file: File;
   userId: User['id'];
-  colorGroupId?: number | null;
+  colorGroupIds?: number[];
   categoryId?: number | null;
-  seasonId?: number | null;
-  style?: string | null;
+  seasonIds?: number[];
+  styles?: string[];
 }
 
 export const clothingItemsApi = {
@@ -39,6 +40,7 @@ export const clothingItemsApi = {
     if (filters.category) params.set('category', filters.category);
     if (filters.color)    params.set('color',    filters.color);
     if (filters.season)   params.set('season',   filters.season);
+    if (filters.style)    params.set('style',    filters.style);
     params.set('page',  String(filters.page  ?? 1));
     params.set('limit', String(filters.limit ?? 20));
     const { data } = await apiClient.get<PaginatedClothingItems>(`/closet/${userId}?${params}`);
@@ -48,10 +50,10 @@ export const clothingItemsApi = {
   upload: async (payload: UploadClothingItemPayload): Promise<ClothingItem> => {
     const formData = new FormData();
     formData.append('file', payload.file);
-    if (payload.colorGroupId != null) formData.append('colorGroupId', String(payload.colorGroupId));
+    for (const id of payload.colorGroupIds ?? []) formData.append('colorGroupIds', String(id));
     if (payload.categoryId != null) formData.append('categoryId', String(payload.categoryId));
-    if (payload.seasonId != null) formData.append('seasonId', String(payload.seasonId));
-    if (payload.style) formData.append('style', payload.style);
+    for (const id of payload.seasonIds ?? []) formData.append('seasonIds', String(id));
+    for (const style of payload.styles ?? []) formData.append('styles', style);
     const { data } = await apiClient.post<ClothingItem>(`/closet/${payload.userId}/items`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

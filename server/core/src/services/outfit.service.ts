@@ -1,6 +1,7 @@
 import { Outfit } from '../db/entities';
 import { OutfitDto } from '../db/entities/Outfit.dto';
 import { ClothingItemDto } from '../dtos';
+import { NotFoundException } from '../exceptions/httpExceptions';
 import { outfitRepository } from '../repositories';
 import { clothingItemService } from './clothingItem.service';
 
@@ -8,10 +9,10 @@ const toItemDto = (item: Outfit['items'][number]): ClothingItemDto => ({
   id: item.id,
   userId: item.userId,
   imageId: item.imageId,
-  style: item.style,
-  colorGroup: item.colorGroup ? { id: item.colorGroup.id, name: item.colorGroup.name } : null,
+  styles: (item.styles ?? []).map(s => s.name),
+  colorGroups: (item.colorGroups ?? []).map(cg => ({ id: cg.id, name: cg.name })),
   category: item.category ? { id: item.category.id, name: item.category.name } : null,
-  season: item.season ? { id: item.season.id, name: item.season.name } : null,
+  seasons: (item.seasons ?? []).map(s => ({ id: s.id, name: s.name })),
   createdAt: item.createdAt,
 });
 
@@ -43,8 +44,20 @@ const getUserOutfits = async (userId: string): Promise<OutfitDto[]> => {
 const findCachedOutfit = (userId: string, clothingItemIds: string[]) =>
   outfitRepository.findExactMatch(userId, clothingItemIds);
 
+const replaceOutfitImage = (outfitId: string, imageId: string): Promise<void> =>
+  outfitRepository.replaceImage(outfitId, imageId);
+
+const deleteOutfit = async (userId: string, outfitId: string): Promise<void> => {
+  const deleted = await outfitRepository.deleteByIdAndUserId(outfitId, userId);
+  if (!deleted) {
+    throw new NotFoundException('Outfit not found');
+  }
+};
+
 export const outfitService = {
   saveOutfit,
   getUserOutfits,
   findCachedOutfit,
+  replaceOutfitImage,
+  deleteOutfit,
 };

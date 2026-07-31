@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { StatusCodes } from 'http-status-codes';
 import { smartBuyService } from '../services/smartBuy.service';
+import { setUpRateLimiter, ONE_MINUTE_MS } from '../middlewares/rateLimiter.middleware';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -28,7 +29,11 @@ smartBuyRouter.get('/product-image', async (req: Request, res: Response, next: N
   }
 });
 
-smartBuyRouter.post('/analyze', upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
+smartBuyRouter.post(
+  '/analyze', 
+  setUpRateLimiter({ limit: 5, windowMs: ONE_MINUTE_MS }), 
+  upload.single('image'), 
+  async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId, productTitle } = req.body;
     if (!userId || typeof userId !== 'string') {

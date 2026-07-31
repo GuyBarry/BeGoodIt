@@ -12,4 +12,8 @@ export const outfitApi = {
     const { data } = await apiClient.post<Outfit>(`/outfits/${userId}`, { imageId, clothingItemIds });
     return data;
   },
+
+  deleteById: async (userId: User['id'], outfitId: Outfit['id']): Promise<void> => {
+    await apiClient.delete(`/outfits/${userId}/${outfitId}`);
+  },
 };
