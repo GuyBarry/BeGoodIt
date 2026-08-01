@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useClothingItems, useAddClothingItem, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
+import { useCurrentUser } from '../../../auth/AuthContext';
 import UploadPanel from './UploadPanel';
 import AnalysisResult from './AnalysisResult';
 import RecentTests from './RecentTests';
