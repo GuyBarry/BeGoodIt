@@ -3,7 +3,6 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import { Alert, Box, Button, CircularProgress, IconButton, LinearProgress, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
 import { imagesApi } from '../../../api/api/images.api';
 import { GRADIENTS, PALETTE, SERIF_FONT } from '../../../styles/tokens';
 import type { AnalysisResult as AnalysisResultType } from './types';
@@ -29,10 +28,6 @@ export default function AnalysisResult({
   isAdding, addSuccess,
   onVirtualTryOn, onAddToCloset, onReset,
 }: Props) {
-  const [customName, setCustomName] = useState(testName);
-
-  useEffect(() => { setCustomName(testName); }, [testName]);
-
   return (
     <Box
       sx={{
@@ -256,7 +251,7 @@ export default function AnalysisResult({
                   variant="contained"
                   size="large"
                   startIcon={isAdding ? <CircularProgress size={18} sx={{ color: 'inherit' }} /> : <AddShoppingCartIcon />}
-                  onClick={() => onAddToCloset(customName || testName)}
+                  onClick={() => onAddToCloset(testName)}
                   disabled={isAdding}
                   sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.5, background: GRADIENTS.primary }}
                 >

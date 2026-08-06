@@ -19,14 +19,13 @@ function formatDate(date: Date) {
 }
 
 export default function RecentTestDialog({ test, onClose, onAddToCloset }: Props) {
-  const [customName, setCustomName] = useState(test.name);
   const [isAdding, setIsAdding] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
 
   const handleAdd = async () => {
     setIsAdding(true);
     try {
-      await onAddToCloset(test, customName || test.name);
+      await onAddToCloset(test, test.name);
       setAddSuccess(true);
     } finally {
       setIsAdding(false);
