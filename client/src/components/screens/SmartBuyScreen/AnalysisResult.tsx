@@ -1,11 +1,11 @@
-import { Box, Button, CircularProgress, IconButton, LinearProgress, TextField, Typography } from '@mui/material';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
-import { useState, useEffect } from 'react';
-import { GRADIENTS, PALETTE, SERIF_FONT } from '../../../styles/tokens';
+import { Alert, Box, Button, CircularProgress, IconButton, LinearProgress, TextField, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { imagesApi } from '../../../api/api/images.api';
+import { GRADIENTS, PALETTE, SERIF_FONT } from '../../../styles/tokens';
 import type { AnalysisResult as AnalysisResultType } from './types';
 
 interface Props {
@@ -15,6 +15,7 @@ interface Props {
   result: AnalysisResultType | null;
   tryOnImage: string | null;
   isTryingOn: boolean;
+  tryOnError: string | null;
   isAdding: boolean;
   addSuccess: boolean;
   onVirtualTryOn: () => void;
@@ -24,7 +25,7 @@ interface Props {
 
 export default function AnalysisResult({
   testImage, testName, isAnalyzing, result,
-  tryOnImage, isTryingOn,
+  tryOnImage, isTryingOn, tryOnError,
   isAdding, addSuccess,
   onVirtualTryOn, onAddToCloset, onReset,
 }: Props) {
@@ -218,16 +219,23 @@ export default function AnalysisResult({
             {/* Buttons */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 'auto' }}>
               {!tryOnImage && (
-                <Button
-                  variant="outlined"
-                  size="large"
-                  startIcon={isTryingOn ? <CircularProgress size={18} sx={{ color: PALETTE.primary }} /> : <AutoAwesomeIcon />}
-                  onClick={onVirtualTryOn}
-                  disabled={isTryingOn}
-                  sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.5 }}
-                >
-                  {isTryingOn ? 'Generating...' : 'Virtual Try-On'}
-                </Button>
+                <>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    startIcon={isTryingOn ? <CircularProgress size={18} sx={{ color: PALETTE.primary }} /> : <AutoAwesomeIcon />}
+                    onClick={onVirtualTryOn}
+                    disabled={isTryingOn}
+                    sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.5 }}
+                  >
+                    {isTryingOn ? 'Generating...' : 'Virtual Try-On'}
+                  </Button>
+                  {tryOnError && (
+                    <Alert severity="warning" sx={{ borderRadius: 2 }}>
+                      {tryOnError}
+                    </Alert>
+                  )}
+                </>
               )}
 
               {addSuccess ? (

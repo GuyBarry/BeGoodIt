@@ -74,14 +74,18 @@ export const fittingRoomApi = {
     const formData = new FormData();
     formData.append('file', file);
     if (itemDescription) formData.append('itemDescription', itemDescription);
-    const response = await apiClient.post<Blob>(
-      `/fitting-room/${userId}/try-on-product`,
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' }, responseType: 'blob' },
-    );
-    return {
-      url: URL.createObjectURL(response.data),
-      imageId: response.headers['x-image-id'] as string,
-    };
+    try {
+      const response = await apiClient.post<Blob>(
+        `/fitting-room/${userId}/try-on-product`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' }, responseType: 'blob' },
+      );
+      return {
+        url: URL.createObjectURL(response.data),
+        imageId: response.headers['x-image-id'] as string,
+      };
+    } catch (error) {
+      return normalizeBlobError(error);
+    }
   },
 };

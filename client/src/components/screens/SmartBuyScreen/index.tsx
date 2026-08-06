@@ -29,6 +29,7 @@ export default function SmartBuyScreen() {
   const [result, setResult] = useState<AnalysisResultType | null>(null);
   const [tryOnImage, setTryOnImage] = useState<string | null>(null);
   const [isTryingOn, setIsTryingOn] = useState(false);
+  const [tryOnError, setTryOnError] = useState<string | null>(null);
   const [recentTests, setRecentTests] = useState<RecentTest[]>([]);
 
   useEffect(() => {
@@ -63,6 +64,7 @@ export default function SmartBuyScreen() {
     setResult(null);
     setTryOnImage(null);
     setIsTryingOn(false);
+    setTryOnError(null);
     setIsAdding(false);
     setAddSuccess(false);
     setIsAnalyzing(true);
@@ -179,6 +181,7 @@ export default function SmartBuyScreen() {
     }
     if (!file) return;
     setIsTryingOn(true);
+    setTryOnError(null);
     try {
       const parts = [
         testName,
@@ -189,8 +192,9 @@ export default function SmartBuyScreen() {
       const itemDescription = parts.length > 0 ? parts.join(', ') : undefined;
       const { url } = await fittingRoomApi.tryOnProduct(currentUserId, file, itemDescription);
       setTryOnImage(url);
-    } catch {
-      // keep product image on failure
+    } catch (err) {
+      const message = err instanceof Error ? err.message : null;
+      setTryOnError(message ?? 'Virtual try-on failed. Please try again.');
     } finally {
       setIsTryingOn(false);
     }
@@ -204,6 +208,7 @@ export default function SmartBuyScreen() {
     setIsAnalyzing(false);
     setTryOnImage(null);
     setIsTryingOn(false);
+    setTryOnError(null);
     setIsAdding(false);
     setAddSuccess(false);
     setTestClassification(null);
@@ -239,6 +244,7 @@ export default function SmartBuyScreen() {
               result={result}
               tryOnImage={tryOnImage}
               isTryingOn={isTryingOn}
+              tryOnError={tryOnError}
               isAdding={isAdding}
               addSuccess={addSuccess}
               onVirtualTryOn={handleVirtualTryOn}
