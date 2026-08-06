@@ -1,23 +1,27 @@
-import "dotenv/config";
 import cors from "cors";
+import "dotenv/config";
 import express, { Express, Request, Response } from "express";
+import fs from "fs";
+import http from "http";
+import https from "https";
+import path from "path";
 import swaggerUi from "swagger-ui-express";
 import { serverConfig } from "./src/config/server.config";
 import { swaggerSpec } from "./src/config/swagger.config";
 import {
   authRouter,
   bodyRouter,
-  clothingItemRouter,
   closetRouter,
+  clothingItemRouter,
   colorGroupRouter,
   fittingRoomRouter,
   garmentCategoryRouter,
   genderRouter,
   imagesRouter,
-  seasonRouter,
-  userRouter,
-  smartBuyRouter,
   outfitRouter,
+  seasonRouter,
+  smartBuyRouter,
+  userRouter,
 } from "./src/controllers";
 import { AppDataSource } from "./src/db/datasource";
 import { errorHandler } from "./src/middlewares/error.middleware";
@@ -31,6 +35,11 @@ export const initApp = async (): Promise<Express> => {
   app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+
+  // In production, serve the built client static files
+  if (serverConfig.env === 'production') {
+    app.use(express.static(path.resolve(__dirname, 'client')));
+  }
 
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use("/auth", authRouter);
@@ -51,6 +60,13 @@ export const initApp = async (): Promise<Express> => {
     res.json({ message: "Welcome to BeGoodIt API" });
   });
 
+  // In production, serve index.html for all unmatched routes (SPA navigation)
+  if (serverConfig.env === 'production') {
+    app.get('*', (_req: Request, res: Response) => {
+      res.sendFile(path.resolve(__dirname, 'client', 'index.html'));
+    });
+  }
+
   app.use(noRouteHandler);
   app.use(errorHandler);
 
@@ -58,10 +74,21 @@ export const initApp = async (): Promise<Express> => {
     await AppDataSource.initialize();
     console.log("Database connection established successfully");
 
-    app.listen(PORT, () => {
-      console.log(`Server is running at http://localhost:${PORT}`);
-      console.log(`API docs available at http://localhost:${PORT}/api-docs`);
-    });
+    if (serverConfig.env === 'production') {
+      const privateKey = fs.readFileSync(path.join(__dirname, '../certs/key.pem'), 'utf8');
+      const certificate = fs.readFileSync(path.join(__dirname, '../certs/cert.pem'), 'utf8');
+      const credentials = { key: privateKey, cert: certificate };
+
+      https.createServer(credentials, app).listen(PORT, () => {
+        console.log(`Server is running at https://localhost:${PORT}`);
+        console.log(`API docs available at https://localhost:${PORT}/api-docs`);
+      });
+    } else {
+      http.createServer(app).listen(PORT, () => {
+        console.log(`Server is running at http://localhost:${PORT}`);
+        console.log(`API docs available at http://localhost:${PORT}/api-docs`);
+      });
+    }
   } catch (err) {
     console.error("Failed to connect to database:", err);
     process.exit(1);
