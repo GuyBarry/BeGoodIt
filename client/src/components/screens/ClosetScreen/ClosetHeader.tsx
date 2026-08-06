@@ -5,6 +5,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import GridViewIcon from '@mui/icons-material/GridView';
 import AppsIcon from '@mui/icons-material/Apps';
 import { SERIF_FONT, GRADIENTS, PALETTE } from '../../../styles/tokens';
+import { getInitials } from '../../../lib/initials';
 import FilterPanel from './FilterPanel';
 
 interface Props {
@@ -103,8 +104,8 @@ export default function ClosetHeader({
                 flexShrink: 0,
               }}
             >
-              <Typography sx={{ color: '#fff', fontFamily: SERIF_FONT, fontSize: 20, fontWeight: 600, lineHeight: 1 }}>
-                {username.charAt(0)}
+              <Typography sx={{ color: '#fff', fontFamily: SERIF_FONT, fontSize: 18, fontWeight: 600, lineHeight: 1 }}>
+                {getInitials(username)}
               </Typography>
             </Box>
           </Box>

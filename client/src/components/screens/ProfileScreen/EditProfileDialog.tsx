@@ -15,6 +15,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 import { GRADIENTS, SERIF_FONT } from '../../../styles/tokens';
+import { getInitials } from '../../../lib/initials';
 import type { User } from '../../../entities/user';
 import { useGenders } from '../../../api';
 
@@ -59,8 +60,8 @@ export default function EditProfileDialog({ open, draft, onDraftChange, onSave, 
                 justifyContent: 'center',
               }}
             >
-              <Typography sx={{ color: '#fff', fontSize: 32, fontFamily: SERIF_FONT, fontWeight: 600 }}>
-                {draft.username.charAt(0)}
+              <Typography sx={{ color: '#fff', fontSize: 28, fontFamily: SERIF_FONT, fontWeight: 600 }}>
+                {getInitials(draft.username)}
               </Typography>
             </Box>
           </Box>
