@@ -56,8 +56,8 @@ export const initApp = async (): Promise<Express> => {
   app.use("/smart-buy", smartBuyRouter);
   app.use("/outfits", outfitRouter);
 
-  app.get("/", (_req: Request, res: Response) => {
-    res.json({ message: "Welcome to BeGoodIt API" });
+  app.get("/health", (_req: Request, res: Response) => {
+    res.json({ message: "BeGoodIt API Is Up" });
   });
 
   // In production, serve index.html for all unmatched routes (SPA navigation)
