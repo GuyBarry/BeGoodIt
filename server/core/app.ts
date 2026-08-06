@@ -62,7 +62,7 @@ export const initApp = async (): Promise<Express> => {
 
   // In production, serve index.html for all unmatched routes (SPA navigation)
   if (serverConfig.env === 'production') {
-    app.get('*', (_req: Request, res: Response) => {
+    app.get(/(.*)/, (_req: Request, res: Response) => {
       res.sendFile(path.resolve(__dirname, 'client', 'index.html'));
     });
   }
