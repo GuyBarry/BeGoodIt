@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
-import { useClothingItems, useAddClothingItem, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
-import { useCurrentUser } from '../../../auth/AuthContext';
-import UploadPanel from './UploadPanel';
-import AnalysisResult from './AnalysisResult';
-import RecentTests from './RecentTests';
-import RecentTestDialog from './RecentTestDialog';
-import type { AnalysisResult as AnalysisResultType, RecentTest } from './types';
-import { smartBuyApi } from '../../../api/api/smartBuy.api';
-import { imagesApi } from '../../../api/api/images.api';
+import { useEffect, useState } from 'react';
+import { useAddClothingItem, useClothingItems, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
 import { fittingRoomApi } from '../../../api/api/fittingRoom.api';
+import { imagesApi } from '../../../api/api/images.api';
+import { smartBuyApi } from '../../../api/api/smartBuy.api';
 import { useCurrentUser } from '../../../auth/AuthContext';
+import AnalysisResult from './AnalysisResult';
+import RecentTestDialog from './RecentTestDialog';
+import RecentTests from './RecentTests';
+import type { AnalysisResult as AnalysisResultType, RecentTest } from './types';
+import UploadPanel from './UploadPanel';
 
 const MAX_RECENT = 6;
 
