@@ -52,7 +52,7 @@ export default function SmartBuyScreen() {
     }).catch(() => {});
   }, [clothingItems]);
   const [selectedRecentTest, setSelectedRecentTest] = useState<RecentTest | null>(null);
-  const [testClassification, setTestClassification] = useState<{ category: string; colorGroup: string; season: string; style: string } | null>(null);
+  const [testClassification, setTestClassification] = useState<{ category: string; colorGroups: string[]; seasons: string[]; styles: string[] } | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
 
@@ -139,13 +139,13 @@ export default function SmartBuyScreen() {
         file,
         userId: currentUserId,
         styles: name ? [name] : [],
-        colorGroupIds: colorGroups.find(c => c.name === testClassification?.colorGroup)?.id != null
-          ? [colorGroups.find(c => c.name === testClassification?.colorGroup)!.id]
-          : [],
+        colorGroupIds: colorGroups
+          .filter(c => testClassification?.colorGroups.includes(c.name))
+          .map(c => c.id),
         categoryId: garmentCategories.find(c => c.name === testClassification?.category)?.id ?? null,
-        seasonIds: seasons.find(s => s.name === testClassification?.season)?.id != null
-          ? [seasons.find(s => s.name === testClassification?.season)!.id]
-          : [],
+        seasonIds: seasons
+          .filter(s => testClassification?.seasons.includes(s.name))
+          .map(s => s.id),
       });
       setAddSuccess(true);
     } finally {
@@ -161,13 +161,13 @@ export default function SmartBuyScreen() {
       file,
       userId: currentUserId,
       styles: name ? [name] : [],
-      colorGroupIds: colorGroups.find(c => c.name === test.classification?.colorGroup)?.id != null
-        ? [colorGroups.find(c => c.name === test.classification?.colorGroup)!.id]
-        : [],
+      colorGroupIds: colorGroups
+        .filter(c => test.classification?.colorGroups.includes(c.name))
+        .map(c => c.id),
       categoryId: garmentCategories.find(c => c.name === test.classification?.category)?.id ?? null,
-      seasonIds: seasons.find(s => s.name === test.classification?.season)?.id != null
-        ? [seasons.find(s => s.name === test.classification?.season)!.id]
-        : [],
+      seasonIds: seasons
+        .filter(s => test.classification?.seasons.includes(s.name))
+        .map(s => s.id),
     });
   };
 
@@ -183,8 +183,8 @@ export default function SmartBuyScreen() {
       const parts = [
         testName,
         testClassification?.category,
-        testClassification?.colorGroup,
-        testClassification?.style,
+        testClassification?.colorGroups[0],
+        testClassification?.styles[0],
       ].filter(Boolean);
       const itemDescription = parts.length > 0 ? parts.join(', ') : undefined;
       const { url } = await fittingRoomApi.tryOnProduct(currentUserId, file, itemDescription);

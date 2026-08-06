@@ -131,9 +131,18 @@ const scoreItem = (
 ): number => {
   let total = 0, weight = 0;
   if (item.category) { total += (CATEGORY_MATRIX[uploaded.category]?.[item.category] ?? 50) * 40; weight += 40; }
-  if (item.colorGroups.length) { total += Math.max(...item.colorGroups.map(c => colorScore(uploaded.colorGroup, c))) * 30; weight += 30; }
-  if (item.seasons.length)     { total += Math.max(...item.seasons.map(s => seasonScore(uploaded.season, s))) * 15; weight += 15; }
-  if (item.styles.length)      { total += Math.max(...item.styles.map(s => styleScore(uploaded.style, s))) * 15; weight += 15; }
+  if (item.colorGroups.length && uploaded.colorGroups.length) {
+    total += Math.max(...uploaded.colorGroups.flatMap(a => item.colorGroups.map(b => colorScore(a, b)))) * 30;
+    weight += 30;
+  }
+  if (item.seasons.length && uploaded.seasons.length) {
+    total += Math.max(...uploaded.seasons.flatMap(a => item.seasons.map(b => seasonScore(a, b)))) * 15;
+    weight += 15;
+  }
+  if (item.styles.length && uploaded.styles.length) {
+    total += Math.max(...uploaded.styles.flatMap(a => item.styles.map(b => styleScore(a, b)))) * 15;
+    weight += 15;
+  }
   const metadataScore = weight === 0 ? 65 : Math.round(total / weight);
 
   if (uploadedEmbedding && item.imageEmbedding?.length === EMBEDDING_BYTES) {
@@ -228,7 +237,7 @@ export const smartBuyService = {
       : 0;
     const outfitCount = scored.filter(m => m.compatibilityPct >= 70).length;
 
-    const suggestedName = [uploadedClassification.colorGroup, uploadedClassification.style, uploadedClassification.category]
+    const suggestedName = [uploadedClassification.colorGroups[0], uploadedClassification.styles[0], uploadedClassification.category]
       .filter(Boolean).join(' ');
 
     return { uploadedClassification, suggestedName, matches: top, compatibilityPct, outfitCount };
@@ -243,7 +252,7 @@ export const smartBuyService = {
       matchCount: number;
       outfitCount: number;
       matchedItems: { itemId: string; matchPct: number }[];
-      classification: { category: string; colorGroup: string; season: string; style: string } | null;
+      classification: { category: string; colorGroups: string[]; seasons: string[]; styles: string[] } | null;
     },
   ) {
     let imageId: string | null = null;

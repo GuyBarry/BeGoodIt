@@ -35,13 +35,11 @@ export default function AddItemScreen() {
     try {
       const classification = await clothingItemsApi.classify(selected);
       console.log('[classify] response:', classification);
-      const foundColor = colors.find(c => c.name === classification.colorGroup);
-      const foundSeason = seasons.find(s => s.name === classification.season);
       setTags({
         category: categories.find(c => c.name === classification.category) ?? null,
-        colors: foundColor ? [foundColor] : [],
-        seasons: foundSeason ? [foundSeason] : [],
-        styles: classification.style ? [classification.style] : [],
+        colors: colors.filter(c => classification.colorGroups.includes(c.name)),
+        seasons: seasons.filter(s => classification.seasons.includes(s.name)),
+        styles: classification.styles.filter(s => s),
       });
     } catch (err) {
       console.error('[classify] failed:', err);

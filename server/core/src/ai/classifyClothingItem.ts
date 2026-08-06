@@ -4,9 +4,9 @@ import { AIImageInput, AIModel, generateNewItemClassificationInput } from './ai.
 export interface ClothingClassification {
   noClothingDetected: boolean;
   category: 'Top' | 'Bottom' | 'Dress' | 'Shoes' | 'Outerwear' | 'Accessories' | 'Undergarment' | 'Activewear';
-  colorGroup: 'Black' | 'White' | 'Red' | 'Blue' | 'Green' | 'Yellow' | 'Orange' | 'Purple' | 'Pink' | 'Brown' | 'Gray' | 'Beige';
-  season: 'Spring' | 'Summer' | 'Fall' | 'Winter' | 'All-Season';
-  style: 'Casual' | 'Formal' | 'Smart Casual' | 'Sporty' | 'Bohemian';
+  colorGroups: ('Black' | 'White' | 'Red' | 'Blue' | 'Green' | 'Yellow' | 'Orange' | 'Purple' | 'Pink' | 'Brown' | 'Gray' | 'Beige')[];
+  seasons: ('Spring' | 'Summer' | 'Fall' | 'Winter' | 'All-Season')[];
+  styles: ('Casual' | 'Formal' | 'Smart Casual' | 'Sporty' | 'Bohemian')[];
   description: string;
 }
 
@@ -22,31 +22,37 @@ const CLASSIFICATION_SCHEMA = {
       type: Type.STRING,
       enum: ['Top', 'Bottom', 'Dress', 'Shoes', 'Outerwear', 'Accessories', 'Undergarment', 'Activewear'],
     },
-    colorGroup: {
-      type: Type.STRING,
-      enum: ['Black', 'White', 'Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Pink', 'Brown', 'Gray', 'Beige'],
+    colorGroups: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING, enum: ['Black', 'White', 'Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Pink', 'Brown', 'Gray', 'Beige'] },
+      description: 'One or more dominant color groups visible on the item.',
     },
-    season: {
-      type: Type.STRING,
-      enum: ['Spring', 'Summer', 'Fall', 'Winter', 'All-Season'],
+    seasons: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING, enum: ['Spring', 'Summer', 'Fall', 'Winter', 'All-Season'] },
+      description: 'One or more seasons this item is suited for.',
     },
-    style: { type: Type.STRING, enum: ['Casual', 'Formal', 'Smart Casual', 'Sporty', 'Bohemian'] },
+    styles: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING, enum: ['Casual', 'Formal', 'Smart Casual', 'Sporty', 'Bohemian'] },
+      description: 'One or more style categories that apply to this item.',
+    },
     description: {
       type: Type.STRING,
       description: 'A rich 1-3 sentence description of the item covering exact color/shade, fabric texture, fit, silhouette, pattern, notable design details, and occasion suitability. This will be used for semantic similarity matching.',
     },
   },
-  required: ['noClothingDetected', 'category', 'colorGroup', 'season', 'style', 'description'],
+  required: ['noClothingDetected', 'category', 'colorGroups', 'seasons', 'styles', 'description'],
 };
 
 const BASE_PROMPT = `Analyze this image and return the following fields.
 
 - noClothingDetected: set to true ONLY if the image contains NO clothing whatsoever (e.g. a landscape, food, furniture, a blank wall, a face with no visible clothing). Set to false for all clothing items. When true, still provide placeholder values for the remaining fields — they will be ignored.
 - category: pick exactly one of: Top, Bottom, Dress, Shoes, Outerwear, Accessories, Undergarment, Activewear
-- colorGroup: pick exactly one of: Black, White, Red, Blue, Green, Yellow, Orange, Purple, Pink, Brown, Gray, Beige
-- season: pick exactly one of: Spring, Summer, Fall, Winter, All-Season
+- colorGroups: pick at least one (can be multiple) from: Black, White, Red, Blue, Green, Yellow, Orange, Purple, Pink, Brown, Gray, Beige
+- seasons: pick at least one (can be multiple) from: Spring, Summer, Fall, Winter, All-Season
   (base on fabric weight — lightweight → Spring/Summer, heavy/insulating → Fall/Winter, only use All-Season for genuine basics like plain tees or jeans)
-- style: pick exactly one of: Casual, Formal, Smart Casual, Sporty, Bohemian
+- styles: pick at least one (can be multiple) from: Casual, Formal, Smart Casual, Sporty, Bohemian
 - description: write 1-3 sentences describing the item in detail — cover the exact color/shade, fabric texture and weight, fit and silhouette, any visible pattern or print, notable design details (buttons, pockets, collar type, hem, etc.), and what occasions or outfits it suits. Be specific enough that someone could match it against items in a photo.`;
 
 const CATEGORY_KEYWORDS: { category: ClothingClassification['category']; keywords: string[] }[] = [
