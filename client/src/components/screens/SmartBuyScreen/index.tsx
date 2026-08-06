@@ -138,7 +138,7 @@ export default function SmartBuyScreen() {
       await addToCloset({
         file,
         userId: currentUserId,
-        styles: name ? [name] : [],
+        styles: testClassification?.styles ?? [],
         colorGroupIds: colorGroups
           .filter(c => testClassification?.colorGroups.includes(c.name))
           .map(c => c.id),
@@ -160,7 +160,7 @@ export default function SmartBuyScreen() {
     await addToCloset({
       file,
       userId: currentUserId,
-      styles: name ? [name] : [],
+      styles: test.classification?.styles ?? [],
       colorGroupIds: colorGroups
         .filter(c => test.classification?.colorGroups.includes(c.name))
         .map(c => c.id),
@@ -183,8 +183,8 @@ export default function SmartBuyScreen() {
       const parts = [
         testName,
         testClassification?.category,
-        testClassification?.colorGroups[0],
-        testClassification?.styles[0],
+        ...(testClassification?.colorGroups ?? []),
+        ...(testClassification?.styles ?? []),
       ].filter(Boolean);
       const itemDescription = parts.length > 0 ? parts.join(', ') : undefined;
       const { url } = await fittingRoomApi.tryOnProduct(currentUserId, file, itemDescription);
