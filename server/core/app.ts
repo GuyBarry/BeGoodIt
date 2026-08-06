@@ -38,7 +38,7 @@ export const initApp = async (): Promise<Express> => {
 
   // In production, serve the built client static files
   if (serverConfig.env === 'production') {
-    app.use(express.static(path.resolve(__dirname, 'client')));
+    app.use(express.static(path.resolve(__dirname, '../client')));
   }
 
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -63,7 +63,7 @@ export const initApp = async (): Promise<Express> => {
   // In production, serve index.html for all unmatched routes (SPA navigation)
   if (serverConfig.env === 'production') {
     app.get(/(.*)/, (_req: Request, res: Response) => {
-      res.sendFile(path.resolve(__dirname, 'client', 'index.html'));
+      res.sendFile(path.resolve(__dirname, '../client', 'index.html'));
     });
   }
 
