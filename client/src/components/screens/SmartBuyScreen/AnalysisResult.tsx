@@ -2,7 +2,7 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
-import { Alert, Box, Button, CircularProgress, IconButton, LinearProgress, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, IconButton, LinearProgress, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { imagesApi } from '../../../api/api/images.api';
 import { GRADIENTS, PALETTE, SERIF_FONT } from '../../../styles/tokens';
@@ -29,7 +29,6 @@ export default function AnalysisResult({
   isAdding, addSuccess,
   onVirtualTryOn, onAddToCloset, onReset,
 }: Props) {
-  const [namingStep, setNamingStep] = useState(false);
   const [customName, setCustomName] = useState(testName);
 
   useEffect(() => { setCustomName(testName); }, [testName]);
@@ -252,39 +251,16 @@ export default function AnalysisResult({
                 >
                   Added to Your Closet!
                 </Button>
-              ) : namingStep ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  <TextField
-                    fullWidth autoFocus
-                    label="Name in your closet"
-                    value={customName}
-                    onChange={e => setCustomName(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && onAddToCloset(customName || testName)}
-                  />
-                  <Box sx={{ display: 'flex', gap: 1.5 }}>
-                    <Button variant="outlined" onClick={() => setNamingStep(false)} sx={{ flex: 1, borderRadius: 2, textTransform: 'none' }}>
-                      Back
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => onAddToCloset(customName || testName)}
-                      disabled={isAdding || !customName.trim()}
-                      startIcon={isAdding ? <CircularProgress size={18} sx={{ color: 'inherit' }} /> : <AddShoppingCartIcon />}
-                      sx={{ flex: 2, borderRadius: 2, textTransform: 'none', fontWeight: 600, background: GRADIENTS.primary }}
-                    >
-                      {isAdding ? 'Adding...' : 'Add to Closet'}
-                    </Button>
-                  </Box>
-                </Box>
               ) : (
                 <Button
                   variant="contained"
                   size="large"
-                  startIcon={<AddShoppingCartIcon />}
-                  onClick={() => setNamingStep(true)}
+                  startIcon={isAdding ? <CircularProgress size={18} sx={{ color: 'inherit' }} /> : <AddShoppingCartIcon />}
+                  onClick={() => onAddToCloset(customName || testName)}
+                  disabled={isAdding}
                   sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.5, background: GRADIENTS.primary }}
                 >
-                  + I Bought It — Add to Closet
+                  {isAdding ? 'Adding...' : '+ I Bought It — Add to Closet'}
                 </Button>
               )}
             </Box>
