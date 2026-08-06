@@ -13,9 +13,9 @@ export interface AnalysisResult {
 
 export interface ItemClassification {
   category: string;
-  colorGroup: string;
-  season: string;
-  style: string;
+  colorGroups: string[];
+  seasons: string[];
+  styles: string[];
 }
 
 export interface RecentTest {

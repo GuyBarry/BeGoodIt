@@ -19,9 +19,9 @@ export interface PaginatedClothingItems {
 
 export interface ClothingClassification {
   category: string;
-  colorGroup: string;
-  season: string;
-  style: string;
+  colorGroups: string[];
+  seasons: string[];
+  styles: string[];
 }
 
 export interface UploadClothingItemPayload {
