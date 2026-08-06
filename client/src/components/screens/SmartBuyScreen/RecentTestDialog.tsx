@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, Box, Typography, IconButton, LinearProgress, Button, CircularProgress, TextField } from '@mui/material';
+import { Dialog, DialogContent, Box, Typography, IconButton, LinearProgress, Button, CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
@@ -19,15 +19,13 @@ function formatDate(date: Date) {
 }
 
 export default function RecentTestDialog({ test, onClose, onAddToCloset }: Props) {
-  const [namingStep, setNamingStep] = useState(false);
-  const [customName, setCustomName] = useState(test.name);
   const [isAdding, setIsAdding] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
 
   const handleAdd = async () => {
     setIsAdding(true);
     try {
-      await onAddToCloset(test, customName || test.name);
+      await onAddToCloset(test, test.name);
       setAddSuccess(true);
     } finally {
       setIsAdding(false);
@@ -146,39 +144,16 @@ export default function RecentTestDialog({ test, onClose, onAddToCloset }: Props
           >
             Added to Your Closet!
           </Button>
-        ) : namingStep ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <TextField
-              fullWidth autoFocus
-              label="Name in your closet"
-              value={customName}
-              onChange={e => setCustomName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleAdd()}
-            />
-            <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <Button variant="outlined" onClick={() => setNamingStep(false)} sx={{ flex: 1, borderRadius: 2, textTransform: 'none' }}>
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleAdd}
-                disabled={isAdding || !customName.trim()}
-                startIcon={isAdding ? <CircularProgress size={18} sx={{ color: 'inherit' }} /> : <AddShoppingCartIcon />}
-                sx={{ flex: 2, borderRadius: 2, textTransform: 'none', fontWeight: 600, background: GRADIENTS.primary }}
-              >
-                {isAdding ? 'Adding...' : 'Add to Closet'}
-              </Button>
-            </Box>
-          </Box>
         ) : (
           <Button
             variant="contained"
             size="large"
-            startIcon={<AddShoppingCartIcon />}
-            onClick={() => setNamingStep(true)}
+            startIcon={isAdding ? <CircularProgress size={18} sx={{ color: 'inherit' }} /> : <AddShoppingCartIcon />}
+            onClick={handleAdd}
+            disabled={isAdding}
             sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.5, background: GRADIENTS.primary }}
           >
-            + I Bought It — Add to Closet
+            {isAdding ? 'Adding...' : '+ I Bought It — Add to Closet'}
           </Button>
         )}
       </DialogContent>
