@@ -8,9 +8,9 @@ export interface SmartBuyMatch {
 export interface SmartBuyAnalysisResponse {
   uploadedClassification: {
     category: string;
-    colorGroup: string;
-    season: string;
-    style: string;
+    colorGroups: string[];
+    seasons: string[];
+    styles: string[];
   };
   suggestedName: string;
   matches: SmartBuyMatch[];
@@ -26,7 +26,7 @@ export interface SmartBuyTestRecord {
   matchCount: number;
   outfitCount: number;
   matchedItems: SmartBuyMatch[];
-  classification: { category: string; colorGroup: string; season: string; style: string } | null;
+  classification: { category: string; colorGroups: string[]; seasons: string[]; styles: string[] } | null;
   testedAt: string;
 }
 
