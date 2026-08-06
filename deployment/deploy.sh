@@ -35,7 +35,7 @@ sshpass -p $password ssh $username@$host "mkdir -p $app_dir" \
   && echo "=== [6/8] Compiling server & pruning dev dependencies ==" \
   && sshpass -p $password ssh $username@$host "cd $app_dir/core && npm run build:prod" \
   \
-  && echo "=== [7/7] Running database migrations ==" \
+  && echo "=== [7/8] Running database migrations ==" \
   && sshpass -p $password ssh $username@$host "cd $app_dir/core && npm run migration:run:prod" \
   \
   && echo "=== [8/8] Starting server with PM2 ==" \
