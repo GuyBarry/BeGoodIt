@@ -1,6 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
-import { GRADIENTS, PRIMARY_ALPHA, SERIF_FONT } from '../../../styles/tokens';
+import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
+import PageTitle from '../../PageTitle';
 import type { Mode } from './types';
 
 interface Props {
@@ -27,9 +28,9 @@ export default function LoginHeader({ mode }: Props) {
         <CheckroomIcon sx={{ color: '#fff', fontSize: 30 }} />
       </Box>
 
-      <Typography variant="h4" sx={{ fontFamily: SERIF_FONT, fontWeight: 600, mb: 0.5 }}>
+      <PageTitle sx={{ mb: 0.5 }}>
         {mode === 'signin' ? 'Welcome back' : 'Create your account'}
-      </Typography>
+      </PageTitle>
       <Typography
         variant="body2"
         color="text.secondary"

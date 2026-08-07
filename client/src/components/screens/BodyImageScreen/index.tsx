@@ -12,6 +12,7 @@ import { GRADIENTS, PRIMARY_ALPHA, SERIF_FONT } from '../../../styles/tokens';
 import { useBodyImage, useUploadBodyImage } from '../../../api';
 import { imagesApi } from '../../../api/api/images.api';
 import { useCurrentUser } from '../../../auth/AuthContext';
+import PageHeader from '../../PageHeader';
 
 const TIPS = [
   { num: 1, text: 'Stand in front of a plain, light-coloured wall' },
@@ -41,28 +42,15 @@ export default function BodyImageScreen() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
 
-      {/* Header */}
-      <Box
-        component="header"
-        sx={{
-          position: 'sticky', top: 0, zIndex: 40,
-          bgcolor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid', borderColor: 'divider',
-          px: 4, py: 3,
-        }}
-      >
-        <Box sx={{ maxWidth: 900, mx: 'auto', display: 'flex', alignItems: 'center', gap: 2 }}>
+      <PageHeader
+        title="Virtual Try-On Model"
+        subtitle="Upload a full-body photo to power the Fitting Room"
+        left={
           <IconButton onClick={() => navigate('/profile')} size="small">
             <ArrowBackIcon />
           </IconButton>
-          <Box>
-            <Typography variant="h4">Virtual Try-On Model</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-              Upload a full-body photo to power the Fitting Room
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
+        }
+      />
 
       {/* Hidden file input */}
       <input

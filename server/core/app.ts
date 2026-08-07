@@ -24,6 +24,7 @@ import {
   userRouter,
 } from "./src/controllers";
 import { AppDataSource } from "./src/db/datasource";
+import { authMiddleware } from "./src/middlewares/auth.middleware";
 import { errorHandler } from "./src/middlewares/error.middleware";
 import { noRouteHandler } from "./src/middlewares/noRoute.middleware";
 
@@ -42,19 +43,25 @@ export const initApp = async (): Promise<Express> => {
   }
 
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+  // Public routes — no authentication required
   app.use("/auth", authRouter);
-  app.use("/body", bodyRouter);
-  app.use("/clothing-items", clothingItemRouter);
-  app.use("/images", imagesRouter);
   app.use("/color-groups", colorGroupRouter);
   app.use("/garment-categories", garmentCategoryRouter);
   app.use("/genders", genderRouter);
   app.use("/seasons", seasonRouter);
-  app.use("/users", userRouter);
-  app.use("/closet", closetRouter);
-  app.use("/fitting-room", fittingRoomRouter);
-  app.use("/smart-buy", smartBuyRouter);
-  app.use("/outfits", outfitRouter);
+  // Image blobs are referenced directly from <img src> tags (no Authorization
+  // header), so they stay public — same as static uploads in the reference app.
+  app.use("/images", imagesRouter);
+
+  // Protected routes — require a valid Bearer access token
+  app.use("/body", authMiddleware, bodyRouter);
+  app.use("/clothing-items", authMiddleware, clothingItemRouter);
+  app.use("/users", authMiddleware, userRouter);
+  app.use("/closet", authMiddleware, closetRouter);
+  app.use("/fitting-room", authMiddleware, fittingRoomRouter);
+  app.use("/smart-buy", authMiddleware, smartBuyRouter);
+  app.use("/outfits", authMiddleware, outfitRouter);
 
   app.get("/health", (_req: Request, res: Response) => {
     res.json({ message: "BeGoodIt API Is Up" });

@@ -26,6 +26,10 @@ export class User {
   @Column({ name: 'password_hash', type: 'text', nullable: true })
   passwordHash: string | null;
 
+  // Active refresh tokens issued to this user. Stored as JSON text.
+  @Column({ name: 'refresh_tokens', type: 'simple-json', nullable: true })
+  refreshTokens: string[] | null;
+
   @Column({ name: 'profile_picture_url', type: 'text', nullable: true })
   profilePictureUrl: string | null;
 

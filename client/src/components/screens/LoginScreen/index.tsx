@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Alert, Box, Divider, Paper, Typography } from '@mui/material';
 import { type CredentialResponse } from '@react-oauth/google';
 import { useMutation } from '@tanstack/react-query';
-import { authApi } from '../../../api/api/auth.api';
-import type { User } from '../../../entities';
+import { authApi, type AuthResponse } from '../../../api/api/auth.api';
 import { useAuth } from '../../../auth/AuthContext';
+import { setTokens } from '../../../auth/tokenStorage';
 import { PRIMARY_ALPHA } from '../../../styles/tokens';
 import type { Mode } from './types';
 import { extractErrorMessage } from './utils';
@@ -18,8 +18,9 @@ export default function LoginScreen() {
   const [mode, setMode] = useState<Mode>('signin');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSuccess = (user: User) => {
+  const handleSuccess = ({ user, token, refreshToken }: AuthResponse) => {
     setErrorMessage(null);
+    setTokens({ token, refreshToken });
     setUser(user);
   };
 

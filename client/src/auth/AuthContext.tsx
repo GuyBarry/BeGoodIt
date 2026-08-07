@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { googleLogout } from '@react-oauth/google';
 import type { User } from '../entities';
+import { clearTokens, SESSION_EXPIRED_EVENT } from './tokenStorage';
 
 const STORAGE_KEY = 'begoodit.auth.user';
 
@@ -26,6 +27,7 @@ const readStoredUser = (): User | null => {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUserState] = useState<User | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -51,7 +53,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setUserState(null);
     localStorage.removeItem(STORAGE_KEY);
+    clearTokens();
   }, []);
+
+  // When the session can't be refreshed anymore, tear it down completely and
+  // let the router send the user back to the login screen.
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      googleLogout();
+      logout();
+      queryClient.clear();
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+    return () =>
+      window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+  }, [logout, queryClient]);
 
   const value = useMemo<AuthContextValue>(
     () => ({ user, isInitialized, setUser, updateUser, logout }),

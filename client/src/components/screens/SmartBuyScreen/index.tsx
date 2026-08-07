@@ -1,10 +1,11 @@
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useAddClothingItem, useClothingItems, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
 import { fittingRoomApi } from '../../../api/api/fittingRoom.api';
 import { imagesApi } from '../../../api/api/images.api';
 import { smartBuyApi } from '../../../api/api/smartBuy.api';
 import { useCurrentUser } from '../../../auth/AuthContext';
+import PageHeader from '../../PageHeader';
 import AnalysisResult from './AnalysisResult';
 import RecentTestDialog from './RecentTestDialog';
 import RecentTests from './RecentTests';
@@ -216,23 +217,7 @@ export default function SmartBuyScreen() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Box
-        component="header"
-        sx={{
-          position: 'sticky', top: 0, zIndex: 40,
-          bgcolor: 'rgba(255,255,255,0.95)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid', borderColor: 'divider',
-          px: 4, py: 3,
-        }}
-      >
-        <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
-          <Typography variant="h4">Smart Buy</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-            Test before you invest
-          </Typography>
-        </Box>
-      </Box>
+      <PageHeader title="Smart Buy" subtitle="Test before you invest" />
 
       <Box component="main" sx={{ flex: 1, px: 4, py: 4 }}>
         <Box sx={{ maxWidth: 1280, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 5 }}>
