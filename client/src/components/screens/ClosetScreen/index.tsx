@@ -6,6 +6,7 @@ import ClosetHeader from './ClosetHeader';
 import ClothingGrid from './ClothingGrid';
 import OutfitsGrid from './OutfitsGrid';
 import OutfitDialog from './OutfitDialog';
+import EmptyClosetState from '../../EmptyClosetState';
 import { useCurrentUser } from '../../../auth/AuthContext';
 import { useClosetItems, useDeleteClothingItem, useDeleteOutfit, useGetOutfits } from '../../../api';
 import type { ClosetFilters } from '../../../api/api/closet.api';
@@ -64,6 +65,14 @@ export default function ClosetScreen() {
   }, [location.state]);
 
   const limit = gridSize === 'compact' ? 40 : 20;
+
+  const hasActiveFilters = Boolean(
+    debouncedSearch ||
+    selectedCategory !== 'All' ||
+    selectedColor    !== 'All' ||
+    selectedSeason   !== 'All' ||
+    selectedStyle    !== 'All',
+  );
 
   const filters: ClosetFilters = {
     ...(debouncedSearch            && { search:   debouncedSearch }),
@@ -130,6 +139,8 @@ export default function ClosetScreen() {
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
                 <CircularProgress />
               </Box>
+            ) : items.length === 0 && !hasActiveFilters ? (
+              <EmptyClosetState />
             ) : (
               <>
                 <ClothingGrid items={items} gridSize={gridSize} onDelete={deleteItem} />

@@ -8,6 +8,7 @@ import { PRIMARY_ALPHA } from '../../../styles/tokens';
 import ClosetItemGrid from './ClosetItemGrid';
 import FittingRoomHeader from './FittingRoomHeader';
 import GenerateButton from './GenerateButton';
+import EmptyClosetState from '../../EmptyClosetState';
 
 import GetInspiredPanel from './GetInspiredPanel';
 import PreviewArea from './PreviewArea';
@@ -180,61 +181,70 @@ export default function FittingRoomScreen() {
 
               {/* Closet tab */}
               {activeTab === 'closet' && (
-                <>
-                  <Box
-                    sx={{
-                      flex: 1,
-                      minHeight: 0,
-                      overflowY: 'auto',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 3,
-                      pr: 1,
-                      pb: 2,
-                    }}
-                  >
-                    <ClosetItemGrid
-                      clothingItems={clothingItems}
-                      selectedItems={selectedItems}
-                      suggestedItems={suggestedItems}
-                      activeCategory={activeCategory}
-                      onCategoryChange={setActiveCategory}
-                      onToggleItem={toggleItem}
+                clothingItems.length === 0 ? (
+                  <Box sx={{ flex: 1, overflowY: 'auto' }}>
+                    <EmptyClosetState
+                      title="Your fitting room is feeling a little too roomy"
+                      subtitle="You don't have any clothes to try on yet. Add some items to your closet and come back to play dress-up."
                     />
                   </Box>
-                  <Box
-                    sx={{
-                      flexShrink: 0,
-                      pt: 2,
-                      mt: 1,
-                      bgcolor: 'background.default',
-                      borderTop: '1px solid',
-                      borderColor: 'divider',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 1.5,
-                    }}
-                  >
-                    {selectedItems.length > 0 && (
-                      <Box sx={{ maxHeight: 110, overflowY: 'auto' }}>
-                        <SelectedSummary
-                          selectedItems={selectedItems}
-                          clothingItems={clothingItems}
-                        />
-                      </Box>
-                    )}
-                    <GenerateButton
-                      selectedItems={selectedItems}
-                      isGenerating={isGenerating}
-                      onGenerate={handleGenerate}
-                      hasGeneratedLook={!!generatedLookUrl}
-                      isSaving={isSaving}
-                      isSaved={isSaved}
-                      onSave={handleSave}
-                      onRecreate={handleRecreate}
-                    />
-                  </Box>
-                </>
+                ) : (
+                  <>
+                    <Box
+                      sx={{
+                        flex: 1,
+                        minHeight: 0,
+                        overflowY: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 3,
+                        pr: 1,
+                        pb: 2,
+                      }}
+                    >
+                      <ClosetItemGrid
+                        clothingItems={clothingItems}
+                        selectedItems={selectedItems}
+                        suggestedItems={suggestedItems}
+                        activeCategory={activeCategory}
+                        onCategoryChange={setActiveCategory}
+                        onToggleItem={toggleItem}
+                      />
+                    </Box>
+                    <Box
+                      sx={{
+                        flexShrink: 0,
+                        pt: 2,
+                        mt: 1,
+                        bgcolor: 'background.default',
+                        borderTop: '1px solid',
+                        borderColor: 'divider',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1.5,
+                      }}
+                    >
+                      {selectedItems.length > 0 && (
+                        <Box sx={{ maxHeight: 110, overflowY: 'auto' }}>
+                          <SelectedSummary
+                            selectedItems={selectedItems}
+                            clothingItems={clothingItems}
+                          />
+                        </Box>
+                      )}
+                      <GenerateButton
+                        selectedItems={selectedItems}
+                        isGenerating={isGenerating}
+                        onGenerate={handleGenerate}
+                        hasGeneratedLook={!!generatedLookUrl}
+                        isSaving={isSaving}
+                        isSaved={isSaved}
+                        onSave={handleSave}
+                        onRecreate={handleRecreate}
+                      />
+                    </Box>
+                  </>
+                )
               )}
 
               {/* Get Inspired tab */}
