@@ -1,9 +1,10 @@
-import {
-  rateLimit,
-  RateLimitRequestHandler,
-  Options as RateLimitOptions,
-} from "express-rate-limit";
 import { Request } from "express";
+import {
+  ipKeyGenerator,
+  rateLimit,
+  Options as RateLimitOptions,
+  RateLimitRequestHandler
+} from "express-rate-limit";
 
 export const ONE_SECOND_MS = 1_000;
 export const ONE_MINUTE_MS = ONE_SECOND_MS * 60;
@@ -18,7 +19,7 @@ export const setUpRateLimiter = (
       const userId: string =
         (req.params?.userId as string) ||
         (req.body?.userId as string) ||
-        req.ip || "unknown";
+        ipKeyGenerator(req.ip as string);
       return `${req.method}:${req.route?.path ?? req.path}:${userId}`;
     },
     standardHeaders: true,

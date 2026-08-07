@@ -142,3 +142,4 @@ vite.config.ts.timestamp-*
 /public/*
 
 serviceAccountKey.json
+certs/

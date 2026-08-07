@@ -38,17 +38,17 @@ const addToCloset = async (
   let categoryId     = tags.categoryId     ?? null;
   let colorGroupIds  = tags.colorGroupIds?.length ? tags.colorGroupIds : null;
   let seasonIds      = tags.seasonIds?.length     ? tags.seasonIds     : null;
-  const styles       = tags.styles?.length        ? tags.styles        : (classification?.style ? [classification.style] : []);
+  const styles       = tags.styles?.length        ? tags.styles        : (classification?.styles?.length ? [...classification.styles] : []);
 
   if (classification && !classification.noClothingDetected) {
-    const [category, colorGroup, season] = await Promise.all([
-      categoryId        == null ? garmentCategoryRepository.findOne({ where: { name: classification.category   } }) : null,
-      colorGroupIds == null ? colorGroupRepository.findOne({      where: { name: classification.colorGroup } }) : null,
-      seasonIds     == null ? seasonRepository.findOne({          where: { name: classification.season      } }) : null,
+    const [category, colorGroups, seasons] = await Promise.all([
+      categoryId    == null ? garmentCategoryRepository.findOne({ where: { name: classification.category } }) : null,
+      colorGroupIds == null ? colorGroupRepository.find({ where: classification.colorGroups.map(name => ({ name })) }) : null,
+      seasonIds     == null ? seasonRepository.find({     where: classification.seasons.map(name => ({ name })) })    : null,
     ]);
-    if (category)   categoryId    = category.id;
-    if (colorGroup) colorGroupIds = [colorGroup.id];
-    if (season)     seasonIds     = [season.id];
+    if (category)              categoryId    = category.id;
+    if (colorGroups?.length)   colorGroupIds = colorGroups.map(cg => cg.id);
+    if (seasons?.length)       seasonIds     = seasons.map(s => s.id);
   }
 
   // Image save and embedding generation can now proceed in parallel

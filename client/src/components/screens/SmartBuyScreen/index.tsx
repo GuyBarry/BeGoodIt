@@ -29,6 +29,7 @@ export default function SmartBuyScreen() {
   const [result, setResult] = useState<AnalysisResultType | null>(null);
   const [tryOnImage, setTryOnImage] = useState<string | null>(null);
   const [isTryingOn, setIsTryingOn] = useState(false);
+  const [tryOnError, setTryOnError] = useState<string | null>(null);
   const [recentTests, setRecentTests] = useState<RecentTest[]>([]);
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function SmartBuyScreen() {
     }).catch(() => {});
   }, [clothingItems]);
   const [selectedRecentTest, setSelectedRecentTest] = useState<RecentTest | null>(null);
-  const [testClassification, setTestClassification] = useState<{ category: string; colorGroup: string; season: string; style: string } | null>(null);
+  const [testClassification, setTestClassification] = useState<{ category: string; colorGroups: string[]; seasons: string[]; styles: string[] } | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
 
@@ -63,6 +64,7 @@ export default function SmartBuyScreen() {
     setResult(null);
     setTryOnImage(null);
     setIsTryingOn(false);
+    setTryOnError(null);
     setIsAdding(false);
     setAddSuccess(false);
     setIsAnalyzing(true);
@@ -138,14 +140,14 @@ export default function SmartBuyScreen() {
       await addToCloset({
         file,
         userId: currentUserId,
-        styles: name ? [name] : [],
-        colorGroupIds: colorGroups.find(c => c.name === testClassification?.colorGroup)?.id != null
-          ? [colorGroups.find(c => c.name === testClassification?.colorGroup)!.id]
-          : [],
+        styles: testClassification?.styles ?? [],
+        colorGroupIds: colorGroups
+          .filter(c => testClassification?.colorGroups.includes(c.name))
+          .map(c => c.id),
         categoryId: garmentCategories.find(c => c.name === testClassification?.category)?.id ?? null,
-        seasonIds: seasons.find(s => s.name === testClassification?.season)?.id != null
-          ? [seasons.find(s => s.name === testClassification?.season)!.id]
-          : [],
+        seasonIds: seasons
+          .filter(s => testClassification?.seasons.includes(s.name))
+          .map(s => s.id),
       });
       setAddSuccess(true);
     } finally {
@@ -160,14 +162,14 @@ export default function SmartBuyScreen() {
     await addToCloset({
       file,
       userId: currentUserId,
-      styles: name ? [name] : [],
-      colorGroupIds: colorGroups.find(c => c.name === test.classification?.colorGroup)?.id != null
-        ? [colorGroups.find(c => c.name === test.classification?.colorGroup)!.id]
-        : [],
+      styles: test.classification?.styles ?? [],
+      colorGroupIds: colorGroups
+        .filter(c => test.classification?.colorGroups.includes(c.name))
+        .map(c => c.id),
       categoryId: garmentCategories.find(c => c.name === test.classification?.category)?.id ?? null,
-      seasonIds: seasons.find(s => s.name === test.classification?.season)?.id != null
-        ? [seasons.find(s => s.name === test.classification?.season)!.id]
-        : [],
+      seasonIds: seasons
+        .filter(s => test.classification?.seasons.includes(s.name))
+        .map(s => s.id),
     });
   };
 
@@ -179,18 +181,20 @@ export default function SmartBuyScreen() {
     }
     if (!file) return;
     setIsTryingOn(true);
+    setTryOnError(null);
     try {
       const parts = [
         testName,
         testClassification?.category,
-        testClassification?.colorGroup,
-        testClassification?.style,
+        ...(testClassification?.colorGroups ?? []),
+        ...(testClassification?.styles ?? []),
       ].filter(Boolean);
       const itemDescription = parts.length > 0 ? parts.join(', ') : undefined;
       const { url } = await fittingRoomApi.tryOnProduct(currentUserId, file, itemDescription);
       setTryOnImage(url);
-    } catch {
-      // keep product image on failure
+    } catch (err) {
+      const message = err instanceof Error ? err.message : null;
+      setTryOnError(message ?? 'Virtual try-on failed. Please try again.');
     } finally {
       setIsTryingOn(false);
     }
@@ -204,6 +208,7 @@ export default function SmartBuyScreen() {
     setIsAnalyzing(false);
     setTryOnImage(null);
     setIsTryingOn(false);
+    setTryOnError(null);
     setIsAdding(false);
     setAddSuccess(false);
     setTestClassification(null);
@@ -239,6 +244,7 @@ export default function SmartBuyScreen() {
               result={result}
               tryOnImage={tryOnImage}
               isTryingOn={isTryingOn}
+              tryOnError={tryOnError}
               isAdding={isAdding}
               addSuccess={addSuccess}
               onVirtualTryOn={handleVirtualTryOn}

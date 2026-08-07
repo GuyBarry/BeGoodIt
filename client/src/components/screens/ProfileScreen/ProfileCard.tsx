@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import { GRADIENTS, SERIF_FONT } from '../../../styles/tokens';
+import { getInitials } from '../../../lib/initials';
 import type { User } from '../../../entities/user';
 
 interface Props {
@@ -36,8 +37,8 @@ export default function ProfileCard({ user }: Props) {
           mb: 2,
         }}
       >
-        <Typography sx={{ color: '#fff', fontSize: 32, fontFamily: SERIF_FONT, fontWeight: 600 }}>
-          {user.username.charAt(0)}
+        <Typography sx={{ color: '#fff', fontSize: 28, fontFamily: SERIF_FONT, fontWeight: 600 }}>
+          {getInitials(user.username)}
         </Typography>
       </Box>
       <Typography variant="h5">
