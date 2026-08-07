@@ -7,7 +7,7 @@ import { imagesApi } from '../../../api/api/images.api';
 interface Props {
   items: ClothingItem[];
   gridSize: 'normal' | 'compact';
-  onDelete: (id: ClothingItem['id']) => void;
+  onDelete: (item: ClothingItem) => void;
 }
 
 const gridCols = {
@@ -81,7 +81,7 @@ export default function ClothingGrid({ items, gridSize, onDelete }: Props) {
             <IconButton
               className="delete-btn"
               size="small"
-              onClick={() => onDelete(item.id)}
+              onClick={() => onDelete(item)}
               sx={{
                 position: 'absolute',
                 top: 8,

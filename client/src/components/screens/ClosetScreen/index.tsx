@@ -8,11 +8,18 @@ import ClothingGrid from './ClothingGrid';
 import OutfitsGrid from './OutfitsGrid';
 import OutfitDialog from './OutfitDialog';
 import EmptyClosetState from '../../EmptyClosetState';
+import DeleteConfirmDialog from '../../common/DeleteConfirmDialog';
 import { useCurrentUser } from '../../../auth/AuthContext';
 import { useClosetItems, useDeleteClothingItem, useDeleteOutfit, useGetOutfits } from '../../../api';
 import { useScrollShadow } from '../../../hooks/useScrollShadow';
+import { imagesApi } from '../../../api/api/images.api';
 import type { ClosetFilters } from '../../../api/api/closet.api';
+import type { ClothingItem } from '../../../entities/clothingItem';
 import type { Outfit } from '../../../entities/outfit';
+
+type PendingDelete =
+  | { type: 'item'; data: ClothingItem }
+  | { type: 'outfit'; data: Outfit };
 
 const bounce = keyframes`
   0%, 100% { transform: translateY(0); opacity: 0.35; }
@@ -53,6 +60,7 @@ export default function ClosetScreen() {
   const [selectedStyle,    setSelectedStyle]    = useState('All');
   const [gridSize,         setGridSize]         = useState<'normal' | 'compact'>('normal');
   const [selectedOutfit,   setSelectedOutfit]   = useState<Outfit | null>(null);
+  const [pendingDelete,    setPendingDelete]    = useState<PendingDelete | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
@@ -87,9 +95,18 @@ export default function ClosetScreen() {
 
   const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage, resetToFirstPage } =
     useClosetItems(currentUserId, filters);
-  const { mutate: deleteItem } = useDeleteClothingItem(currentUserId);
+  const { mutate: deleteItem, isPending: isDeletingItem } = useDeleteClothingItem(currentUserId);
   const { data: outfits = [], isLoading: outfitsLoading } = useGetOutfits(currentUserId);
-  const { mutate: deleteOutfit } = useDeleteOutfit(currentUserId);
+  const { mutate: deleteOutfit, isPending: isDeletingOutfit } = useDeleteOutfit(currentUserId);
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    if (pendingDelete.type === 'item') {
+      deleteItem(pendingDelete.data.id, { onSuccess: () => setPendingDelete(null) });
+    } else {
+      deleteOutfit(pendingDelete.data.id, { onSuccess: () => setPendingDelete(null) });
+    }
+  };
 
   const items = data?.pages.flatMap(p => p.items) ?? [];
   const total = data?.pages[0]?.total ?? 0;
@@ -160,7 +177,11 @@ export default function ClosetScreen() {
               <EmptyClosetState />
             ) : (
               <>
-                <ClothingGrid items={items} gridSize={gridSize} onDelete={deleteItem} />
+                <ClothingGrid
+                  items={items}
+                  gridSize={gridSize}
+                  onDelete={item => setPendingDelete({ type: 'item', data: item })}
+                />
 
                 {items.length > 0 && (
                   <Box sx={{ mt: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2.5 }}>
@@ -211,12 +232,36 @@ export default function ClosetScreen() {
               <CircularProgress />
             </Box>
           ) : (
-            <OutfitsGrid outfits={filteredOutfits} gridSize={gridSize} onSelect={setSelectedOutfit} onDelete={deleteOutfit} />
+            <OutfitsGrid
+              outfits={filteredOutfits}
+              gridSize={gridSize}
+              onSelect={setSelectedOutfit}
+              onDelete={outfit => setPendingDelete({ type: 'outfit', data: outfit })}
+            />
           )}
         </Box>
       </Box>
 
       <OutfitDialog outfit={selectedOutfit} onClose={() => setSelectedOutfit(null)} />
+
+      <DeleteConfirmDialog
+        open={!!pendingDelete}
+        itemName={
+          pendingDelete?.type === 'item'
+            ? pendingDelete.data.styles?.join(', ') || pendingDelete.data.category?.name || 'This item'
+            : pendingDelete?.data.name ?? 'This outfit'
+        }
+        imageUrl={
+          pendingDelete?.type === 'item'
+            ? imagesApi.getImageUrl(pendingDelete.data.imageId)
+            : pendingDelete?.data.imageId
+              ? imagesApi.getImageUrl(pendingDelete.data.imageId)
+              : null
+        }
+        isDeleting={pendingDelete?.type === 'item' ? isDeletingItem : isDeletingOutfit}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
+      />
     </Box>
   );
 }

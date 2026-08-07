@@ -9,7 +9,7 @@ interface Props {
   outfits: Outfit[];
   gridSize: 'normal' | 'compact';
   onSelect: (outfit: Outfit) => void;
-  onDelete: (id: Outfit['id']) => void;
+  onDelete: (outfit: Outfit) => void;
 }
 
 const gridCols = {
@@ -82,7 +82,7 @@ export default function OutfitsGrid({ outfits, gridSize, onSelect, onDelete }: P
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              onDelete(outfit.id);
+              onDelete(outfit);
             }}
             sx={{
               position: 'absolute',
