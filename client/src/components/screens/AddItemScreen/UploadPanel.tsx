@@ -14,7 +14,7 @@ interface Props {
 
 export default function UploadPanel({ imageUrl, isAnalyzing, analysisComplete, tags, onFileSelect, onClear }: Props) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, gap: 3 }}>
       <ImageUploadArea
         imageUrl={imageUrl}
         isProcessing={isAnalyzing}

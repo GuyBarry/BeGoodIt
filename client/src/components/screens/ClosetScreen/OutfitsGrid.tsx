@@ -46,13 +46,13 @@ export default function OutfitsGrid({ outfits, gridSize, onSelect, onDelete }: P
             },
           }}
         >
-          <Box sx={{ aspectRatio: '3/4', overflow: 'hidden' }}>
+          <Box sx={{ aspectRatio: '3/4', overflow: 'hidden', bgcolor: 'grey.100' }}>
             {outfit.imageId ? (
               <Box
                 component="img"
                 src={imagesApi.getImageUrl(outfit.imageId)}
                 alt={outfit.name ?? 'Outfit'}
-                sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
               />
             ) : (
               <Box sx={{ width: '100%', height: '100%', bgcolor: 'grey.100' }} />

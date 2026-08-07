@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Box, CircularProgress, Typography, Button } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { keyframes } from '@emotion/react';
 import ClosetHeader from './ClosetHeader';
 import ClothingGrid from './ClothingGrid';
@@ -9,6 +10,7 @@ import OutfitDialog from './OutfitDialog';
 import EmptyClosetState from '../../EmptyClosetState';
 import { useCurrentUser } from '../../../auth/AuthContext';
 import { useClosetItems, useDeleteClothingItem, useDeleteOutfit, useGetOutfits } from '../../../api';
+import { useScrollShadow } from '../../../hooks/useScrollShadow';
 import type { ClosetFilters } from '../../../api/api/closet.api';
 import type { Outfit } from '../../../entities/outfit';
 
@@ -116,8 +118,11 @@ export default function ClosetScreen() {
     return true;
   });
 
+  const { ref: mainRef, onScroll: onMainScroll, sx: scrollShadowSx } =
+    useScrollShadow([activeTab, items.length, filteredOutfits.length, isLoading, outfitsLoading]);
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       <ClosetHeader
         activeTab={activeTab}               onTabChange={setActiveTab}
         searchQuery={searchQuery}           onSearchChange={setSearchQuery}
@@ -132,7 +137,19 @@ export default function ClosetScreen() {
         username={currentUser.username}
       />
 
-      <Box component="main" sx={{ flex: 1, px: { xs: 2, sm: 4 }, py: 4 }}>
+      <Box
+        component="main"
+        ref={mainRef}
+        onScroll={onMainScroll}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          px: { xs: 2, sm: 4 },
+          py: 4,
+          ...scrollShadowSx,
+        }}
+      >
         <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
           {activeTab === 'clothes' ? (
             isLoading ? (
@@ -146,10 +163,18 @@ export default function ClosetScreen() {
                 <ClothingGrid items={items} gridSize={gridSize} onDelete={deleteItem} />
 
                 {items.length > 0 && (
-                  <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Showing {items.length} of {total} items
-                    </Typography>
+                  <Box sx={{ mt: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2.5 }}>
+                    <Box sx={{ width: '100%', maxWidth: 320, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ whiteSpace: 'nowrap', fontWeight: 500, letterSpacing: 0.3 }}
+                      >
+                        {items.length} of {total} items
+                      </Typography>
+                      <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
+                    </Box>
 
                     {isFetchingNextPage ? (
                       <LoadingDots />
@@ -169,7 +194,14 @@ export default function ClosetScreen() {
                       >
                         Load more
                       </Button>
-                    ) : null}
+                    ) : (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'success.main' }}>
+                        <CheckCircleIcon fontSize="small" />
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          You've seen your whole closet
+                        </Typography>
+                      </Box>
+                    )}
                   </Box>
                 )}
               </>

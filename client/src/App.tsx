@@ -46,10 +46,10 @@ export default function App() {
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', bgcolor: 'background.default' }}>
       {!isMobile && <Sidebar />}
 
-      <Box component="main" sx={{ flex: 1, overflow: 'auto', pb: isMobile ? 8 : 0 }}>
+      <Box component="main" sx={{ flex: 1, minHeight: 0, overflow: 'hidden', pb: isMobile ? 8 : 0 }}>
         <Routes>
           <Route index element={<Navigate to="/fitting" replace />} />
           <Route path="/login"    element={<Navigate to="/fitting" replace />} />

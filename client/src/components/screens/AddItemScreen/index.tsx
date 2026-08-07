@@ -4,6 +4,7 @@ import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import { useAddClothingItem, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
 import { clothingItemsApi } from '../../../api/api/closet.api';
 import { useCurrentUser } from '../../../auth/AuthContext';
+import { useScrollShadow } from '../../../hooks/useScrollShadow';
 import AddItemHeader from './AddItemHeader';
 import UploadPanel from './UploadPanel';
 import TipsCard from './TipsCard';
@@ -24,6 +25,8 @@ export default function AddItemScreen() {
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [tags, setTags] = useState<SelectedTags>(EMPTY_TAGS);
+  const { ref: mainRef, onScroll: onMainScroll, sx: scrollShadowSx } =
+    useScrollShadow([imageUrl, analysisComplete, saveSuccess]);
 
   const handleFileSelect = useCallback(async (selected: File) => {
     setFile(selected);
@@ -95,7 +98,12 @@ export default function AddItemScreen() {
       )}
       <AddItemHeader />
 
-      <Box component="main" sx={{ flex: 1, minHeight: 0, px: 4, py: 4, overflowY: 'auto' }}>
+      <Box
+        component="main"
+        ref={mainRef}
+        onScroll={onMainScroll}
+        sx={{ flex: 1, minHeight: 0, px: 4, py: 4, overflowY: 'auto', ...scrollShadowSx }}
+      >
         {saveSuccess ? (
           <Box
             sx={{

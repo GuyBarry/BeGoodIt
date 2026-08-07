@@ -63,8 +63,10 @@ export default function LoginScreen() {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        height: '100vh',
         width: '100%',
+        overflowY: 'auto',
+        overflowX: 'hidden',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

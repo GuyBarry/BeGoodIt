@@ -14,6 +14,7 @@ import GetInspiredPanel from './GetInspiredPanel';
 import PreviewArea from './PreviewArea';
 import SelectedSummary from './SelectedSummary';
 import { useCurrentUser } from '../../../auth/AuthContext';
+import { useScrollShadow } from '../../../hooks/useScrollShadow';
 
 export default function FittingRoomScreen() {
   const navigate = useNavigate();
@@ -48,6 +49,8 @@ export default function FittingRoomScreen() {
   }, [outfits, selectedItems]);
 
   const isSaved = isSavedByMutation || isAlreadySavedOutfit;
+  const { ref: closetListRef, onScroll: onClosetListScroll, sx: closetScrollShadowSx } =
+    useScrollShadow([clothingItems.length, activeCategory, activeTab]);
 
   const toggleItem = (id: string) => {
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -191,6 +194,8 @@ export default function FittingRoomScreen() {
                 ) : (
                   <>
                     <Box
+                      ref={closetListRef}
+                      onScroll={onClosetListScroll}
                       sx={{
                         flex: 1,
                         minHeight: 0,
@@ -200,6 +205,7 @@ export default function FittingRoomScreen() {
                         gap: 3,
                         pr: 1,
                         pb: 2,
+                        ...closetScrollShadowSx,
                       }}
                     >
                       <ClosetItemGrid
