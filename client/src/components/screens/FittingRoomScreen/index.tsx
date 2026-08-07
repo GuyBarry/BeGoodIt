@@ -1,13 +1,15 @@
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useClothingItems, useFindMatches, useGenerateLook, useGetOutfits, useSaveOutfit } from '../../../api';
+import { useBodyImage, useClothingItems, useFindMatches, useGenerateLook, useGetOutfits, useSaveOutfit } from '../../../api';
 import { PRIMARY_ALPHA } from '../../../styles/tokens';
 import ClosetItemGrid from './ClosetItemGrid';
 import FittingRoomHeader from './FittingRoomHeader';
 import GenerateButton from './GenerateButton';
+import GettingStartedChecklist from './GettingStartedChecklist';
 import EmptyClosetState from '../../EmptyClosetState';
 
 import GetInspiredPanel from './GetInspiredPanel';
@@ -21,6 +23,7 @@ export default function FittingRoomScreen() {
   const currentUserId = useCurrentUser().id;
   const { data: clothingItems = [] } = useClothingItems(currentUserId);
   const { data: outfits = [] }        = useGetOutfits(currentUserId);
+  const { data: bodyImage, isLoading: isBodyImageLoading } = useBodyImage(currentUserId);
   const { mutate: generateLook, isPending: isGenerating }             = useGenerateLook();
   const { mutate: saveOutfit,   isPending: isSaving, isSuccess: isSavedByMutation, reset: resetSaveOutfit } = useSaveOutfit();
   const { mutate: findMatches,  isPending: isAnalyzingInspiration }   = useFindMatches();
@@ -141,6 +144,12 @@ export default function FittingRoomScreen() {
       )}
       <FittingRoomHeader />
 
+      <GettingStartedChecklist
+        hasClothes={clothingItems.length > 0}
+        hasBodyImage={!!bodyImage}
+        hasOutfit={outfits.length > 0}
+      />
+
       <Box component="main" sx={{ flex: 1, minHeight: 0, px: 4, py: 3, overflow: 'hidden' }}>
         <Box sx={{ maxWidth: 1280, mx: 'auto', height: '100%' }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4, height: '100%' }}>
@@ -237,6 +246,24 @@ export default function FittingRoomScreen() {
                             clothingItems={clothingItems}
                           />
                         </Box>
+                      )}
+                      {!isBodyImageLoading && !bodyImage && (
+                        <Alert
+                          severity="info"
+                          variant="outlined"
+                          action={
+                            <Button
+                              size="small"
+                              startIcon={<PhotoCameraIcon fontSize="small" />}
+                              onClick={() => navigate('/body')}
+                              sx={{ textTransform: 'none', fontWeight: 600 }}
+                            >
+                              Add Photo
+                            </Button>
+                          }
+                        >
+                          Add a body photo to see yourself in this look.
+                        </Alert>
                       )}
                       <GenerateButton
                         selectedItems={selectedItems}

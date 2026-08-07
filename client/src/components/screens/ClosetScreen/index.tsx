@@ -8,9 +8,18 @@ import ClothingGrid from './ClothingGrid';
 import OutfitsGrid from './OutfitsGrid';
 import OutfitDialog from './OutfitDialog';
 import EmptyClosetState from '../../EmptyClosetState';
+import FilteredEmptyState from './FilteredEmptyState';
+import EmptyOutfitsState from './EmptyOutfitsState';
 import DeleteConfirmDialog from '../../common/DeleteConfirmDialog';
 import { useCurrentUser } from '../../../auth/AuthContext';
-import { useClosetItems, useDeleteClothingItem, useDeleteOutfit, useGetOutfits } from '../../../api';
+import {
+  useClosetItems,
+  useClothingItems,
+  useBodyImage,
+  useDeleteClothingItem,
+  useDeleteOutfit,
+  useGetOutfits,
+} from '../../../api';
 import { useScrollShadow } from '../../../hooks/useScrollShadow';
 import { imagesApi } from '../../../api/api/images.api';
 import type { ClosetFilters } from '../../../api/api/closet.api';
@@ -98,6 +107,17 @@ export default function ClosetScreen() {
   const { mutate: deleteItem, isPending: isDeletingItem } = useDeleteClothingItem(currentUserId);
   const { data: outfits = [], isLoading: outfitsLoading } = useGetOutfits(currentUserId);
   const { mutate: deleteOutfit, isPending: isDeletingOutfit } = useDeleteOutfit(currentUserId);
+  const { data: allClothingItems = [] } = useClothingItems(currentUserId);
+  const { data: bodyImage } = useBodyImage(currentUserId);
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setDebouncedSearch('');
+    setSelectedCategory('All');
+    setSelectedColor('All');
+    setSelectedSeason('All');
+    setSelectedStyle('All');
+  };
 
   const confirmDelete = () => {
     if (!pendingDelete) return;
@@ -175,6 +195,8 @@ export default function ClosetScreen() {
               </Box>
             ) : items.length === 0 && !hasActiveFilters ? (
               <EmptyClosetState />
+            ) : items.length === 0 && hasActiveFilters ? (
+              <FilteredEmptyState itemLabel="items" onClearFilters={clearFilters} />
             ) : (
               <>
                 <ClothingGrid
@@ -231,6 +253,10 @@ export default function ClosetScreen() {
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
               <CircularProgress />
             </Box>
+          ) : outfits.length === 0 && !hasActiveFilters ? (
+            <EmptyOutfitsState hasClothes={allClothingItems.length > 0} hasBodyImage={!!bodyImage} />
+          ) : filteredOutfits.length === 0 ? (
+            <FilteredEmptyState itemLabel="outfits" onClearFilters={clearFilters} />
           ) : (
             <OutfitsGrid
               outfits={filteredOutfits}
