@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material/styles';
+import { alpha, createTheme } from '@mui/material/styles';
 import { PALETTE, SERIF_FONT } from './styles/tokens';
 
 const theme = createTheme({
@@ -25,6 +25,30 @@ const theme = createTheme({
     borderRadius: 12,
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        '*': {
+          scrollbarWidth: 'thin',
+          scrollbarColor: `${alpha(PALETTE.primary, 0.25)} transparent`,
+        },
+        '*::-webkit-scrollbar': {
+          width: 8,
+          height: 8,
+        },
+        '*::-webkit-scrollbar-track': {
+          background: 'transparent',
+        },
+        '*::-webkit-scrollbar-thumb': {
+          backgroundColor: alpha(PALETTE.primary, 0.2),
+          borderRadius: 999,
+          backgroundClip: 'padding-box',
+          border: '2px solid transparent',
+        },
+        '*::-webkit-scrollbar-thumb:hover': {
+          backgroundColor: alpha(PALETTE.primary, 0.4),
+        },
+      },
+    },
     MuiDrawer: {
       styleOverrides: {
         paper: {

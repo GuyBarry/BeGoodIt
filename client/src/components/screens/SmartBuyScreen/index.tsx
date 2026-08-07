@@ -1,10 +1,12 @@
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useAddClothingItem, useClothingItems, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
 import { fittingRoomApi } from '../../../api/api/fittingRoom.api';
 import { imagesApi } from '../../../api/api/images.api';
 import { smartBuyApi } from '../../../api/api/smartBuy.api';
 import { useCurrentUser } from '../../../auth/AuthContext';
+import { useScrollShadow } from '../../../hooks/useScrollShadow';
+import PageHeader from '../../PageHeader';
 import AnalysisResult from './AnalysisResult';
 import RecentTestDialog from './RecentTestDialog';
 import RecentTests from './RecentTests';
@@ -56,6 +58,8 @@ export default function SmartBuyScreen() {
   const [testClassification, setTestClassification] = useState<{ category: string; colorGroups: string[]; seasons: string[]; styles: string[] } | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
+  const { ref: mainRef, onScroll: onMainScroll, sx: scrollShadowSx } =
+    useScrollShadow([testImage, isAnalyzing, result, recentTests.length]);
 
   const runAnalysis = async (imageUrl: string, name: string, file?: File) => {
     setTestImage(imageUrl);
@@ -215,26 +219,15 @@ export default function SmartBuyScreen() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Box
-        component="header"
-        sx={{
-          position: 'sticky', top: 0, zIndex: 40,
-          bgcolor: 'rgba(255,255,255,0.95)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid', borderColor: 'divider',
-          px: 4, py: 3,
-        }}
-      >
-        <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
-          <Typography variant="h4">Smart Buy</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-            Test before you invest
-          </Typography>
-        </Box>
-      </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      <PageHeader title="Smart Buy" subtitle="Test before you invest" />
 
-      <Box component="main" sx={{ flex: 1, px: 4, py: 4 }}>
+      <Box
+        component="main"
+        ref={mainRef}
+        onScroll={onMainScroll}
+        sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 4, py: 4, ...scrollShadowSx }}
+      >
         <Box sx={{ maxWidth: 1280, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 5 }}>
           {testImage || isAnalyzing ? (
             <AnalysisResult

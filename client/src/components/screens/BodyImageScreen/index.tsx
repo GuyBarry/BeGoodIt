@@ -12,6 +12,8 @@ import { GRADIENTS, PRIMARY_ALPHA, SERIF_FONT } from '../../../styles/tokens';
 import { useBodyImage, useUploadBodyImage } from '../../../api';
 import { imagesApi } from '../../../api/api/images.api';
 import { useCurrentUser } from '../../../auth/AuthContext';
+import { useScrollShadow } from '../../../hooks/useScrollShadow';
+import PageHeader from '../../PageHeader';
 
 const TIPS = [
   { num: 1, text: 'Stand in front of a plain, light-coloured wall' },
@@ -28,6 +30,7 @@ export default function BodyImageScreen() {
   const { mutate: upload, isPending, error, reset } = useUploadBodyImage();
 
   const bodyImageId = bodyMapping?.imageId ?? null;
+  const { ref: mainRef, onScroll: onMainScroll, sx: scrollShadowSx } = useScrollShadow([bodyImageId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -39,30 +42,17 @@ export default function BodyImageScreen() {
   const triggerUpload = () => { reset(); fileInputRef.current?.click(); };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
-      {/* Header */}
-      <Box
-        component="header"
-        sx={{
-          position: 'sticky', top: 0, zIndex: 40,
-          bgcolor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid', borderColor: 'divider',
-          px: 4, py: 3,
-        }}
-      >
-        <Box sx={{ maxWidth: 900, mx: 'auto', display: 'flex', alignItems: 'center', gap: 2 }}>
+      <PageHeader
+        title="Virtual Try-On Model"
+        subtitle="Upload a full-body photo to power the Fitting Room"
+        left={
           <IconButton onClick={() => navigate('/profile')} size="small">
             <ArrowBackIcon />
           </IconButton>
-          <Box>
-            <Typography variant="h4">Virtual Try-On Model</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-              Upload a full-body photo to power the Fitting Room
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
+        }
+      />
 
       {/* Hidden file input */}
       <input
@@ -74,7 +64,12 @@ export default function BodyImageScreen() {
       />
 
       {/* Main content */}
-      <Box component="main" sx={{ flex: 1, px: 4, py: 3 }}>
+      <Box
+        component="main"
+        ref={mainRef}
+        onScroll={onMainScroll}
+        sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 4, py: 3, ...scrollShadowSx }}
+      >
         <Box
           sx={{
             maxWidth: 900, mx: 'auto',

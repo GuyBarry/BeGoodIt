@@ -1,6 +1,6 @@
-import { Box, Typography, Dialog, DialogContent, DialogTitle, Button } from '@mui/material';
+import { Box, Typography, Dialog, DialogContent, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { SERIF_FONT } from '../../../styles/tokens';
+import { GRADIENTS, SERIF_FONT } from '../../../styles/tokens';
 import type { Outfit } from '../../../entities/outfit';
 import { imagesApi } from '../../../api/api/images.api';
 
@@ -10,77 +10,138 @@ interface Props {
 }
 
 export default function OutfitDialog({ outfit, onClose }: Props) {
+  const items = outfit?.items ?? [];
+
   return (
     <Dialog
       open={!!outfit}
       onClose={onClose}
-      maxWidth="sm"
+      maxWidth="md"
       fullWidth
-      slotProps={{ paper: { sx: { borderRadius: 3 } } }}
+      slotProps={{ paper: { sx: { borderRadius: 4 } } }}
     >
-      <DialogTitle sx={{ fontFamily: SERIF_FONT, fontSize: 22, fontWeight: 600, pb: 1 }}>
-        {outfit?.name ?? 'Outfit'}
-      </DialogTitle>
-      <DialogContent>
-        {outfit && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Box sx={{ aspectRatio: '4/3', borderRadius: 3, overflow: 'hidden', bgcolor: 'grey.100' }}>
-              {outfit.imageId && (
-                <Box
-                  component="img"
-                  src={imagesApi.getImageUrl(outfit.imageId)}
-                  alt={outfit.name ?? 'Outfit'}
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
+      {outfit && (
+        <>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 3, pt: 3, pb: 1 }}>
+            <Typography
+              sx={{ flex: 1, fontFamily: SERIF_FONT, fontSize: 22, fontWeight: 600 }}
+              noWrap
+            >
+              {outfit.name ?? 'Outfit'}
+            </Typography>
+            <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary' }}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+
+          <DialogContent sx={{ px: 3, pt: 1, pb: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3 }}>
+              <Box
+                sx={{
+                  flexShrink: 0,
+                  width: { xs: '100%', sm: 260 },
+                  aspectRatio: '3/4',
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                  background: GRADIENTS.primarySubtle,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
+                {outfit.imageId && (
+                  <Box
+                    component="img"
+                    src={imagesApi.getImageUrl(outfit.imageId)}
+                    alt={outfit.name ?? 'Outfit'}
+                    sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                  />
+                )}
+              </Box>
+
+              <Box
+                sx={{
+                  display: { xs: 'none', sm: 'block' },
+                  width: '1px',
+                  bgcolor: 'divider',
+                  alignSelf: 'stretch',
+                }}
+              />
+
+              {items.length > 0 && (
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={{ fontWeight: 600, mb: 0.25 }}>
+                    Clothing Items in This Outfit
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                    {items.length} {items.length === 1 ? 'item' : 'items'}
+                  </Typography>
+
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 1.5,
+                      maxHeight: { xs: 300, sm: 340 },
+                      overflowY: 'auto',
+                      pr: 1,
+                    }}
+                  >
+                    {items.map(item => {
+                      const label = item.styles?.join(', ') || item.category?.name || 'Item';
+                      const categoryName = item.category?.name;
+                      return (
+                        <Box
+                          key={item.id}
+                          sx={{
+                            width: 118,
+                            borderRadius: 2.5,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            bgcolor: 'background.paper',
+                            overflow: 'hidden',
+                            transition: 'box-shadow 0.2s, transform 0.2s',
+                            '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.08)', transform: 'translateY(-2px)' },
+                          }}
+                        >
+                          <Box sx={{ aspectRatio: '3/4', bgcolor: 'grey.50' }}>
+                            {item.imageId && (
+                              <Box
+                                component="img"
+                                src={imagesApi.getImageUrl(item.imageId)}
+                                alt={label}
+                                sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                              />
+                            )}
+                          </Box>
+                          <Box sx={{ px: 1, py: 0.75 }}>
+                            <Typography
+                              sx={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                            >
+                              {label}
+                            </Typography>
+                            {categoryName && (
+                              <Box
+                                sx={{
+                                  display: 'inline-block', mt: 0.5, px: 0.75, py: 0.25,
+                                  borderRadius: 1.5, bgcolor: 'action.hover',
+                                }}
+                              >
+                                <Typography sx={{ fontSize: 10, fontWeight: 500, color: 'text.secondary' }}>
+                                  {categoryName}
+                                </Typography>
+                              </Box>
+                            )}
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                </Box>
               )}
             </Box>
-
-            {(outfit.items ?? []).length > 0 && (
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                  Clothing Items in This Outfit
-                </Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
-                  {(outfit.items ?? []).map(item => {
-                    const label = item.styles?.join(', ') || item.category?.name || 'Item';
-                    return (
-                      <Box key={item.id}>
-                        <Box sx={{ aspectRatio: '3/4', borderRadius: 2, overflow: 'hidden', bgcolor: '#fff', mb: 1 }}>
-                          {item.imageId && (
-                            <Box
-                              component="img"
-                              src={imagesApi.getImageUrl(item.imageId)}
-                              alt={label}
-                              sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                            />
-                          )}
-                        </Box>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                        >
-                          {label}
-                        </Typography>
-                      </Box>
-                    );
-                  })}
-                </Box>
-              </Box>
-            )}
-
-            <Button
-              variant="outlined"
-              fullWidth
-              startIcon={<CloseIcon />}
-              onClick={onClose}
-              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 500 }}
-            >
-              Close
-            </Button>
-          </Box>
-        )}
-      </DialogContent>
+          </DialogContent>
+        </>
+      )}
     </Dialog>
   );
 }

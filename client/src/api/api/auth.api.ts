@@ -12,19 +12,25 @@ export type LoginPayload = {
   password: string;
 };
 
+export type AuthResponse = {
+  user: User;
+  token: string;
+  refreshToken: string;
+};
+
 export const authApi = {
-  loginWithGoogle: async (credential: string): Promise<User> => {
-    const { data } = await apiClient.post<User>('/auth/google', { credential });
+  loginWithGoogle: async (credential: string): Promise<AuthResponse> => {
+    const { data } = await apiClient.post<AuthResponse>('/auth/google', { credential });
     return data;
   },
 
-  register: async (payload: RegisterPayload): Promise<User> => {
-    const { data } = await apiClient.post<User>('/auth/register', payload);
+  register: async (payload: RegisterPayload): Promise<AuthResponse> => {
+    const { data } = await apiClient.post<AuthResponse>('/auth/register', payload);
     return data;
   },
 
-  login: async (payload: LoginPayload): Promise<User> => {
-    const { data } = await apiClient.post<User>('/auth/login', payload);
+  login: async (payload: LoginPayload): Promise<AuthResponse> => {
+    const { data } = await apiClient.post<AuthResponse>('/auth/login', payload);
     return data;
   },
 };

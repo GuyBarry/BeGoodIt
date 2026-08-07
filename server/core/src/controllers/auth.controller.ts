@@ -6,6 +6,7 @@ import { authService } from '../services/auth.service';
 type GoogleLoginBody = { credential?: string };
 type RegisterBody = { username?: string; email?: string; password?: string };
 type LoginBody = { identifier?: string; password?: string };
+type RefreshBody = { refreshToken?: string };
 
 export const authRouter = Router();
 
@@ -16,8 +17,8 @@ authRouter.post(
     if (!credential || typeof credential !== 'string') {
       throw new BadRequestException('Missing Google credential');
     }
-    const user = await authService.loginWithGoogle(credential);
-    res.status(StatusCodes.OK).json(user);
+    const result = await authService.loginWithGoogle(credential);
+    res.status(StatusCodes.OK).json(result);
   },
 );
 
@@ -32,8 +33,8 @@ authRouter.post(
     ) {
       throw new BadRequestException('username, email and password are required');
     }
-    const user = await authService.register({ username, email, password });
-    res.status(StatusCodes.CREATED).json(user);
+    const result = await authService.register({ username, email, password });
+    res.status(StatusCodes.CREATED).json(result);
   },
 );
 
@@ -44,7 +45,19 @@ authRouter.post(
     if (typeof identifier !== 'string' || typeof password !== 'string') {
       throw new BadRequestException('identifier and password are required');
     }
-    const user = await authService.login({ identifier, password });
-    res.status(StatusCodes.OK).json(user);
+    const result = await authService.login({ identifier, password });
+    res.status(StatusCodes.OK).json(result);
+  },
+);
+
+authRouter.post(
+  '/refresh',
+  async (req: Request<{}, {}, RefreshBody>, res: Response) => {
+    const refreshToken = req.body?.refreshToken;
+    if (!refreshToken || typeof refreshToken !== 'string') {
+      throw new BadRequestException('Refresh token is required');
+    }
+    const tokens = await authService.refresh(refreshToken);
+    res.status(StatusCodes.OK).json(tokens);
   },
 );

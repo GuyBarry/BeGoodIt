@@ -19,7 +19,7 @@ import { getInitials } from '../../../lib/initials';
 import type { User } from '../../../entities/user';
 import { useGenders } from '../../../api';
 
-const BODY_TYPES = ['Ectomorph', 'Mesomorph', 'Endomorph', 'Athletic', 'Average'];
+const BODY_TYPES = ['Slim', 'Athletic', 'Curvy', 'Average', 'Plus Size'];
 
 interface Props {
   open: boolean;
