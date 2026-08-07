@@ -18,8 +18,7 @@ export const setUpRateLimiter = (
       const userId: string =
         (req.params?.userId as string) ||
         (req.body?.userId as string) ||
-        req.ip ||
-        "unknown";
+        req.ip || "unknown";
       return `${req.method}:${req.route?.path ?? req.path}:${userId}`;
     },
     standardHeaders: true,
