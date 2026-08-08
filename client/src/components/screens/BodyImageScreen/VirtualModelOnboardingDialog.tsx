@@ -21,6 +21,10 @@ const TIPS = [
 // own UI (the dedicated upload screen, and the pre-auth login screen).
 const SKIP_ROUTES = ['/login', '/body'];
 
+// Persisted per-user so dismissing the first-run tutorial sticks across
+// refreshes instead of re-popping every reload.
+const dismissedKey = (userId: string) => `bgi:vm-onboarding-dismissed:${userId}`;
+
 export default function VirtualModelOnboardingDialog() {
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,9 +32,11 @@ export default function VirtualModelOnboardingDialog() {
   const { data: bodyMapping, isLoading } = useBodyImage(currentUserId);
   const { mutate: upload, isPending, error, reset } = useUploadBodyImage();
 
-  // Dismissing only hides it for the rest of this session — it's a nudge,
-  // not a nag, but it should keep offering until a model actually exists.
-  const [dismissed, setDismissed] = useState(false);
+  // Once dismissed, stay dismissed for this user — it's a first-run tutorial,
+  // not something to re-show on every reload.
+  const [dismissed, setDismissed] = useState(
+    () => localStorage.getItem(dismissedKey(currentUserId)) === 'true',
+  );
   const [justUploaded, setJustUploaded] = useState(false);
 
   const hasBodyImage = !!bodyMapping?.imageId;
@@ -63,7 +69,10 @@ export default function VirtualModelOnboardingDialog() {
   };
 
   const triggerUpload = () => { reset(); fileInputRef.current?.click(); };
-  const close = () => setDismissed(true);
+  const close = () => {
+    localStorage.setItem(dismissedKey(currentUserId), 'true');
+    setDismissed(true);
+  };
 
   return (
     <Dialog
