@@ -99,7 +99,7 @@ export default function RecentTestDialog({ test, onClose, onAddToCloset }: Props
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateColumns: `repeat(${Math.min(test.matchedItems.length, 3)}, minmax(0, 1fr))`,
+                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
                 gap: 1.5,
               }}
             >

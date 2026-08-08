@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useAddClothingItem, useClothingItems, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
+import { useAddClothingItem, useBodyImage, useClothingItems, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
 import { fittingRoomApi } from '../../../api/api/fittingRoom.api';
 import { imagesApi } from '../../../api/api/images.api';
 import { smartBuyApi } from '../../../api/api/smartBuy.api';
@@ -19,6 +19,7 @@ const MAX_RECENT = 6;
 export default function SmartBuyScreen() {
   const currentUserId = useCurrentUser().id;
   const { data: clothingItems = [] } = useClothingItems(currentUserId);
+  const { data: bodyImage, isLoading: isBodyImageLoading } = useBodyImage(currentUserId);
   const { mutateAsync: addToCloset } = useAddClothingItem(currentUserId);
   const { data: colorGroups = [] } = useColorGroups();
   const { data: garmentCategories = [] } = useGarmentCategories();
@@ -235,6 +236,8 @@ export default function SmartBuyScreen() {
               tryOnError={tryOnError}
               isAdding={isAdding}
               addSuccess={addSuccess}
+              hasBodyImage={!!bodyImage}
+              isBodyImageLoading={isBodyImageLoading}
               onVirtualTryOn={handleVirtualTryOn}
               onAddToCloset={handleAddToCloset}
               onReset={handleReset}

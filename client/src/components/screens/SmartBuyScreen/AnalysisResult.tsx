@@ -2,7 +2,9 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { Alert, Box, Button, CircularProgress, IconButton, LinearProgress, Skeleton, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { imagesApi } from '../../../api/api/images.api';
 import { useScrollShadow } from '../../../hooks/useScrollShadow';
 import { GRADIENTS, PALETTE, SERIF_FONT } from '../../../styles/tokens';
@@ -20,6 +22,8 @@ interface Props {
   tryOnError: string | null;
   isAdding: boolean;
   addSuccess: boolean;
+  hasBodyImage: boolean;
+  isBodyImageLoading: boolean;
   onVirtualTryOn: () => void;
   onAddToCloset: (name: string) => void;
   onReset: () => void;
@@ -28,9 +32,10 @@ interface Props {
 export default function AnalysisResult({
   testImage, testName, isAnalyzing, result,
   tryOnImage, isTryingOn, tryOnError,
-  isAdding, addSuccess,
+  isAdding, addSuccess, hasBodyImage, isBodyImageLoading,
   onVirtualTryOn, onAddToCloset, onReset,
 }: Props) {
+  const navigate = useNavigate();
   const { ref: rightPanelRef, onScroll: onRightPanelScroll, sx: rightPanelScrollShadowSx } =
     useScrollShadow([result]);
 
@@ -42,6 +47,9 @@ export default function AnalysisResult({
         alignItems: 'stretch',
         gap: 3,
         height: '100%',
+        // Below lg the two columns stack; let the whole thing scroll instead of
+        // clipping, since the parent <main> is overflow:hidden.
+        overflowY: { xs: 'auto', lg: 'visible' },
       }}
     >
       {/* ── Left: product image + compatibility card ── */}
@@ -52,14 +60,18 @@ export default function AnalysisResult({
           boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
           display: 'flex',
           flexDirection: 'column',
-          height: '100%',
+          height: { xs: 'auto', lg: '100%' },
         }}
       >
         <Box
           sx={{
             position: 'relative',
-            flex: 1,
+            // On lg the column fills the viewport height, so the image area grows
+            // to fill it. When stacked (< lg) there's no fixed height to fill, so
+            // an aspect ratio gives the image a real height instead of collapsing.
+            flex: { lg: 1 },
             minHeight: 0,
+            aspectRatio: { xs: '3 / 4', lg: 'auto' },
             background: '#f0ede8',
           }}
         >
@@ -164,7 +176,7 @@ export default function AnalysisResult({
       </Box>
 
       {/* ── Right: analysis content ── */}
-      <Box sx={{ p: '8px', display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, gap: 1.5 }}>
+      <Box sx={{ p: '8px', display: 'flex', flexDirection: 'column', height: { xs: 'auto', lg: '100%' }, minHeight: 0, gap: 1.5 }}>
         {isAnalyzing && !result && (
           <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2.5, pr: 0.5 }}>
             {/* Best Matches skeleton */}
@@ -211,7 +223,7 @@ export default function AnalysisResult({
                   }}
                 >
                   <Typography sx={{ fontWeight: 700, fontSize: 18, mb: 2 }}>Best Matches in Your Closet</Typography>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(result.matchedItems.length, 4)}, minmax(0, 1fr))`, gap: 1.5 }}>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 1.5 }}>
                     {result.matchedItems.slice(0, 4).map(({ item, matchPct }) => (
                       <Box key={item.id} sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                         <Box sx={{ position: 'relative', height: 120, borderRadius: 2, overflow: 'hidden', bgcolor: 'action.hover' }}>
@@ -261,12 +273,30 @@ export default function AnalysisResult({
             <Box sx={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1 }}>
               {!tryOnImage && (
                 <>
+                  {!isBodyImageLoading && !hasBodyImage && (
+                    <Alert
+                      severity="info"
+                      variant="outlined"
+                      action={
+                        <Button
+                          size="small"
+                          startIcon={<PhotoCameraIcon fontSize="small" />}
+                          onClick={() => navigate('/body')}
+                          sx={{ textTransform: 'none', fontWeight: 600 }}
+                        >
+                          Add Photo
+                        </Button>
+                      }
+                    >
+                      Add a body photo to see yourself in this look.
+                    </Alert>
+                  )}
                   <Button
                     variant="outlined"
                     size="large"
                     startIcon={isTryingOn ? <CircularProgress size={18} sx={{ color: PALETTE.primary }} /> : <AutoAwesomeIcon />}
                     onClick={onVirtualTryOn}
-                    disabled={isTryingOn}
+                    disabled={isTryingOn || !hasBodyImage}
                     sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.5 }}
                   >
                     {isTryingOn ? 'Generating...' : 'Virtual Try-On'}
