@@ -7,6 +7,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
 import { GRADIENTS, PRIMARY_ALPHA, SERIF_FONT } from '../../../styles/tokens';
 import apiClient from '../../../api/client';
+import { emitImageTooLarge, isImageTooLarge } from '../../../lib/imageUpload';
 
 interface Props {
   onAnalyze: (imageUrl: string, name: string, file?: File) => void;
@@ -22,8 +23,12 @@ export default function UploadPanel({ onAnalyze }: Props) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    onAnalyze(URL.createObjectURL(file), file.name.replace(/\.[^/.]+$/, ''), file);
     e.target.value = '';
+    if (isImageTooLarge(file)) {
+      emitImageTooLarge();
+      return;
+    }
+    onAnalyze(URL.createObjectURL(file), file.name.replace(/\.[^/.]+$/, ''), file);
   };
 
   const handleUrlSubmit = async () => {

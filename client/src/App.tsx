@@ -9,6 +9,7 @@ import SmartBuyScreen from './components/screens/SmartBuyScreen';
 import ProfileScreen from './components/screens/ProfileScreen/index';
 import BodyImageScreen from './components/screens/BodyImageScreen/index';
 import LoginScreen from './components/screens/LoginScreen/index';
+import UploadErrorBanner from './components/UploadErrorBanner';
 import { useAuth } from './auth/AuthContext';
 
 export default function App() {
@@ -47,6 +48,7 @@ export default function App() {
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', bgcolor: 'background.default' }}>
+      <UploadErrorBanner />
       {!isMobile && <Sidebar />}
 
       <Box component="main" sx={{ flex: 1, minHeight: 0, overflow: 'hidden', pb: isMobile ? 8 : 0 }}>

@@ -5,6 +5,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutlineOutlin
 import { GRADIENTS } from '../../../styles/tokens';
 import { useUploadBodyImage } from '../../../api';
 import { imagesApi } from '../../../api/api/images.api';
+import { emitImageTooLarge, isImageTooLarge } from '../../../lib/imageUpload';
 import type { User } from '../../../entities/user';
 
 interface Props {
@@ -20,6 +21,10 @@ export default function AvatarCard({ userId }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = '';
+    if (isImageTooLarge(file)) {
+      emitImageTooLarge();
+      return;
+    }
     uploadBodyImage(
       { file, userId },
       { onSuccess: (result) => setBodyImageId(result.imageId) },
