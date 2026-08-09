@@ -55,36 +55,15 @@ const BASE_PROMPT = `Analyze this image and return the following fields.
 - styles: pick at least one (can be multiple) from: Casual, Formal, Smart Casual, Sporty, Bohemian
 - description: write 1-3 sentences describing the item in detail — cover the exact color/shade, fabric texture and weight, fit and silhouette, any visible pattern or print, notable design details (buttons, pockets, collar type, hem, etc.), and what occasions or outfits it suits. Be specific enough that someone could match it against items in a photo.`;
 
-// Keywords are matched as substrings against the (lowercased) product title, so
-// Hebrew entries use word *stems* (dropping the final letter that changes with
-// plural/construct forms, e.g. חולצה/חולצת/חולצות) to catch grammatical
-// variants without listing every inflection. Hebrew has no letter casing, so
-// `.toLowerCase()` is a no-op on it and doesn't need special handling.
-const CATEGORY_KEYWORDS: { category: ClothingClassification['category']; keywords: string[] }[] = [
-  { category: 'Bottom',      keywords: ['short', 'pant', 'jean', 'trouser', 'chino', 'skirt', 'legging', 'jogger', 'bermuda', 'cargo', 'denim', 'ג\'ינס', 'מכנס', 'שורט', 'חצאי', 'טייטס'] },
-  { category: 'Top',         keywords: ['shirt', ' tee', 't-shirt', 'blouse', 'top', 'sweater', 'hoodie', 'sweatshirt', 'tank', 'polo', 'turtleneck', 'pullover', 'knitwear', 'חולצ', 'טישרט', 'סוודר', 'קפוצ\'ון', 'גופי'] },
-  { category: 'Outerwear',   keywords: ['jacket', 'coat', 'blazer', 'parka', 'windbreaker', 'anorak', 'trench', 'puffer', 'vest', 'מעיל', 'ז\'קט', 'קרדיגן', 'וסט'] },
-  { category: 'Dress',       keywords: ['dress', 'gown', 'jumpsuit', 'romper', 'overall', 'שמל', 'סרפן'] },
-  { category: 'Shoes',       keywords: ['shoe', 'sneaker', 'boot', 'sandal', 'heel', 'loafer', 'slipper', 'mule', 'trainer', 'runner', 'נעל', 'סניקרס', 'מגפ', 'סנדל'] },
-  { category: 'Accessories', keywords: ['sunglass', 'glasses', 'watch', 'belt', 'bag', 'hat', 'cap', 'scarf', 'glove', 'wallet', 'jewel', 'necklace', 'bracelet', 'ring', 'earring', 'beanie', 'backpack', 'משקפ', 'שעון', 'חגור', 'תיק', 'כובע', 'צעיף', 'כפפ', 'תכשיט', 'שרשרת', 'צמיד', 'טבעת', 'עגיל'] },
-  { category: 'Activewear',  keywords: ['sport', 'athletic', 'gym', 'workout', 'running', 'cycling', 'yoga', 'compression', 'ספורט', 'אימון'] },
-];
-
-const deriveCategory = (title: string): ClothingClassification['category'] | null => {
-  const lower = title.toLowerCase();
-  for (const { category, keywords } of CATEGORY_KEYWORDS) {
-    if (keywords.some(kw => lower.includes(kw))) return category;
-  }
-  return null;
-};
-
 export async function classifyClothingItem(image: AIImageInput, productTitle?: string): Promise<ClothingClassification> {
-  const derivedCategory = productTitle ? deriveCategory(productTitle) : null;
-
+  // The product title is the single most reliable category signal (retailers
+  // name the garment explicitly), so we hand it to the model as strong context
+  // and let it reconcile the words with the image itself — rather than deriving
+  // the category from brittle keyword matching. Substring matching used to
+  // misfire on things like "short sleeve t-shirt", where "short" looked like a
+  // Bottom and hard-overrode the correct image-based classification.
   const hint = productTitle
-    ? derivedCategory
-      ? `\n\nIMPORTANT: the product is called "${productTitle}". The category MUST be "${derivedCategory}" — do not change it based on the image.`
-      : `\n\nHint: the product is called "${productTitle}" — use this to help determine the correct category.`
+    ? `\n\nThe product is named "${productTitle}". Treat this title as the primary signal for the category — its garment noun (e.g. "t-shirt", "jeans", "dress") names what the item is, even when the photo is styled on a model wearing a full outfit. Use the image to fill in color, fabric, fit, and details.`
     : '';
 
   return generateNewItemClassificationInput<ClothingClassification>(

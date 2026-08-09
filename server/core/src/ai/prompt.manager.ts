@@ -107,5 +107,5 @@ export const generateProductTryOn = async (
     { mimeType: productImage.mimetype, data: productImage.buffer },
   ];
 
-  return generateAIImage(AIModel.GEMINI_2_5_FLASH_IMAGE, prompt, { responseModalities: ['IMAGE'], systemInstruction: VIRTUAL_TRY_ON_SYSTEM_INSTRUCTION }, images);
+  return generateAIImage(AIModel.GEMINI_3_1_FLASH_IMAGE, prompt, { responseModalities: ['IMAGE'], systemInstruction: VIRTUAL_TRY_ON_SYSTEM_INSTRUCTION }, images);
 };
