@@ -13,6 +13,7 @@ import { useBodyImage, useUploadBodyImage } from '../../../api';
 import { imagesApi } from '../../../api/api/images.api';
 import { useCurrentUser } from '../../../auth/AuthContext';
 import { useScrollShadow } from '../../../hooks/useScrollShadow';
+import { emitImageTooLarge, isImageTooLarge } from '../../../lib/imageUpload';
 import PageHeader from '../../PageHeader';
 
 const TIPS = [
@@ -36,6 +37,10 @@ export default function BodyImageScreen() {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = '';
+    if (isImageTooLarge(file)) {
+      emitImageTooLarge();
+      return;
+    }
     upload({ file, userId: currentUserId });
   };
 

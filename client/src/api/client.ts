@@ -6,6 +6,7 @@ import {
   getRefreshToken,
   setTokens,
 } from '../auth/tokenStorage';
+import { emitImageTooLarge } from '../lib/imageUpload';
 
 const baseURL = import.meta.env.VITE_API_URL || window.location.origin;
 
@@ -31,6 +32,10 @@ type RetriableRequest = InternalAxiosRequestConfig & { _retried?: boolean };
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    if (error.response?.status === 413) {
+      emitImageTooLarge();
+    }
+
     const original = error.config as RetriableRequest | undefined;
     const refreshToken = getRefreshToken();
 

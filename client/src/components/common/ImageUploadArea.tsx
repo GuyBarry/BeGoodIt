@@ -4,6 +4,7 @@ import type { SxProps, Theme } from '@mui/material';
 import UploadIcon from '@mui/icons-material/Upload';
 import CloseIcon from '@mui/icons-material/Close';
 import { PRIMARY_ALPHA } from '../../styles/tokens';
+import { emitImageTooLarge, isImageTooLarge } from '../../lib/imageUpload';
 
 interface Props {
   imageUrl: string | null;
@@ -37,7 +38,12 @@ export default function ImageUploadArea({
   const handleFiles = useCallback(
     (files: FileList | null) => {
       if (!files || !files[0]) return;
-      if (isImageFile(files[0])) onFileSelect(files[0]);
+      if (!isImageFile(files[0])) return;
+      if (isImageTooLarge(files[0])) {
+        emitImageTooLarge();
+        return;
+      }
+      onFileSelect(files[0]);
     },
     [onFileSelect],
   );
