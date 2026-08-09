@@ -29,17 +29,25 @@ const isBlockedResponse = (html: string, status: number): boolean => {
   );
 };
 
+// Attribute values are captured via a backreference to whichever quote char
+// actually opened them ((["']) ... \1), instead of excluding both " and '
+// outright. Titles routinely contain an apostrophe that has nothing to do
+// with the attribute delimiter — e.g. Hebrew ג'ינס ("jeans"), or "Men's
+// Jeans" — and excluding ' unconditionally truncated the match at that
+// character, e.g. content="ג'ינס SLIM CROPPED" used to yield just "ג".
+const ATTR = '(["\'])((?:(?!\\1)[\\s\\S])*)\\1';
+
 const extractMeta = (html: string): { imageUrl: string | null; title: string } => {
   const imageUrl =
-    html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1] ??
-    html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i)?.[1] ??
-    html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i)?.[1] ??
-    html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i)?.[1] ??
+    html.match(new RegExp(`<meta[^>]+property=["']og:image["'][^>]+content=${ATTR}`, 'i'))?.[2] ??
+    html.match(new RegExp(`<meta[^>]+content=${ATTR}[^>]+property=["']og:image["']`, 'i'))?.[2] ??
+    html.match(new RegExp(`<meta[^>]+name=["']twitter:image["'][^>]+content=${ATTR}`, 'i'))?.[2] ??
+    html.match(new RegExp(`<meta[^>]+content=${ATTR}[^>]+name=["']twitter:image["']`, 'i'))?.[2] ??
     null;
 
   const title = (
-    html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"'<>]+)["']/i)?.[1] ??
-    html.match(/<meta[^>]+content=["']([^"'<>]+)["'][^>]+property=["']og:title["']/i)?.[1] ??
+    html.match(new RegExp(`<meta[^>]+property=["']og:title["'][^>]+content=${ATTR}`, 'i'))?.[2] ??
+    html.match(new RegExp(`<meta[^>]+content=${ATTR}[^>]+property=["']og:title["']`, 'i'))?.[2] ??
     html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] ??
     ''
   ).trim();
@@ -55,7 +63,16 @@ const fetchHtmlWithPuppeteer = async (pageUrl: string): Promise<string> => {
   try {
     const page = await browser.newPage();
     await page.setExtraHTTPHeaders({ 'Accept-Language': 'en-US,en;q=0.9' });
-    await page.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    // Many retailer PDPs (Zara included) are client-rendered SPAs: the
+    // server-sent HTML only has generic/placeholder <meta> tags (og:image,
+    // title) until the page's own JS fetches the product data and rewrites
+    // them. `domcontentloaded` fires before that happens, so we'd scrape the
+    // site's default share image instead of this specific product's photo.
+    // `networkidle2` waits for the page's data-fetching to settle first.
+    await page.goto(pageUrl, { waitUntil: 'networkidle2', timeout: 25000 });
+    // Small grace period for SPAs that update meta tags just after the last
+    // network request resolves rather than synchronously with it.
+    await new Promise(resolve => setTimeout(resolve, 1000));
     return await page.content();
   } finally {
     await browser.close();
@@ -124,13 +141,23 @@ const styleScore = (a: string, b: string): number => {
   return 40;
 };
 
+// How much a same/adjacent-category match (e.g. Top vs Top) is allowed to climb
+// above its base category score on the strength of color/style/embedding
+// similarity alone. Without this, a near-duplicate of something already in the
+// closet — same category, same color, same everything — scores artificially
+// high just because it looks like a great match on paper, when in reality it's
+// simply redundant with an item the user already owns.
+const CATEGORY_SCORE_HEADROOM = 25;
+
 const scoreItem = (
   uploaded: ClothingClassification,
   uploadedEmbedding: number[] | null,
   item: { category: string | null; colorGroups: string[]; seasons: string[]; styles: string[]; imageEmbedding: Buffer | null },
 ): number => {
+  const categoryPct = item.category ? (CATEGORY_MATRIX[uploaded.category]?.[item.category] ?? 50) : 50;
+
   let total = 0, weight = 0;
-  if (item.category) { total += (CATEGORY_MATRIX[uploaded.category]?.[item.category] ?? 50) * 40; weight += 40; }
+  if (item.category) { total += categoryPct * 40; weight += 40; }
   if (item.colorGroups.length && uploaded.colorGroups.length) {
     total += Math.max(...uploaded.colorGroups.flatMap(a => item.colorGroups.map(b => colorScore(a, b)))) * 30;
     weight += 30;
@@ -145,11 +172,22 @@ const scoreItem = (
   }
   const metadataScore = weight === 0 ? 65 : Math.round(total / weight);
 
+  let score = metadataScore;
   if (uploadedEmbedding && item.imageEmbedding?.length === EMBEDDING_BYTES) {
     const embeddingScore = Math.round(cosineSimilarity(uploadedEmbedding, bufferToFloats(item.imageEmbedding)) * 100);
-    return Math.round(0.7 * metadataScore + 0.3 * embeddingScore);
+    const blend = Math.round(0.7 * metadataScore + 0.3 * embeddingScore);
+    // The embedding compares AI-written text descriptions, not "would these
+    // look good together" — two genuinely different but well-paired items
+    // (e.g. a top and its ideal bottom) rarely have near-identical
+    // descriptions, so a weak embedding shouldn't undercut a metadata score
+    // the curated rules already earned. Let it boost, never drag down.
+    score = Math.max(blend, metadataScore);
   }
-  return metadataScore;
+
+  // Category fit is a hard ceiling, not just one input among several: two items
+  // the curated matrix says don't pair well can't out-score that via color,
+  // style, or visual/textual similarity alone.
+  return Math.min(score, categoryPct + CATEGORY_SCORE_HEADROOM);
 };
 
 export interface SmartBuyMatch { itemId: string; compatibilityPct: number; }
@@ -219,6 +257,10 @@ export const smartBuyService = {
     const uploadedEmbedding = await generateEmbedding(uploadedClassification.description).catch(() => null);
 
     const scored = closetItems
+      // Same-category items (e.g. a top vs. the tops already in the closet) aren't
+      // outfit "matches" — you don't pair two tops together — so they shouldn't
+      // show up as a best match no matter how similar the color/style/embedding.
+      .filter(item => item.category?.name !== uploadedClassification.category)
       .map(item => ({
         itemId: item.id,
         compatibilityPct: scoreItem(uploadedClassification, uploadedEmbedding, {

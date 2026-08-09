@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useAddClothingItem, useClothingItems, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
+import { useAddClothingItem, useBodyImage, useClothingItems, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
 import { fittingRoomApi } from '../../../api/api/fittingRoom.api';
 import { imagesApi } from '../../../api/api/images.api';
 import { smartBuyApi } from '../../../api/api/smartBuy.api';
@@ -19,6 +19,7 @@ const MAX_RECENT = 6;
 export default function SmartBuyScreen() {
   const currentUserId = useCurrentUser().id;
   const { data: clothingItems = [] } = useClothingItems(currentUserId);
+  const { data: bodyImage, isLoading: isBodyImageLoading } = useBodyImage(currentUserId);
   const { mutateAsync: addToCloset } = useAddClothingItem(currentUserId);
   const { data: colorGroups = [] } = useColorGroups();
   const { data: garmentCategories = [] } = useGarmentCategories();
@@ -222,13 +223,8 @@ export default function SmartBuyScreen() {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       <PageHeader title="Smart Buy" subtitle="Test before you invest" />
 
-      <Box
-        component="main"
-        ref={mainRef}
-        onScroll={onMainScroll}
-        sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 4, py: 4, ...scrollShadowSx }}
-      >
-        <Box sx={{ maxWidth: 1280, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <Box component="main" sx={{ flex: 1, minHeight: 0, overflow: 'hidden', px: 4, py: 4 }}>
+        <Box sx={{ maxWidth: 1280, mx: 'auto', height: '100%' }}>
           {testImage || isAnalyzing ? (
             <AnalysisResult
               testImage={testImage!}
@@ -240,15 +236,22 @@ export default function SmartBuyScreen() {
               tryOnError={tryOnError}
               isAdding={isAdding}
               addSuccess={addSuccess}
+              hasBodyImage={!!bodyImage}
+              isBodyImageLoading={isBodyImageLoading}
               onVirtualTryOn={handleVirtualTryOn}
               onAddToCloset={handleAddToCloset}
               onReset={handleReset}
             />
           ) : (
-            <UploadPanel onAnalyze={runAnalysis} />
+            <Box
+              ref={mainRef}
+              onScroll={onMainScroll}
+              sx={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 5, ...scrollShadowSx }}
+            >
+              <UploadPanel onAnalyze={runAnalysis} />
+              <RecentTests tests={recentTests} onRetest={t => setSelectedRecentTest(t)} />
+            </Box>
           )}
-
-          {!testImage && !isAnalyzing && <RecentTests tests={recentTests} onRetest={t => setSelectedRecentTest(t)} />}
         </Box>
       </Box>
 
