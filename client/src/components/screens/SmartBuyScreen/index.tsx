@@ -145,6 +145,9 @@ export default function SmartBuyScreen() {
       await addToCloset({
         file,
         userId: currentUserId,
+        // The Smart Buy image is usually a model wearing the garment; isolate
+        // just the garment when adding it to the closet.
+        extractGarment: true,
         styles: testClassification?.styles ?? [],
         colorGroupIds: colorGroups
           .filter(c => testClassification?.colorGroups.includes(c.name))
@@ -167,6 +170,7 @@ export default function SmartBuyScreen() {
     await addToCloset({
       file,
       userId: currentUserId,
+      extractGarment: true,
       styles: test.classification?.styles ?? [],
       colorGroupIds: colorGroups
         .filter(c => test.classification?.colorGroups.includes(c.name))

@@ -109,3 +109,27 @@ export const generateProductTryOn = async (
 
   return generateAIImage(AIModel.GEMINI_3_1_FLASH_IMAGE, prompt, { responseModalities: ['IMAGE'], systemInstruction: VIRTUAL_TRY_ON_SYSTEM_INSTRUCTION }, images);
 };
+
+const ISOLATE_GARMENT_SYSTEM_INSTRUCTION = `
+      You are a product-photography assistant. Every response is a single, photorealistic image of exactly ONE clothing garment by itself, laid flat / floating on a plain solid white background, as if shot for an e-commerce catalog. Never include a person, mannequin, or any second item.
+    `;
+
+// Retailer/Smart-Buy images are usually a model wearing the garment. Background
+// removal alone keeps the whole person, so the closet ends up with a full-body
+// shot. This regenerates a clean, catalog-style image of just the garment while
+// preserving its real appearance, so it matches the rest of the closet.
+export const isolateGarment = async (
+  productImage: Express.Multer.File,
+  itemDescription?: string,
+): Promise<Buffer> => {
+  const prompt = `
+        From the provided image, extract ONLY the single main clothing garment${itemDescription ? ` (${itemDescription})` : ''} and present it on its own.
+        Remove the person/model, the background, and any other clothing or accessories — keep only this one garment.
+        Preserve its EXACT color, shade, fabric texture, pattern/print, and shape. Do not redesign, recolor, add, or remove any detail.
+        Render it as a clean, centered e-commerce product shot on a plain solid white background.
+        Output exactly one garment. No person, no mannequin, no extra items, no text.
+    `;
+
+  const images: AIImageInput[] = [{ mimeType: productImage.mimetype, data: productImage.buffer }];
+  return generateAIImage(AIModel.GEMINI_3_1_FLASH_IMAGE, prompt, { responseModalities: ['IMAGE'], systemInstruction: ISOLATE_GARMENT_SYSTEM_INSTRUCTION }, images);
+};
