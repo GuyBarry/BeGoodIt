@@ -90,6 +90,7 @@ describe('closetRouter', () => {
         'user-uuid-1',
         expect.objectContaining({ originalname: 'shirt.png', mimetype: 'image/png' }),
         { colorGroupIds: [], categoryId: null, seasonIds: [], styles: [] },
+        { extractGarment: false, itemDescription: undefined },
       );
     });
 
@@ -109,6 +110,7 @@ describe('closetRouter', () => {
         'user-uuid-1',
         expect.objectContaining({ originalname: 'shirt.png' }),
         { colorGroupIds: [2], categoryId: 3, seasonIds: [1], styles: ['casual'] },
+        { extractGarment: false, itemDescription: undefined },
       );
     });
 
