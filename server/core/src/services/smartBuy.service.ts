@@ -229,6 +229,13 @@ export const smartBuyService = {
       } catch {
         throw new BotProtectedException();
       }
+      // Puppeteer can still land on the site's block/challenge page (Akamai,
+      // Cloudflare, etc.) rather than the real product. Re-check the rendered
+      // HTML so we surface an accurate "this site blocks automated access"
+      // message instead of falling through to a misleading "no image" error.
+      if (isBlockedResponse(html, 200)) {
+        throw new BotProtectedException();
+      }
     } else if (!res.ok) {
       throw new BadRequestException(`The page returned ${res.status}. Try a different link.`);
     }

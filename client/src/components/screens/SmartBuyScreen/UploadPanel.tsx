@@ -59,10 +59,14 @@ export default function UploadPanel({ onAnalyze }: Props) {
       } else {
         let message: string | null = null;
         try {
-          const text = typeof err?.response?.data?.text === 'function'
-            ? await err.response.data.text()
-            : JSON.stringify(err?.response?.data ?? '');
-          message = JSON.parse(text).error;
+          const data = err?.response?.data;
+          const text = data instanceof Blob ? await data.text()
+            : typeof data === 'string' ? data
+            : JSON.stringify(data ?? '');
+          const parsed = JSON.parse(text);
+          // The server's error handler responds with { message }; fall back to
+          // `.error` just in case an endpoint uses that shape instead.
+          message = parsed.message ?? parsed.error ?? null;
         } catch { /* ignore */ }
         setUrlError(message ?? 'Could not find the product image. Try uploading it directly.');
       }

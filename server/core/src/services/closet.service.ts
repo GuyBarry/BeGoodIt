@@ -3,7 +3,8 @@ import { ClothingFilters } from '../repositories';
 import { backgroundRemovalService } from './backgroundRemoval.service';
 import { imagesService } from './images.service';
 import { AddItemInput, clothingItemService } from './clothingItem.service';
-import { classifyClothingItem } from '../ai/classifyClothingItem';
+import { classifyClothingItem, ClothingClassification } from '../ai/classifyClothingItem';
+import { isolateGarment } from '../ai/prompt.manager';
 import { generateEmbedding } from '../ai/ai.provider';
 import { BadRequestException } from '../exceptions/httpExceptions';
 import { garmentCategoryRepository, colorGroupRepository, seasonRepository } from '../repositories';
@@ -17,18 +18,63 @@ const getItemsByUserId = async (
   return clothingItemService.getFilteredByUserId(userId, filters, page, limit);
 };
 
+export type AddToClosetOptions = {
+  // When true (Smart Buy adds), the source image is usually a model wearing the
+  // garment; isolate just the garment into a clean catalog shot before storing.
+  extractGarment?: boolean;
+  itemDescription?: string;
+};
+
 const addToCloset = async (
   userId: string,
   file: Express.Multer.File,
   tags: AddItemInput = {},
+  options: AddToClosetOptions = {},
 ): Promise<ClothingItemDto> => {
-  const processedFile = await backgroundRemovalService.removeBackground(file);
+  let sourceFile = file;
+  let classification: ClothingClassification | null = null;
 
-  // Classify first so we can reject non-clothing images before committing any DB writes
-  const classification = await classifyClothingItem({
-    mimeType: processedFile.mimetype,
-    data: processedFile.buffer,
-  }).catch(() => null);
+  if (options.extractGarment) {
+    // Detect whether the image is a model/worn shot before deciding to isolate.
+    // Isolation is an expensive image-generation call, so we skip it entirely for
+    // images that are already a clean standalone product shot.
+    const detection = await classifyClothingItem({ mimeType: file.mimetype, data: file.buffer }).catch(() => null);
+
+    if (detection?.isWornByModel) {
+      try {
+        const isolated = await isolateGarment(file, options.itemDescription);
+        sourceFile = {
+          ...file,
+          buffer: isolated,
+          mimetype: 'image/png',
+          size: isolated.length,
+          originalname: file.originalname.replace(/\.[^/.]+$/, '_item.png'),
+        };
+        // Image changed — leave classification null so we re-classify the clean
+        // garment below (more accurate colours/category than the model shot).
+      } catch (error) {
+        // Isolation is best-effort: on failure, keep the original image and reuse
+        // the detection classification rather than blocking the add.
+        console.error('Garment isolation failed, using original image:', error);
+        classification = detection;
+      }
+    } else {
+      // Already a clean single-item shot: skip isolation and reuse this classification.
+      classification = detection;
+    }
+  }
+
+  const processedFile = await backgroundRemovalService.removeBackground(sourceFile);
+
+  // Classify the processed image unless we already have a usable classification
+  // (a clean single-item shot that didn't need isolation). This also rejects
+  // non-clothing images before committing any DB writes.
+  if (!classification) {
+    classification = await classifyClothingItem({
+      mimeType: processedFile.mimetype,
+      data: processedFile.buffer,
+    }).catch(() => null);
+  }
 
   if (classification?.noClothingDetected === true) {
     throw new BadRequestException('No clothing detected in image');
