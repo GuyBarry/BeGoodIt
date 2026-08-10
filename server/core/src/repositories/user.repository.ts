@@ -69,4 +69,30 @@ export const userRepository = AppDataSource.getRepository(User).extend({
       .where('id = :id', { id })
       .execute();
   },
+
+  async addRefreshToken(id: string, token: string): Promise<void> {
+    const user = await this.findOne({ where: { id } });
+    if (!user) return;
+    user.refreshTokens = [...(user.refreshTokens ?? []), token];
+    await this.save(user);
+  },
+
+  async replaceRefreshToken(
+    id: string,
+    oldToken: string,
+    newToken: string,
+  ): Promise<void> {
+    const user = await this.findOne({ where: { id } });
+    if (!user) return;
+    const remaining = (user.refreshTokens ?? []).filter((t) => t !== oldToken);
+    user.refreshTokens = [...remaining, newToken];
+    await this.save(user);
+  },
+
+  async clearRefreshTokens(id: string): Promise<void> {
+    const user = await this.findOne({ where: { id } });
+    if (!user) return;
+    user.refreshTokens = [];
+    await this.save(user);
+  },
 });

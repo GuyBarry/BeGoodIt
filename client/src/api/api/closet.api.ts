@@ -19,9 +19,9 @@ export interface PaginatedClothingItems {
 
 export interface ClothingClassification {
   category: string;
-  colorGroup: string;
-  season: string;
-  style: string;
+  colorGroups: string[];
+  seasons: string[];
+  styles: string[];
 }
 
 export interface UploadClothingItemPayload {
@@ -31,6 +31,7 @@ export interface UploadClothingItemPayload {
   categoryId?: number | null;
   seasonIds?: number[];
   styles?: string[];
+  extractGarment?: boolean;
 }
 
 export const clothingItemsApi = {
@@ -54,6 +55,7 @@ export const clothingItemsApi = {
     if (payload.categoryId != null) formData.append('categoryId', String(payload.categoryId));
     for (const id of payload.seasonIds ?? []) formData.append('seasonIds', String(id));
     for (const style of payload.styles ?? []) formData.append('styles', style);
+    if (payload.extractGarment) formData.append('extractGarment', 'true');
     const { data } = await apiClient.post<ClothingItem>(`/closet/${payload.userId}/items`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

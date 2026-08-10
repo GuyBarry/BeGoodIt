@@ -95,7 +95,7 @@ export default function PreviewArea({
             component="img"
             src={generatedLookUrl}
             alt="Generated look"
-            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
           />
           <Box sx={{ position: 'absolute', bottom: 24, right: 24, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Tooltip title={isSaved ? 'Saved' : 'Save Outfit'} placement="top">

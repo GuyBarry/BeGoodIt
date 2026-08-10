@@ -1,15 +1,34 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Box, CircularProgress, Typography, Button } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { keyframes } from '@emotion/react';
 import ClosetHeader from './ClosetHeader';
 import ClothingGrid from './ClothingGrid';
 import OutfitsGrid from './OutfitsGrid';
 import OutfitDialog from './OutfitDialog';
+import EmptyClosetState from '../../EmptyClosetState';
+import FilteredEmptyState from './FilteredEmptyState';
+import EmptyOutfitsState from './EmptyOutfitsState';
+import DeleteConfirmDialog from '../../common/DeleteConfirmDialog';
 import { useCurrentUser } from '../../../auth/AuthContext';
-import { useClosetItems, useDeleteClothingItem, useDeleteOutfit, useGetOutfits } from '../../../api';
+import {
+  useClosetItems,
+  useClothingItems,
+  useBodyImage,
+  useDeleteClothingItem,
+  useDeleteOutfit,
+  useGetOutfits,
+} from '../../../api';
+import { useScrollShadow } from '../../../hooks/useScrollShadow';
+import { imagesApi } from '../../../api/api/images.api';
 import type { ClosetFilters } from '../../../api/api/closet.api';
+import type { ClothingItem } from '../../../entities/clothingItem';
 import type { Outfit } from '../../../entities/outfit';
+
+type PendingDelete =
+  | { type: 'item'; data: ClothingItem }
+  | { type: 'outfit'; data: Outfit };
 
 const bounce = keyframes`
   0%, 100% { transform: translateY(0); opacity: 0.35; }
@@ -50,6 +69,7 @@ export default function ClosetScreen() {
   const [selectedStyle,    setSelectedStyle]    = useState('All');
   const [gridSize,         setGridSize]         = useState<'normal' | 'compact'>('normal');
   const [selectedOutfit,   setSelectedOutfit]   = useState<Outfit | null>(null);
+  const [pendingDelete,    setPendingDelete]    = useState<PendingDelete | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
@@ -65,6 +85,14 @@ export default function ClosetScreen() {
 
   const limit = gridSize === 'compact' ? 40 : 20;
 
+  const hasActiveFilters = Boolean(
+    debouncedSearch ||
+    selectedCategory !== 'All' ||
+    selectedColor    !== 'All' ||
+    selectedSeason   !== 'All' ||
+    selectedStyle    !== 'All',
+  );
+
   const filters: ClosetFilters = {
     ...(debouncedSearch            && { search:   debouncedSearch }),
     ...(selectedCategory !== 'All' && { category: selectedCategory }),
@@ -76,9 +104,29 @@ export default function ClosetScreen() {
 
   const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage, resetToFirstPage } =
     useClosetItems(currentUserId, filters);
-  const { mutate: deleteItem } = useDeleteClothingItem(currentUserId);
+  const { mutate: deleteItem, isPending: isDeletingItem } = useDeleteClothingItem(currentUserId);
   const { data: outfits = [], isLoading: outfitsLoading } = useGetOutfits(currentUserId);
-  const { mutate: deleteOutfit } = useDeleteOutfit(currentUserId);
+  const { mutate: deleteOutfit, isPending: isDeletingOutfit } = useDeleteOutfit(currentUserId);
+  const { data: allClothingItems = [] } = useClothingItems(currentUserId);
+  const { data: bodyImage } = useBodyImage(currentUserId);
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setDebouncedSearch('');
+    setSelectedCategory('All');
+    setSelectedColor('All');
+    setSelectedSeason('All');
+    setSelectedStyle('All');
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    if (pendingDelete.type === 'item') {
+      deleteItem(pendingDelete.data.id, { onSuccess: () => setPendingDelete(null) });
+    } else {
+      deleteOutfit(pendingDelete.data.id, { onSuccess: () => setPendingDelete(null) });
+    }
+  };
 
   const items = data?.pages.flatMap(p => p.items) ?? [];
   const total = data?.pages[0]?.total ?? 0;
@@ -107,8 +155,11 @@ export default function ClosetScreen() {
     return true;
   });
 
+  const { ref: mainRef, onScroll: onMainScroll, sx: scrollShadowSx } =
+    useScrollShadow([activeTab, items.length, filteredOutfits.length, isLoading, outfitsLoading]);
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       <ClosetHeader
         activeTab={activeTab}               onTabChange={setActiveTab}
         searchQuery={searchQuery}           onSearchChange={setSearchQuery}
@@ -123,22 +174,50 @@ export default function ClosetScreen() {
         username={currentUser.username}
       />
 
-      <Box component="main" sx={{ flex: 1, px: { xs: 2, sm: 4 }, py: 4 }}>
+      <Box
+        component="main"
+        ref={mainRef}
+        onScroll={onMainScroll}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          px: { xs: 2, sm: 4 },
+          py: 4,
+          ...scrollShadowSx,
+        }}
+      >
         <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
           {activeTab === 'clothes' ? (
             isLoading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
                 <CircularProgress />
               </Box>
+            ) : items.length === 0 && !hasActiveFilters ? (
+              <EmptyClosetState />
+            ) : items.length === 0 && hasActiveFilters ? (
+              <FilteredEmptyState itemLabel="items" onClearFilters={clearFilters} />
             ) : (
               <>
-                <ClothingGrid items={items} gridSize={gridSize} onDelete={deleteItem} />
+                <ClothingGrid
+                  items={items}
+                  gridSize={gridSize}
+                  onDelete={item => setPendingDelete({ type: 'item', data: item })}
+                />
 
                 {items.length > 0 && (
-                  <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Showing {items.length} of {total} items
-                    </Typography>
+                  <Box sx={{ mt: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2.5 }}>
+                    <Box sx={{ width: '100%', maxWidth: 320, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ whiteSpace: 'nowrap', fontWeight: 500, letterSpacing: 0.3 }}
+                      >
+                        {items.length} of {total} items
+                      </Typography>
+                      <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
+                    </Box>
 
                     {isFetchingNextPage ? (
                       <LoadingDots />
@@ -158,7 +237,14 @@ export default function ClosetScreen() {
                       >
                         Load more
                       </Button>
-                    ) : null}
+                    ) : (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'success.main' }}>
+                        <CheckCircleIcon fontSize="small" />
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          You've seen your whole closet
+                        </Typography>
+                      </Box>
+                    )}
                   </Box>
                 )}
               </>
@@ -167,13 +253,41 @@ export default function ClosetScreen() {
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
               <CircularProgress />
             </Box>
+          ) : outfits.length === 0 && !hasActiveFilters ? (
+            <EmptyOutfitsState hasClothes={allClothingItems.length > 0} hasBodyImage={!!bodyImage} />
+          ) : filteredOutfits.length === 0 ? (
+            <FilteredEmptyState itemLabel="outfits" onClearFilters={clearFilters} />
           ) : (
-            <OutfitsGrid outfits={filteredOutfits} gridSize={gridSize} onSelect={setSelectedOutfit} onDelete={deleteOutfit} />
+            <OutfitsGrid
+              outfits={filteredOutfits}
+              gridSize={gridSize}
+              onSelect={setSelectedOutfit}
+              onDelete={outfit => setPendingDelete({ type: 'outfit', data: outfit })}
+            />
           )}
         </Box>
       </Box>
 
       <OutfitDialog outfit={selectedOutfit} onClose={() => setSelectedOutfit(null)} />
+
+      <DeleteConfirmDialog
+        open={!!pendingDelete}
+        itemName={
+          pendingDelete?.type === 'item'
+            ? pendingDelete.data.styles?.join(', ') || pendingDelete.data.category?.name || 'This item'
+            : pendingDelete?.data.name ?? 'This outfit'
+        }
+        imageUrl={
+          pendingDelete?.type === 'item'
+            ? imagesApi.getImageUrl(pendingDelete.data.imageId)
+            : pendingDelete?.data.imageId
+              ? imagesApi.getImageUrl(pendingDelete.data.imageId)
+              : null
+        }
+        isDeleting={pendingDelete?.type === 'item' ? isDeletingItem : isDeletingOutfit}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
+      />
     </Box>
   );
 }

@@ -60,11 +60,17 @@ closetRouter.post(
         : null;
       const seasonIds = parseIds(req.body.seasonIds);
       const styles = parseStrings(req.body.styles);
+      const extractGarment = req.body.extractGarment === "true";
+      const itemDescription =
+        typeof req.body.itemDescription === "string"
+          ? req.body.itemDescription
+          : undefined;
 
       const result = await closetService.addToCloset(
         req.params.userId,
         req.file!,
         { colorGroupIds, categoryId, seasonIds, styles },
+        { extractGarment, itemDescription },
       );
       res.status(StatusCodes.CREATED).json(result);
     } catch (error) {

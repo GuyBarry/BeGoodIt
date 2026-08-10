@@ -3,10 +3,13 @@ import { AIImageInput, AIModel, generateNewItemClassificationInput } from './ai.
 
 export interface ClothingClassification {
   noClothingDetected: boolean;
+  // True when the garment is shown worn by a person or on a mannequin (model /
+  // lifestyle photo); false for a standalone product shot of just the garment.
+  isWornByModel: boolean;
   category: 'Top' | 'Bottom' | 'Dress' | 'Shoes' | 'Outerwear' | 'Accessories' | 'Undergarment' | 'Activewear';
-  colorGroup: 'Black' | 'White' | 'Red' | 'Blue' | 'Green' | 'Yellow' | 'Orange' | 'Purple' | 'Pink' | 'Brown' | 'Gray' | 'Beige';
-  season: 'Spring' | 'Summer' | 'Fall' | 'Winter' | 'All-Season';
-  style: 'Casual' | 'Formal' | 'Smart Casual' | 'Sporty' | 'Bohemian';
+  colorGroups: ('Black' | 'White' | 'Red' | 'Blue' | 'Green' | 'Yellow' | 'Orange' | 'Purple' | 'Pink' | 'Brown' | 'Gray' | 'Beige')[];
+  seasons: ('Spring' | 'Summer' | 'Fall' | 'Winter' | 'All-Season')[];
+  styles: ('Casual' | 'Formal' | 'Smart Casual' | 'Sporty' | 'Bohemian')[];
   description: string;
 }
 
@@ -18,62 +21,58 @@ const CLASSIFICATION_SCHEMA = {
       description:
         'Set to true ONLY when the image contains no clothing at all (e.g. a landscape, food, furniture, a face). Set to false for every valid clothing item.',
     },
+    isWornByModel: {
+      type: Type.BOOLEAN,
+      description:
+        'Set to true when the garment is being worn by a person or shown on a mannequin (a model/lifestyle photo). Set to false when the image is a standalone product shot of just the garment (flat-lay, ghost mannequin, or on a plain background with no person).',
+    },
     category: {
       type: Type.STRING,
       enum: ['Top', 'Bottom', 'Dress', 'Shoes', 'Outerwear', 'Accessories', 'Undergarment', 'Activewear'],
     },
-    colorGroup: {
-      type: Type.STRING,
-      enum: ['Black', 'White', 'Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Pink', 'Brown', 'Gray', 'Beige'],
+    colorGroups: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING, enum: ['Black', 'White', 'Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Pink', 'Brown', 'Gray', 'Beige'] },
+      description: 'One or more dominant color groups visible on the item.',
     },
-    season: {
-      type: Type.STRING,
-      enum: ['Spring', 'Summer', 'Fall', 'Winter', 'All-Season'],
+    seasons: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING, enum: ['Spring', 'Summer', 'Fall', 'Winter', 'All-Season'] },
+      description: 'One or more seasons this item is suited for.',
     },
-    style: { type: Type.STRING, enum: ['Casual', 'Formal', 'Smart Casual', 'Sporty', 'Bohemian'] },
+    styles: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING, enum: ['Casual', 'Formal', 'Smart Casual', 'Sporty', 'Bohemian'] },
+      description: 'One or more style categories that apply to this item.',
+    },
     description: {
       type: Type.STRING,
       description: 'A rich 1-3 sentence description of the item covering exact color/shade, fabric texture, fit, silhouette, pattern, notable design details, and occasion suitability. This will be used for semantic similarity matching.',
     },
   },
-  required: ['noClothingDetected', 'category', 'colorGroup', 'season', 'style', 'description'],
+  required: ['noClothingDetected', 'isWornByModel', 'category', 'colorGroups', 'seasons', 'styles', 'description'],
 };
 
 const BASE_PROMPT = `Analyze this image and return the following fields.
 
 - noClothingDetected: set to true ONLY if the image contains NO clothing whatsoever (e.g. a landscape, food, furniture, a blank wall, a face with no visible clothing). Set to false for all clothing items. When true, still provide placeholder values for the remaining fields — they will be ignored.
+- isWornByModel: set to true if the garment is worn by a person or shown on a mannequin (a model/lifestyle photo); set to false if it is a standalone product shot of just the garment (flat-lay, ghost mannequin, or on a plain background with no person)
 - category: pick exactly one of: Top, Bottom, Dress, Shoes, Outerwear, Accessories, Undergarment, Activewear
-- colorGroup: pick exactly one of: Black, White, Red, Blue, Green, Yellow, Orange, Purple, Pink, Brown, Gray, Beige
-- season: pick exactly one of: Spring, Summer, Fall, Winter, All-Season
+- colorGroups: pick at least one (can be multiple) from: Black, White, Red, Blue, Green, Yellow, Orange, Purple, Pink, Brown, Gray, Beige
+- seasons: pick at least one (can be multiple) from: Spring, Summer, Fall, Winter, All-Season
   (base on fabric weight — lightweight → Spring/Summer, heavy/insulating → Fall/Winter, only use All-Season for genuine basics like plain tees or jeans)
-- style: pick exactly one of: Casual, Formal, Smart Casual, Sporty, Bohemian
+- styles: pick at least one (can be multiple) from: Casual, Formal, Smart Casual, Sporty, Bohemian
 - description: write 1-3 sentences describing the item in detail — cover the exact color/shade, fabric texture and weight, fit and silhouette, any visible pattern or print, notable design details (buttons, pockets, collar type, hem, etc.), and what occasions or outfits it suits. Be specific enough that someone could match it against items in a photo.`;
 
-const CATEGORY_KEYWORDS: { category: ClothingClassification['category']; keywords: string[] }[] = [
-  { category: 'Bottom',      keywords: ['short', 'pant', 'jean', 'trouser', 'chino', 'skirt', 'legging', 'jogger', 'bermuda', 'cargo', 'denim'] },
-  { category: 'Top',         keywords: ['shirt', ' tee', 't-shirt', 'blouse', 'top', 'sweater', 'hoodie', 'sweatshirt', 'tank', 'polo', 'turtleneck', 'pullover', 'knitwear'] },
-  { category: 'Outerwear',   keywords: ['jacket', 'coat', 'blazer', 'parka', 'windbreaker', 'anorak', 'trench', 'puffer', 'vest'] },
-  { category: 'Dress',       keywords: ['dress', 'gown', 'jumpsuit', 'romper', 'overall'] },
-  { category: 'Shoes',       keywords: ['shoe', 'sneaker', 'boot', 'sandal', 'heel', 'loafer', 'slipper', 'mule', 'trainer', 'runner'] },
-  { category: 'Accessories', keywords: ['sunglass', 'glasses', 'watch', 'belt', 'bag', 'hat', 'cap', 'scarf', 'glove', 'wallet', 'jewel', 'necklace', 'bracelet', 'ring', 'earring', 'beanie', 'backpack'] },
-  { category: 'Activewear',  keywords: ['sport', 'athletic', 'gym', 'workout', 'running', 'cycling', 'yoga', 'compression'] },
-];
-
-const deriveCategory = (title: string): ClothingClassification['category'] | null => {
-  const lower = title.toLowerCase();
-  for (const { category, keywords } of CATEGORY_KEYWORDS) {
-    if (keywords.some(kw => lower.includes(kw))) return category;
-  }
-  return null;
-};
-
 export async function classifyClothingItem(image: AIImageInput, productTitle?: string): Promise<ClothingClassification> {
-  const derivedCategory = productTitle ? deriveCategory(productTitle) : null;
-
+  // The product title is the single most reliable category signal (retailers
+  // name the garment explicitly), so we hand it to the model as strong context
+  // and let it reconcile the words with the image itself — rather than deriving
+  // the category from brittle keyword matching. Substring matching used to
+  // misfire on things like "short sleeve t-shirt", where "short" looked like a
+  // Bottom and hard-overrode the correct image-based classification.
   const hint = productTitle
-    ? derivedCategory
-      ? `\n\nIMPORTANT: the product is called "${productTitle}". The category MUST be "${derivedCategory}" — do not change it based on the image.`
-      : `\n\nHint: the product is called "${productTitle}" — use this to help determine the correct category.`
+    ? `\n\nThe product is named "${productTitle}". Treat this title as the primary signal for the category — its garment noun (e.g. "t-shirt", "jeans", "dress") names what the item is, even when the photo is styled on a model wearing a full outfit. Use the image to fill in color, fabric, fit, and details.`
     : '';
 
   return generateNewItemClassificationInput<ClothingClassification>(

@@ -25,6 +25,6 @@ export const AppDataSource = new DataSource({
   synchronize: false, // Use migrations in production
   logging: process.env.DB_LOGGING !== 'false' && process.env.NODE_ENV !== 'production',
   entities: [BodyMapping, ColorGroup, GarmentCategory, Gender, Season, Style, User, OutfitFolder, ClothingItem, Outfit, Image, SmartBuyTest],
-  migrations: ['src/db/migrations/**/*.ts'],
+  migrations: [process.env.NODE_ENV === 'production' ? 'dist/src/db/migrations/**/*.js' : 'src/db/migrations/**/*.ts'],
   subscribers: [],
 });

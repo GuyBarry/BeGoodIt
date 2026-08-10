@@ -11,6 +11,7 @@ import type { User } from '../../../entities/user';
 import { useUser, useUpdateUser, useClothingItems, useBodyImage, useGetOutfits } from '../../../api';
 import { imagesApi } from '../../../api/api/images.api';
 import { useCurrentUser, useLogout } from '../../../auth/AuthContext';
+import { useScrollShadow } from '../../../hooks/useScrollShadow';
 import { GRADIENTS, PRIMARY_ALPHA } from '../../../styles/tokens';
 import ProfileHeader from './ProfileHeader';
 import ProfileCard from './ProfileCard';
@@ -30,6 +31,8 @@ export default function ProfileScreen() {
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
   const [draft, setDraft] = useState<User | null>(null);
+  const { ref: mainRef, onScroll: onMainScroll, sx: scrollShadowSx } =
+    useScrollShadow([user, clothingItems.length, outfits.length]);
 
   const openEdit = () => {
     if (user) {
@@ -52,7 +55,7 @@ export default function ProfileScreen() {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
         <CircularProgress />
       </Box>
     );
@@ -60,17 +63,22 @@ export default function ProfileScreen() {
 
   if (isError || !user || !user.username) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
         <Typography color="error">Failed to load profile.</Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', bgcolor: 'background.default' }}>
       <ProfileHeader />
 
-      <Box component="main" sx={{ flex: 1, px: 4, py: 4 }}>
+      <Box
+        component="main"
+        ref={mainRef}
+        onScroll={onMainScroll}
+        sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 4, py: 4, ...scrollShadowSx }}
+      >
         <Box sx={{ maxWidth: 900, mx: 'auto' }}>
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, lg: 6 }}>
@@ -101,6 +109,7 @@ export default function ProfileScreen() {
                           sx={{
                             width: 72, height: 96, borderRadius: 2.5, flexShrink: 0,
                             overflow: 'hidden', cursor: 'pointer',
+                            bgcolor: 'grey.100',
                             border: '2px solid', borderColor: 'background.paper',
                             boxShadow: `0 4px 12px ${PRIMARY_ALPHA[25]}`,
                             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
@@ -114,7 +123,7 @@ export default function ProfileScreen() {
                             component="img"
                             src={imagesApi.getImageUrl(bodyImage.imageId)}
                             alt="Your virtual try-on model"
-                            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                            sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                           />
                         </Box>
                       ) : (

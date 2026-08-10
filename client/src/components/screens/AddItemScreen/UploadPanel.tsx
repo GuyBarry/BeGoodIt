@@ -14,7 +14,7 @@ interface Props {
 
 export default function UploadPanel({ imageUrl, isAnalyzing, analysisComplete, tags, onFileSelect, onClear }: Props) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, gap: 3 }}>
       <ImageUploadArea
         imageUrl={imageUrl}
         isProcessing={isAnalyzing}
@@ -34,9 +34,9 @@ export default function UploadPanel({ imageUrl, isAnalyzing, analysisComplete, t
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
             {([
               { label: 'Category', value: tags.category?.name },
-              { label: 'Color',    value: tags.color?.name },
-              { label: 'Season',   value: tags.season?.name },
-              { label: 'Style',    value: tags.style },
+              { label: 'Color',    value: tags.colors?.map(color => color.name).join(', ') },
+              { label: 'Season',   value: tags.seasons?.map(season => season.name).join(', ') },
+              { label: 'Style',    value: tags.styles?.map(style => style).join(', ') },
             ] as const).map(({ label, value }) => value && (
               <Box key={label} sx={{ bgcolor: 'action.hover', borderRadius: 2, px: 2, py: 1.5 }}>
                 <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>

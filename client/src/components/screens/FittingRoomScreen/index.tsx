@@ -1,24 +1,30 @@
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
-import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar } from '@mui/material';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import ReportProblemRoundedIcon from '@mui/icons-material/ReportProblemRounded';
+import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useClothingItems, useFindMatches, useGenerateLook, useGetOutfits, useSaveOutfit } from '../../../api';
-import { PRIMARY_ALPHA } from '../../../styles/tokens';
+import { useBodyImage, useClothingItems, useFindMatches, useGenerateLook, useGetOutfits, useSaveOutfit } from '../../../api';
+import { GRADIENTS, PRIMARY_ALPHA, SERIF_FONT } from '../../../styles/tokens';
 import ClosetItemGrid from './ClosetItemGrid';
 import FittingRoomHeader from './FittingRoomHeader';
 import GenerateButton from './GenerateButton';
+import GettingStartedChecklist from './GettingStartedChecklist';
+import EmptyClosetState from '../../EmptyClosetState';
 
 import GetInspiredPanel from './GetInspiredPanel';
 import PreviewArea from './PreviewArea';
 import SelectedSummary from './SelectedSummary';
 import { useCurrentUser } from '../../../auth/AuthContext';
+import { useScrollShadow } from '../../../hooks/useScrollShadow';
 
 export default function FittingRoomScreen() {
   const navigate = useNavigate();
   const currentUserId = useCurrentUser().id;
   const { data: clothingItems = [] } = useClothingItems(currentUserId);
   const { data: outfits = [] }        = useGetOutfits(currentUserId);
+  const { data: bodyImage, isLoading: isBodyImageLoading } = useBodyImage(currentUserId);
   const { mutate: generateLook, isPending: isGenerating }             = useGenerateLook();
   const { mutate: saveOutfit,   isPending: isSaving, isSuccess: isSavedByMutation, reset: resetSaveOutfit } = useSaveOutfit();
   const { mutate: findMatches,  isPending: isAnalyzingInspiration }   = useFindMatches();
@@ -33,6 +39,7 @@ export default function FittingRoomScreen() {
   const [suggestedItems, setSuggestedItems]   = useState<string[]>([]);
   const [missingBodyImageOpen, setMissingBodyImageOpen] = useState(false);
   const [noMatchesSnackbarOpen, setNoMatchesSnackbarOpen] = useState(false);
+  const [generationFailedOpen, setGenerationFailedOpen] = useState(false);
 
   // If this exact set of clothing items was already saved as an outfit before, the freshly
   // generated (possibly cached) look is already saved, regardless of local mutation state.
@@ -47,6 +54,8 @@ export default function FittingRoomScreen() {
   }, [outfits, selectedItems]);
 
   const isSaved = isSavedByMutation || isAlreadySavedOutfit;
+  const { ref: closetListRef, onScroll: onClosetListScroll, sx: closetScrollShadowSx } =
+    useScrollShadow([clothingItems.length, activeCategory, activeTab]);
 
   const toggleItem = (id: string) => {
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -74,6 +83,8 @@ export default function FittingRoomScreen() {
         onError: (error: Error & { status?: number }) => {
           if (error.status === 404 && error.message.toLowerCase().includes('body photo')) {
             setMissingBodyImageOpen(true);
+          } else {
+            setGenerationFailedOpen(true);
           }
         },
       },
@@ -137,6 +148,12 @@ export default function FittingRoomScreen() {
       )}
       <FittingRoomHeader />
 
+      <GettingStartedChecklist
+        hasClothes={clothingItems.length > 0}
+        hasBodyImage={!!bodyImage}
+        hasOutfit={outfits.length > 0}
+      />
+
       <Box component="main" sx={{ flex: 1, minHeight: 0, px: 4, py: 3, overflow: 'hidden' }}>
         <Box sx={{ maxWidth: 1280, mx: 'auto', height: '100%' }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4, height: '100%' }}>
@@ -180,61 +197,91 @@ export default function FittingRoomScreen() {
 
               {/* Closet tab */}
               {activeTab === 'closet' && (
-                <>
-                  <Box
-                    sx={{
-                      flex: 1,
-                      minHeight: 0,
-                      overflowY: 'auto',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 3,
-                      pr: 1,
-                      pb: 2,
-                    }}
-                  >
-                    <ClosetItemGrid
-                      clothingItems={clothingItems}
-                      selectedItems={selectedItems}
-                      suggestedItems={suggestedItems}
-                      activeCategory={activeCategory}
-                      onCategoryChange={setActiveCategory}
-                      onToggleItem={toggleItem}
+                clothingItems.length === 0 ? (
+                  <Box sx={{ flex: 1, overflowY: 'auto' }}>
+                    <EmptyClosetState
+                      title="Your fitting room is feeling a little too roomy"
+                      subtitle="You don't have any clothes to try on yet. Add some items to your closet and come back to play dress-up."
                     />
                   </Box>
-                  <Box
-                    sx={{
-                      flexShrink: 0,
-                      pt: 2,
-                      mt: 1,
-                      bgcolor: 'background.default',
-                      borderTop: '1px solid',
-                      borderColor: 'divider',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 1.5,
-                    }}
-                  >
-                    {selectedItems.length > 0 && (
-                      <Box sx={{ maxHeight: 110, overflowY: 'auto' }}>
-                        <SelectedSummary
-                          selectedItems={selectedItems}
-                          clothingItems={clothingItems}
-                        />
-                      </Box>
-                    )}
-                    <GenerateButton
-                      selectedItems={selectedItems}
-                      isGenerating={isGenerating}
-                      onGenerate={handleGenerate}
-                      hasGeneratedLook={!!generatedLookUrl}
-                      isSaving={isSaving}
-                      isSaved={isSaved}
-                      onSave={handleSave}
-                      onRecreate={handleRecreate}
-                    />
-                  </Box>
-                </>
+                ) : (
+                  <>
+                    <Box
+                      ref={closetListRef}
+                      onScroll={onClosetListScroll}
+                      sx={{
+                        flex: 1,
+                        minHeight: 0,
+                        overflowY: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 3,
+                        pr: 1,
+                        pb: 2,
+                        ...closetScrollShadowSx,
+                      }}
+                    >
+                      <ClosetItemGrid
+                        clothingItems={clothingItems}
+                        selectedItems={selectedItems}
+                        suggestedItems={suggestedItems}
+                        activeCategory={activeCategory}
+                        onCategoryChange={setActiveCategory}
+                        onToggleItem={toggleItem}
+                      />
+                    </Box>
+                    <Box
+                      sx={{
+                        flexShrink: 0,
+                        pt: 2,
+                        mt: 1,
+                        bgcolor: 'background.default',
+                        borderTop: '1px solid',
+                        borderColor: 'divider',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1.5,
+                      }}
+                    >
+                      {selectedItems.length > 0 && (
+                        <Box sx={{ maxHeight: 110, overflowY: 'auto' }}>
+                          <SelectedSummary
+                            selectedItems={selectedItems}
+                            clothingItems={clothingItems}
+                          />
+                        </Box>
+                      )}
+                      {!isBodyImageLoading && !bodyImage && (
+                        <Alert
+                          severity="info"
+                          variant="outlined"
+                          action={
+                            <Button
+                              size="small"
+                              startIcon={<PhotoCameraIcon fontSize="small" />}
+                              onClick={() => navigate('/body')}
+                              sx={{ textTransform: 'none', fontWeight: 600 }}
+                            >
+                              Add Photo
+                            </Button>
+                          }
+                        >
+                          Add a body photo to see yourself in this look.
+                        </Alert>
+                      )}
+                      <GenerateButton
+                        selectedItems={selectedItems}
+                        isGenerating={isGenerating}
+                        onGenerate={handleGenerate}
+                        hasGeneratedLook={!!generatedLookUrl}
+                        isSaving={isSaving}
+                        isSaved={isSaved}
+                        onSave={handleSave}
+                        onRecreate={handleRecreate}
+                      />
+                    </Box>
+                  </>
+                )
               )}
 
               {/* Get Inspired tab */}
@@ -263,6 +310,82 @@ export default function FittingRoomScreen() {
         <DialogActions>
           <Button onClick={() => setMissingBodyImageOpen(false)}>Cancel</Button>
           <Button variant="contained" onClick={() => navigate('/body')}>Upload Body Photo</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={generationFailedOpen}
+        onClose={() => setGenerationFailedOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        slotProps={{ paper: { sx: { borderRadius: 4, overflow: 'hidden' } } }}
+      >
+        <Box sx={{ px: 3.5, pt: 3.5, pb: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <Box
+            sx={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              bgcolor: 'error.light',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mb: 2,
+            }}
+          >
+            <ReportProblemRoundedIcon sx={{ fontSize: 32, color: 'error.dark' }} />
+          </Box>
+          <Typography sx={{ fontFamily: SERIF_FONT, fontWeight: 700, fontSize: 22 }}>
+            We couldn't create that look
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Something went wrong while generating your image. This can happen if:
+          </Typography>
+        </Box>
+
+        <DialogContent sx={{ px: 3.5, pt: 1.5, pb: 0 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+            {[
+              'One of the selected items is too revealing or not suitable for the try-on model',
+              'Your body photo or the item photos are unclear, cropped, or low quality',
+              'A temporary server issue occurred',
+            ].map((reason) => (
+              <Box
+                key={reason}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 1.25,
+                  bgcolor: 'action.hover',
+                  borderRadius: 2.5,
+                  px: 1.75,
+                  py: 1.25,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 6, height: 6, borderRadius: '50%',
+                    bgcolor: 'primary.main', mt: 0.9, flexShrink: 0,
+                  }}
+                />
+                <Typography variant="body2" color="text.secondary">{reason}</Typography>
+              </Box>
+            ))}
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
+            Try a different combination of items, or upload a clearer body/item photo, then try again.
+          </Typography>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3.5, pt: 2.5, pb: 3.5 }}>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={() => setGenerationFailedOpen(false)}
+            sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, py: 1.25, background: GRADIENTS.primary }}
+          >
+            Got it
+          </Button>
         </DialogActions>
       </Dialog>
 

@@ -168,7 +168,7 @@ describe('Suite 3 — Attribute & Pattern Extraction', () => {
 
     expect(result.noClothingDetected).toBe(false);
     assertOneOf(result.category, tc.expectedClassification!.category!, 'category');
-    assertOneOf(result.colorGroup, tc.expectedClassification!.colorGroup!, 'colorGroup');
+    expect(result.colorGroups.some(c => tc.expectedClassification!.colorGroup!.includes(c))).toBe(true);
     assertContainsKeyword(result.description, tc.expectedDescriptionKeywords!, 'sleeve description');
   });
 
@@ -183,7 +183,7 @@ describe('Suite 3 — Attribute & Pattern Extraction', () => {
 
     expect(result.noClothingDetected).toBe(false);
     assertOneOf(result.category, tc.expectedClassification!.category!, 'category');
-    assertOneOf(result.colorGroup, tc.expectedClassification!.colorGroup!, 'colorGroup');
+    expect(result.colorGroups.some(c => tc.expectedClassification!.colorGroup!.includes(c))).toBe(true);
     assertContainsKeyword(result.description, tc.expectedDescriptionKeywords!, 'sleeve description');
   });
 

@@ -7,6 +7,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
 import { GRADIENTS, PRIMARY_ALPHA, SERIF_FONT } from '../../../styles/tokens';
 import apiClient from '../../../api/client';
+import { emitImageTooLarge, isImageTooLarge } from '../../../lib/imageUpload';
 
 interface Props {
   onAnalyze: (imageUrl: string, name: string, file?: File) => void;
@@ -22,8 +23,12 @@ export default function UploadPanel({ onAnalyze }: Props) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    onAnalyze(URL.createObjectURL(file), file.name.replace(/\.[^/.]+$/, ''), file);
     e.target.value = '';
+    if (isImageTooLarge(file)) {
+      emitImageTooLarge();
+      return;
+    }
+    onAnalyze(URL.createObjectURL(file), file.name.replace(/\.[^/.]+$/, ''), file);
   };
 
   const handleUrlSubmit = async () => {
@@ -54,10 +59,14 @@ export default function UploadPanel({ onAnalyze }: Props) {
       } else {
         let message: string | null = null;
         try {
-          const text = typeof err?.response?.data?.text === 'function'
-            ? await err.response.data.text()
-            : JSON.stringify(err?.response?.data ?? '');
-          message = JSON.parse(text).error;
+          const data = err?.response?.data;
+          const text = data instanceof Blob ? await data.text()
+            : typeof data === 'string' ? data
+            : JSON.stringify(data ?? '');
+          const parsed = JSON.parse(text);
+          // The server's error handler responds with { message }; fall back to
+          // `.error` just in case an endpoint uses that shape instead.
+          message = parsed.message ?? parsed.error ?? null;
         } catch { /* ignore */ }
         setUrlError(message ?? 'Could not find the product image. Try uploading it directly.');
       }

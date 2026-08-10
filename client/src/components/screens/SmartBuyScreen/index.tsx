@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Box, Typography } from '@mui/material';
-import { useClothingItems, useAddClothingItem, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
-import UploadPanel from './UploadPanel';
-import AnalysisResult from './AnalysisResult';
-import RecentTests from './RecentTests';
-import RecentTestDialog from './RecentTestDialog';
-import type { AnalysisResult as AnalysisResultType, RecentTest } from './types';
-import { smartBuyApi } from '../../../api/api/smartBuy.api';
-import { imagesApi } from '../../../api/api/images.api';
+import { Box } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useAddClothingItem, useBodyImage, useClothingItems, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
 import { fittingRoomApi } from '../../../api/api/fittingRoom.api';
+import { imagesApi } from '../../../api/api/images.api';
+import { smartBuyApi } from '../../../api/api/smartBuy.api';
 import { useCurrentUser } from '../../../auth/AuthContext';
+import { useScrollShadow } from '../../../hooks/useScrollShadow';
+import PageHeader from '../../PageHeader';
+import AnalysisResult from './AnalysisResult';
+import RecentTestDialog from './RecentTestDialog';
+import RecentTests from './RecentTests';
+import type { AnalysisResult as AnalysisResultType, RecentTest } from './types';
+import UploadPanel from './UploadPanel';
 
 const MAX_RECENT = 6;
 
@@ -17,6 +19,7 @@ const MAX_RECENT = 6;
 export default function SmartBuyScreen() {
   const currentUserId = useCurrentUser().id;
   const { data: clothingItems = [] } = useClothingItems(currentUserId);
+  const { data: bodyImage, isLoading: isBodyImageLoading } = useBodyImage(currentUserId);
   const { mutateAsync: addToCloset } = useAddClothingItem(currentUserId);
   const { data: colorGroups = [] } = useColorGroups();
   const { data: garmentCategories = [] } = useGarmentCategories();
@@ -29,6 +32,7 @@ export default function SmartBuyScreen() {
   const [result, setResult] = useState<AnalysisResultType | null>(null);
   const [tryOnImage, setTryOnImage] = useState<string | null>(null);
   const [isTryingOn, setIsTryingOn] = useState(false);
+  const [tryOnError, setTryOnError] = useState<string | null>(null);
   const [recentTests, setRecentTests] = useState<RecentTest[]>([]);
 
   useEffect(() => {
@@ -52,9 +56,11 @@ export default function SmartBuyScreen() {
     }).catch(() => {});
   }, [clothingItems]);
   const [selectedRecentTest, setSelectedRecentTest] = useState<RecentTest | null>(null);
-  const [testClassification, setTestClassification] = useState<{ category: string; colorGroup: string; season: string; style: string } | null>(null);
+  const [testClassification, setTestClassification] = useState<{ category: string; colorGroups: string[]; seasons: string[]; styles: string[] } | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
+  const { ref: mainRef, onScroll: onMainScroll, sx: scrollShadowSx } =
+    useScrollShadow([testImage, isAnalyzing, result, recentTests.length]);
 
   const runAnalysis = async (imageUrl: string, name: string, file?: File) => {
     setTestImage(imageUrl);
@@ -63,6 +69,7 @@ export default function SmartBuyScreen() {
     setResult(null);
     setTryOnImage(null);
     setIsTryingOn(false);
+    setTryOnError(null);
     setIsAdding(false);
     setAddSuccess(false);
     setIsAnalyzing(true);
@@ -138,14 +145,17 @@ export default function SmartBuyScreen() {
       await addToCloset({
         file,
         userId: currentUserId,
-        styles: name ? [name] : [],
-        colorGroupIds: colorGroups.find(c => c.name === testClassification?.colorGroup)?.id != null
-          ? [colorGroups.find(c => c.name === testClassification?.colorGroup)!.id]
-          : [],
+        // The Smart Buy image is usually a model wearing the garment; isolate
+        // just the garment when adding it to the closet.
+        extractGarment: true,
+        styles: testClassification?.styles ?? [],
+        colorGroupIds: colorGroups
+          .filter(c => testClassification?.colorGroups.includes(c.name))
+          .map(c => c.id),
         categoryId: garmentCategories.find(c => c.name === testClassification?.category)?.id ?? null,
-        seasonIds: seasons.find(s => s.name === testClassification?.season)?.id != null
-          ? [seasons.find(s => s.name === testClassification?.season)!.id]
-          : [],
+        seasonIds: seasons
+          .filter(s => testClassification?.seasons.includes(s.name))
+          .map(s => s.id),
       });
       setAddSuccess(true);
     } finally {
@@ -160,14 +170,15 @@ export default function SmartBuyScreen() {
     await addToCloset({
       file,
       userId: currentUserId,
-      styles: name ? [name] : [],
-      colorGroupIds: colorGroups.find(c => c.name === test.classification?.colorGroup)?.id != null
-        ? [colorGroups.find(c => c.name === test.classification?.colorGroup)!.id]
-        : [],
+      extractGarment: true,
+      styles: test.classification?.styles ?? [],
+      colorGroupIds: colorGroups
+        .filter(c => test.classification?.colorGroups.includes(c.name))
+        .map(c => c.id),
       categoryId: garmentCategories.find(c => c.name === test.classification?.category)?.id ?? null,
-      seasonIds: seasons.find(s => s.name === test.classification?.season)?.id != null
-        ? [seasons.find(s => s.name === test.classification?.season)!.id]
-        : [],
+      seasonIds: seasons
+        .filter(s => test.classification?.seasons.includes(s.name))
+        .map(s => s.id),
     });
   };
 
@@ -179,18 +190,20 @@ export default function SmartBuyScreen() {
     }
     if (!file) return;
     setIsTryingOn(true);
+    setTryOnError(null);
     try {
       const parts = [
         testName,
         testClassification?.category,
-        testClassification?.colorGroup,
-        testClassification?.style,
+        ...(testClassification?.colorGroups ?? []),
+        ...(testClassification?.styles ?? []),
       ].filter(Boolean);
       const itemDescription = parts.length > 0 ? parts.join(', ') : undefined;
       const { url } = await fittingRoomApi.tryOnProduct(currentUserId, file, itemDescription);
       setTryOnImage(url);
-    } catch {
-      // keep product image on failure
+    } catch (err) {
+      const message = err instanceof Error ? err.message : null;
+      setTryOnError(message ?? 'Virtual try-on failed. Please try again.');
     } finally {
       setIsTryingOn(false);
     }
@@ -204,33 +217,18 @@ export default function SmartBuyScreen() {
     setIsAnalyzing(false);
     setTryOnImage(null);
     setIsTryingOn(false);
+    setTryOnError(null);
     setIsAdding(false);
     setAddSuccess(false);
     setTestClassification(null);
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Box
-        component="header"
-        sx={{
-          position: 'sticky', top: 0, zIndex: 40,
-          bgcolor: 'rgba(255,255,255,0.95)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid', borderColor: 'divider',
-          px: 4, py: 3,
-        }}
-      >
-        <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
-          <Typography variant="h4">Smart Buy</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-            Test before you invest
-          </Typography>
-        </Box>
-      </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      <PageHeader title="Smart Buy" subtitle="Test before you invest" />
 
-      <Box component="main" sx={{ flex: 1, px: 4, py: 4 }}>
-        <Box sx={{ maxWidth: 1280, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <Box component="main" sx={{ flex: 1, minHeight: 0, overflow: 'hidden', px: 4, py: 4 }}>
+        <Box sx={{ maxWidth: 1280, mx: 'auto', height: '100%' }}>
           {testImage || isAnalyzing ? (
             <AnalysisResult
               testImage={testImage!}
@@ -239,17 +237,25 @@ export default function SmartBuyScreen() {
               result={result}
               tryOnImage={tryOnImage}
               isTryingOn={isTryingOn}
+              tryOnError={tryOnError}
               isAdding={isAdding}
               addSuccess={addSuccess}
+              hasBodyImage={!!bodyImage}
+              isBodyImageLoading={isBodyImageLoading}
               onVirtualTryOn={handleVirtualTryOn}
               onAddToCloset={handleAddToCloset}
               onReset={handleReset}
             />
           ) : (
-            <UploadPanel onAnalyze={runAnalysis} />
+            <Box
+              ref={mainRef}
+              onScroll={onMainScroll}
+              sx={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 5, ...scrollShadowSx }}
+            >
+              <UploadPanel onAnalyze={runAnalysis} />
+              <RecentTests tests={recentTests} onRetest={t => setSelectedRecentTest(t)} />
+            </Box>
           )}
-
-          {!testImage && !isAnalyzing && <RecentTests tests={recentTests} onRetest={t => setSelectedRecentTest(t)} />}
         </Box>
       </Box>
 
