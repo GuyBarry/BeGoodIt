@@ -5,6 +5,6 @@ import 'dotenv/config';
 export const authConfig = {
   jwtSecret: process.env.JWT_SECRET || 'secretkey',
   // seconds
-  accessExpiresIn: parseInt(process.env.JWT_EXPIRES_IN || '3600', 10), // 1 hour
-  refreshExpiresIn: parseInt(process.env.JWT_REFRESH_EXPIRES_IN || '86400', 10), // 24 hours
+  accessExpiresIn: parseInt(process.env.JWT_EXPIRES_IN || '3', 10), // 1 hour
+  refreshExpiresIn: parseInt(process.env.JWT_REFRESH_EXPIRES_IN || '3', 10), // 24 hours
 };
