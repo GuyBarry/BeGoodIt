@@ -44,28 +44,32 @@ export const initApp = async (): Promise<Express> => {
 
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+  const apiRouter = express.Router();
+
   // Public routes — no authentication required
-  app.use("/auth", authRouter);
-  app.use("/color-groups", colorGroupRouter);
-  app.use("/garment-categories", garmentCategoryRouter);
-  app.use("/genders", genderRouter);
-  app.use("/seasons", seasonRouter);
+  apiRouter.use("/auth", authRouter);
+  apiRouter.use("/color-groups", colorGroupRouter);
+  apiRouter.use("/garment-categories", garmentCategoryRouter);
+  apiRouter.use("/genders", genderRouter);
+  apiRouter.use("/seasons", seasonRouter);
   // Image blobs are referenced directly from <img src> tags (no Authorization
   // header), so they stay public — same as static uploads in the reference app.
-  app.use("/images", imagesRouter);
+  apiRouter.use("/images", imagesRouter);
 
   // Protected routes — require a valid Bearer access token
-  app.use("/body", authMiddleware, bodyRouter);
-  app.use("/clothing-items", authMiddleware, clothingItemRouter);
-  app.use("/users", authMiddleware, userRouter);
-  app.use("/closet", authMiddleware, closetRouter);
-  app.use("/fitting-room", authMiddleware, fittingRoomRouter);
-  app.use("/smart-buy", authMiddleware, smartBuyRouter);
-  app.use("/outfits", authMiddleware, outfitRouter);
+  apiRouter.use("/body", authMiddleware, bodyRouter);
+  apiRouter.use("/clothing-items", authMiddleware, clothingItemRouter);
+  apiRouter.use("/users", authMiddleware, userRouter);
+  apiRouter.use("/closet", authMiddleware, closetRouter);
+  apiRouter.use("/fitting-room", authMiddleware, fittingRoomRouter);
+  apiRouter.use("/smart-buy", authMiddleware, smartBuyRouter);
+  apiRouter.use("/outfits", authMiddleware, outfitRouter);
 
-  app.get("/health", (_req: Request, res: Response) => {
+  apiRouter.get("/health", (_req: Request, res: Response) => {
     res.json({ message: "BeGoodIt API Is Up" });
   });
+
+  app.use("/api", apiRouter);
 
   // In production, serve index.html for all unmatched routes (SPA navigation)
   if (serverConfig.env === 'production') {

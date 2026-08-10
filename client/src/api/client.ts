@@ -8,7 +8,7 @@ import {
 } from '../auth/tokenStorage';
 import { emitImageTooLarge } from '../lib/imageUpload';
 
-const baseURL = import.meta.env.VITE_API_URL || window.location.origin;
+const baseURL = `${import.meta.env.VITE_API_URL || window.location.origin}/api`;
 
 const apiClient = axios.create({ baseURL });
 
