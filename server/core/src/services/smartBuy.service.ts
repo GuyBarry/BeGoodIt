@@ -101,45 +101,60 @@ export interface ProductMeta {
 
 // ── Compatibility scoring ────────────────────────────────────────────────────
 
+// Values are the empirical co-occurrence score(A -> B) = P(B in outfit | A in
+// outfit) x 100, derived from 16,990 outfits in the Maryland Polyvore dataset
+// (Han et al., ACM MM'17). Note the matrix is asymmetric by construction, and
+// the Undergarment/Activewear rows rest on comparatively few outfits (391/171).
 const CATEGORY_MATRIX: Record<string, Record<string, number>> = {
-  Top:          { Bottom: 95, Shoes: 80, Outerwear: 85, Accessories: 70, Dress: 10, Top: 20, Activewear: 30, Undergarment: 10 },
-  Bottom:       { Top: 95, Shoes: 85, Outerwear: 80, Accessories: 65, Dress: 10, Bottom: 20, Activewear: 30, Undergarment: 10 },
-  Dress:        { Shoes: 90, Accessories: 80, Outerwear: 75, Dress: 20, Top: 10, Bottom: 10, Activewear: 10, Undergarment: 10 },
-  Shoes:        { Top: 80, Bottom: 85, Dress: 90, Outerwear: 70, Accessories: 65, Shoes: 20, Activewear: 40, Undergarment: 10 },
-  Outerwear:    { Top: 85, Bottom: 80, Dress: 75, Shoes: 70, Accessories: 65, Outerwear: 30, Activewear: 30, Undergarment: 10 },
-  Accessories:  { Top: 70, Bottom: 65, Dress: 80, Shoes: 65, Outerwear: 65, Accessories: 60, Activewear: 60, Undergarment: 10 },
-  Activewear:   { Activewear: 85, Shoes: 75, Accessories: 60, Top: 30, Bottom: 30, Outerwear: 40, Dress: 10, Undergarment: 10 },
-  Undergarment: { Top: 10, Bottom: 10, Dress: 10, Shoes: 10, Outerwear: 10, Accessories: 10, Activewear: 10, Undergarment: 50 },
+  Top:          { Bottom: 90, Shoes: 94, Outerwear: 36, Accessories: 93, Dress: 3, Top: 10, Activewear: 1, Undergarment: 2 },
+  Bottom:       { Top: 91, Shoes: 94, Outerwear: 39, Accessories: 93, Dress: 2, Bottom: 2, Activewear: 1, Undergarment: 2 },
+  Dress:        { Shoes: 95, Accessories: 96, Outerwear: 33, Dress: 5, Top: 8, Bottom: 4, Activewear: 1, Undergarment: 1 },
+  Shoes:        { Top: 69, Bottom: 69, Dress: 25, Outerwear: 37, Accessories: 94, Shoes: 5, Activewear: 1, Undergarment: 2 },
+  Outerwear:    { Top: 69, Bottom: 72, Dress: 22, Shoes: 95, Accessories: 94, Outerwear: 3, Activewear: 1, Undergarment: 2 },
+  Accessories:  { Top: 68, Bottom: 67, Dress: 25, Shoes: 93, Outerwear: 36, Accessories: 74, Activewear: 1, Undergarment: 2 },
+  Activewear:   { Activewear: 12, Shoes: 80, Accessories: 78, Top: 67, Bottom: 24, Outerwear: 19, Dress: 1, Undergarment: 5 },
+  Undergarment: { Top: 51, Bottom: 69, Dress: 15, Shoes: 86, Outerwear: 33, Accessories: 90, Activewear: 2, Undergarment: 18 },
 };
 
-const NEUTRALS = new Set(['Black', 'White', 'Gray', 'Beige', 'Brown']);
-const COMPLEMENTARY: [string, string][] = [
-  ['Blue', 'Orange'], ['Red', 'Green'], ['Yellow', 'Purple'], ['Pink', 'Green'],
-];
-
-const colorScore = (a: string, b: string): number => {
-  if (a === b) return 55;
-  const na = NEUTRALS.has(a), nb = NEUTRALS.has(b);
-  if (na && nb) return 80;
-  if (na || nb) return 85;
-  if (COMPLEMENTARY.some(([x, y]) => (a === x && b === y) || (a === y && b === x))) return 80;
-  return 60;
+// Values are the empirical co-occurrence score(A -> B) = P(B in outfit | A in
+// outfit), derived from the same 16,990 Polyvore outfits as CATEGORY_MATRIX.
+const COLOR_MATRIX: Record<string, Record<string, number>> = {
+  Black:  { Black: 79, White: 72, Red: 63, Blue: 63, Green: 58, Yellow: 57, Orange: 56, Purple: 55, Pink: 65, Brown: 60, Gray: 59, Beige: 59 },
+  White:  { Black: 85, White: 66, Red: 62, Blue: 67, Green: 59, Yellow: 57, Orange: 56, Purple: 55, Pink: 67, Brown: 60, Gray: 59, Beige: 59 },
+  Red:    { Black: 85, White: 69, Red: 66, Blue: 63, Green: 57, Yellow: 56, Orange: 58, Purple: 56, Pink: 66, Brown: 61, Gray: 58, Beige: 59 },
+  Blue:   { Black: 78, White: 73, Red: 61, Blue: 65, Green: 59, Yellow: 57, Orange: 57, Purple: 56, Pink: 67, Brown: 59, Gray: 59, Beige: 59 },
+  Green:  { Black: 82, White: 71, Red: 60, Blue: 67, Green: 64, Yellow: 58, Orange: 57, Purple: 55, Pink: 65, Brown: 60, Gray: 59, Beige: 61 },
+  Yellow: { Black: 82, White: 69, Red: 61, Blue: 65, Green: 59, Yellow: 63, Orange: 59, Purple: 56, Pink: 64, Brown: 59, Gray: 57, Beige: 60 },
+  Orange: { Black: 78, White: 69, Red: 64, Blue: 65, Green: 58, Yellow: 59, Orange: 63, Purple: 56, Pink: 73, Brown: 62, Gray: 58, Beige: 63 },
+  Purple: { Black: 81, White: 70, Red: 63, Blue: 70, Green: 59, Yellow: 58, Orange: 58, Purple: 61, Pink: 72, Brown: 59, Gray: 59, Beige: 58 },
+  Pink:   { Black: 79, White: 71, Red: 62, Blue: 65, Green: 58, Yellow: 56, Orange: 59, Purple: 56, Pink: 69, Brown: 60, Gray: 58, Beige: 62 },
+  Brown:  { Black: 81, White: 70, Red: 62, Blue: 65, Green: 58, Yellow: 56, Orange: 58, Purple: 55, Pink: 67, Brown: 62, Gray: 58, Beige: 65 },
+  Gray:   { Black: 85, White: 72, Red: 61, Blue: 66, Green: 59, Yellow: 56, Orange: 56, Purple: 56, Pink: 65, Brown: 59, Gray: 61, Beige: 59 },
+  Beige:  { Black: 77, White: 67, Red: 60, Blue: 64, Green: 59, Yellow: 57, Orange: 59, Purple: 55, Pink: 68, Brown: 65, Gray: 58, Beige: 61 },
 };
+
+const colorScore = (a: string, b: string): number => COLOR_MATRIX[a]?.[b] ?? 60;
+
+const SEASON_CYCLE = ['Winter', 'Spring', 'Summer', 'Fall'];
 
 const seasonScore = (a: string, b: string): number => {
   if (a === b) return 90;
   if (a === 'All-Season' || b === 'All-Season') return 85;
-  return 35;
+  const ia = SEASON_CYCLE.indexOf(a), ib = SEASON_CYCLE.indexOf(b);
+  if (ia === -1 || ib === -1) return 35;
+  const dist = Math.min(Math.abs(ia - ib), SEASON_CYCLE.length - Math.abs(ia - ib));
+  return dist === 1 ? 65 : 30; // calendar-adjacent (transitional) vs. opposite
 };
 
-const styleScore = (a: string, b: string): number => {
-  if (a === b) return 90;
-  if (
-    (a === 'Casual' && b === 'Smart Casual') || (a === 'Smart Casual' && b === 'Casual') ||
-    (a === 'Formal' && b === 'Smart Casual') || (a === 'Smart Casual' && b === 'Formal')
-  ) return 70;
-  return 40;
+const STYLE_MATRIX: Record<string, Record<string, number>> = {
+  Casual:         { Casual: 90, Formal: 40, 'Smart Casual': 70, Sporty: 75, Bohemian: 75 },
+  Formal:         { Casual: 40, Formal: 90, 'Smart Casual': 70, Sporty: 20, Bohemian: 25 },
+  'Smart Casual': { Casual: 70, Formal: 70, 'Smart Casual': 90, Sporty: 45, Bohemian: 45 },
+  Sporty:         { Casual: 75, Formal: 20, 'Smart Casual': 45, Sporty: 90, Bohemian: 35 },
+  Bohemian:       { Casual: 75, Formal: 25, 'Smart Casual': 45, Sporty: 35, Bohemian: 90 },
 };
+
+const styleScore = (a: string, b: string): number => STYLE_MATRIX[a]?.[b] ?? 40;
 
 // How much a same/adjacent-category match (e.g. Top vs Top) is allowed to climb
 // above its base category score on the strength of color/style/embedding
