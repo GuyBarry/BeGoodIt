@@ -6,8 +6,8 @@ import { AddItemInput, clothingItemService } from './clothingItem.service';
 import { classifyClothingItem, ClothingClassification } from '../ai/classifyClothingItem';
 import { isolateGarment } from '../ai/prompt.manager';
 import { generateEmbedding } from '../ai/ai.provider';
-import { BadRequestException } from '../exceptions/httpExceptions';
-import { garmentCategoryRepository, colorGroupRepository, seasonRepository } from '../repositories';
+import { BadRequestException, ConflictException } from '../exceptions/httpExceptions';
+import { garmentCategoryRepository, colorGroupRepository, seasonRepository, outfitRepository } from '../repositories';
 
 const getItemsByUserId = async (
   userId: string,
@@ -114,7 +114,28 @@ const addToCloset = async (
   });
 };
 
-const removeFromCloset = async (userId: string, itemId: string): Promise<void> => {
+export type RemoveFromClosetOptions = {
+  // When true, outfits containing this item are deleted along with it instead
+  // of blocking the delete with a conflict.
+  removeOutfits?: boolean;
+};
+
+const removeFromCloset = async (
+  userId: string,
+  itemId: string,
+  options: RemoveFromClosetOptions = {},
+): Promise<void> => {
+  const outfitsWithItem = await outfitRepository.findByItemId(itemId, userId);
+
+  if (outfitsWithItem.length > 0) {
+    if (!options.removeOutfits) {
+      throw new ConflictException('This item is used in one or more outfits', {
+        outfits: outfitsWithItem.map(o => ({ id: o.id, name: o.name, imageId: o.imageId })),
+      });
+    }
+    await outfitRepository.deleteManyByIdsAndUserId(outfitsWithItem.map(o => o.id), userId);
+  }
+
   return clothingItemService.deleteById(itemId, userId);
 };
 

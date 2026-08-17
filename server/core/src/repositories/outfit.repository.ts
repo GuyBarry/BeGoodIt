@@ -1,7 +1,21 @@
+import { In } from 'typeorm';
 import { AppDataSource } from '../db/datasource';
 import { ClothingItem, Outfit } from '../db/entities';
 
 export const outfitRepository = AppDataSource.getRepository(Outfit).extend({
+  findByItemId(itemId: string, userId: string): Promise<Outfit[]> {
+    return this.createQueryBuilder('o')
+      .select(['o.id', 'o.name', 'o.imageId'])
+      .innerJoin('o.items', 'item', 'item.id = :itemId', { itemId })
+      .where('o.userId = :userId', { userId })
+      .getMany();
+  },
+
+  async deleteManyByIdsAndUserId(ids: string[], userId: string): Promise<void> {
+    if (ids.length === 0) return;
+    await this.delete({ id: In(ids), userId });
+  },
+
   findByUserId(userId: string): Promise<Outfit[]> {
     // Uses idx_outfit_user_created composite index; loads relations in one round-trip via JOIN
     return this.find({
