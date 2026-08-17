@@ -3,7 +3,7 @@
 set -e
 
 . ./vm.config
-host="begoodit.cs.colman.ac.il"
+host="localhost"
 app_dir="/home/cs147/begoodit-application"
 
 echo "🚀 Deploying to $username@$host..."
