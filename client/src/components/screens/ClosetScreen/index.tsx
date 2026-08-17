@@ -11,6 +11,7 @@ import EmptyClosetState from '../../EmptyClosetState';
 import FilteredEmptyState from './FilteredEmptyState';
 import EmptyOutfitsState from './EmptyOutfitsState';
 import DeleteConfirmDialog from '../../common/DeleteConfirmDialog';
+import ItemInOutfitsDialog from '../../common/ItemInOutfitsDialog';
 import { useCurrentUser } from '../../../auth/AuthContext';
 import {
   useClosetItems,
@@ -22,13 +23,15 @@ import {
 } from '../../../api';
 import { useScrollShadow } from '../../../hooks/useScrollShadow';
 import { imagesApi } from '../../../api/api/images.api';
-import type { ClosetFilters } from '../../../api/api/closet.api';
+import { getOutfitConflict, type ClosetFilters, type OutfitConflict } from '../../../api/api/closet.api';
 import type { ClothingItem } from '../../../entities/clothingItem';
 import type { Outfit } from '../../../entities/outfit';
 
 type PendingDelete =
   | { type: 'item'; data: ClothingItem }
   | { type: 'outfit'; data: Outfit };
+
+type OutfitConflictState = { item: ClothingItem; outfits: OutfitConflict[] };
 
 const bounce = keyframes`
   0%, 100% { transform: translateY(0); opacity: 0.35; }
@@ -70,6 +73,7 @@ export default function ClosetScreen() {
   const [gridSize,         setGridSize]         = useState<'normal' | 'compact'>('normal');
   const [selectedOutfit,   setSelectedOutfit]   = useState<Outfit | null>(null);
   const [pendingDelete,    setPendingDelete]    = useState<PendingDelete | null>(null);
+  const [outfitConflict,   setOutfitConflict]   = useState<OutfitConflictState | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
@@ -122,10 +126,30 @@ export default function ClosetScreen() {
   const confirmDelete = () => {
     if (!pendingDelete) return;
     if (pendingDelete.type === 'item') {
-      deleteItem(pendingDelete.data.id, { onSuccess: () => setPendingDelete(null) });
+      const item = pendingDelete.data;
+      deleteItem(
+        { id: item.id },
+        {
+          onSuccess: () => setPendingDelete(null),
+          onError: (error) => {
+            const outfits = getOutfitConflict(error);
+            if (!outfits) return;
+            setPendingDelete(null);
+            setOutfitConflict({ item, outfits });
+          },
+        },
+      );
     } else {
       deleteOutfit(pendingDelete.data.id, { onSuccess: () => setPendingDelete(null) });
     }
+  };
+
+  const confirmDeleteWithOutfits = () => {
+    if (!outfitConflict) return;
+    deleteItem(
+      { id: outfitConflict.item.id, removeOutfits: true },
+      { onSuccess: () => setOutfitConflict(null) },
+    );
   };
 
   const items = data?.pages.flatMap(p => p.items) ?? [];
@@ -287,6 +311,15 @@ export default function ClosetScreen() {
         isDeleting={pendingDelete?.type === 'item' ? isDeletingItem : isDeletingOutfit}
         onCancel={() => setPendingDelete(null)}
         onConfirm={confirmDelete}
+      />
+
+      <ItemInOutfitsDialog
+        open={!!outfitConflict}
+        itemImageUrl={outfitConflict ? imagesApi.getImageUrl(outfitConflict.item.imageId) : null}
+        outfits={outfitConflict?.outfits ?? []}
+        isDeleting={isDeletingItem}
+        onCancel={() => setOutfitConflict(null)}
+        onConfirm={confirmDeleteWithOutfits}
       />
     </Box>
   );

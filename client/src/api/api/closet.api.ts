@@ -1,6 +1,16 @@
 import apiClient from '../client';
+import { getConflictDetail } from '../errors';
 import type { ClothingItem } from '../../entities/clothingItem';
 import type { User } from '../../entities/user';
+
+export interface OutfitConflict {
+  id: string;
+  name: string | null;
+  imageId: string | null;
+}
+
+export const getOutfitConflict = (err: unknown): OutfitConflict[] | undefined =>
+  getConflictDetail<OutfitConflict[]>(err, 'outfits');
 
 export interface ClosetFilters {
   search?: string;
@@ -62,8 +72,13 @@ export const clothingItemsApi = {
     return data;
   },
 
-  deleteById: async (userId: User['id'], id: ClothingItem['id']): Promise<void> => {
-    await apiClient.delete(`/closet/${userId}/items/${id}`);
+  deleteById: async (
+    userId: User['id'],
+    id: ClothingItem['id'],
+    options: { removeOutfits?: boolean } = {},
+  ): Promise<void> => {
+    const params = options.removeOutfits ? '?removeOutfits=true' : '';
+    await apiClient.delete(`/closet/${userId}/items/${id}${params}`);
   },
 
   classify: async (file: File): Promise<ClothingClassification> => {
