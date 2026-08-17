@@ -8,6 +8,7 @@ import FittingRoomScreen from './components/screens/FittingRoomScreen/index';
 import SmartBuyScreen from './components/screens/SmartBuyScreen';
 import ProfileScreen from './components/screens/ProfileScreen/index';
 import BodyImageScreen from './components/screens/BodyImageScreen/index';
+import VirtualModelOnboardingDialog from './components/screens/BodyImageScreen/VirtualModelOnboardingDialog';
 import LoginScreen from './components/screens/LoginScreen/index';
 import UploadErrorBanner from './components/UploadErrorBanner';
 import { useAuth } from './auth/AuthContext';
@@ -66,6 +67,8 @@ export default function App() {
       </Box>
 
       {isMobile && <BottomNav />}
+
+      <VirtualModelOnboardingDialog />
     </Box>
   );
 }
