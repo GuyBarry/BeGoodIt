@@ -83,7 +83,8 @@ closetRouter.delete(
   "/:userId/items/:id",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await closetService.removeFromCloset(req.params.userId, req.params.id);
+      const removeOutfits = req.query.removeOutfits === "true";
+      await closetService.removeFromCloset(req.params.userId, req.params.id, { removeOutfits });
       res.status(StatusCodes.NO_CONTENT).send();
     } catch (error) {
       next(error);
