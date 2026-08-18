@@ -276,6 +276,12 @@ export const smartBuyService = {
       clothingItemRepository.getFilteredByUserId(userId, {}, 1, 1000),
     ]);
 
+    if (uploadedClassification.noClothingDetected) {
+      throw new BadRequestException(
+        "We couldn't find a clothing item in that image. Try a photo of a single garment.",
+      );
+    }
+
     const uploadedEmbedding = await generateEmbedding(uploadedClassification.description).catch(() => null);
 
     const scored = closetItems

@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Alert, Box, Snackbar } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useAddClothingItem, useBodyImage, useClothingItems, useColorGroups, useGarmentCategories, useSeasons } from '../../../api';
 import { fittingRoomApi } from '../../../api/api/fittingRoom.api';
@@ -34,6 +34,7 @@ export default function SmartBuyScreen() {
   const [isTryingOn, setIsTryingOn] = useState(false);
   const [tryOnError, setTryOnError] = useState<string | null>(null);
   const [recentTests, setRecentTests] = useState<RecentTest[]>([]);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   useEffect(() => {
     smartBuyApi.getTests(currentUserId).then(records => {
@@ -119,6 +120,14 @@ export default function SmartBuyScreen() {
       };
 
       setRecentTests(prev => [entry, ...prev.slice(0, MAX_RECENT - 1)]);
+    } catch (err: any) {
+      // The server's error handler responds with { message }; fall back to
+      // `.error` and then a generic message. Reset back to the upload panel so
+      // the user isn't stranded on a blank result view with their image showing.
+      const data = err?.response?.data;
+      const message = data?.message ?? data?.error ?? 'Something went wrong analyzing that image. Please try again.';
+      handleReset();
+      setAnalysisError(message);
     } finally {
       setIsAnalyzing(false);
     }
@@ -266,6 +275,17 @@ export default function SmartBuyScreen() {
           onAddToCloset={handleAddRecentToCloset}
         />
       )}
+
+      <Snackbar
+        open={!!analysisError}
+        autoHideDuration={6000}
+        onClose={() => setAnalysisError(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="warning" variant="filled" onClose={() => setAnalysisError(null)} sx={{ borderRadius: 2 }}>
+          {analysisError}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
